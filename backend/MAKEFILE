@@ -1,0 +1,19 @@
+gorun : 
+	 @air -c ./.air.toml
+
+build:
+	@go build -o bin/main cmd/api/main.go
+	@go build -o bin/bin cmd/bin_consume/main.go
+	@go build -o bin/socket cmd/gps/main.go
+
+run: build
+	@./bin/main
+
+modelpull:
+	@rm -rf database/model
+	@go run cmd/gen/main.go && rm -rf tmp/query
+
+clean:
+	@rm -rf ./bin/
+	@rm -rf ./tmp/
+	@rm -rf ./database/model
