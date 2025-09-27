@@ -38,6 +38,8 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		Moods:                     newMoods(db, opts...),
 		Notifications:             newNotifications(db, opts...),
 		ProgressReports:           newProgressReports(db, opts...),
+		RoleOwners:                newRoleOwners(db, opts...),
+		Roles:                     newRoles(db, opts...),
 		ScoringHistory:            newScoringHistory(db, opts...),
 		UserAchievements:          newUserAchievements(db, opts...),
 		UserInsights:              newUserInsights(db, opts...),
@@ -72,6 +74,8 @@ type Query struct {
 	Moods                     moods
 	Notifications             notifications
 	ProgressReports           progressReports
+	RoleOwners                roleOwners
+	Roles                     roles
 	ScoringHistory            scoringHistory
 	UserAchievements          userAchievements
 	UserInsights              userInsights
@@ -107,6 +111,8 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		Moods:                     q.Moods.clone(db),
 		Notifications:             q.Notifications.clone(db),
 		ProgressReports:           q.ProgressReports.clone(db),
+		RoleOwners:                q.RoleOwners.clone(db),
+		Roles:                     q.Roles.clone(db),
 		ScoringHistory:            q.ScoringHistory.clone(db),
 		UserAchievements:          q.UserAchievements.clone(db),
 		UserInsights:              q.UserInsights.clone(db),
@@ -149,6 +155,8 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		Moods:                     q.Moods.replaceDB(db),
 		Notifications:             q.Notifications.replaceDB(db),
 		ProgressReports:           q.ProgressReports.replaceDB(db),
+		RoleOwners:                q.RoleOwners.replaceDB(db),
+		Roles:                     q.Roles.replaceDB(db),
 		ScoringHistory:            q.ScoringHistory.replaceDB(db),
 		UserAchievements:          q.UserAchievements.replaceDB(db),
 		UserInsights:              q.UserInsights.replaceDB(db),
@@ -181,6 +189,8 @@ type queryCtx struct {
 	Moods                     *moodsDo
 	Notifications             *notificationsDo
 	ProgressReports           *progressReportsDo
+	RoleOwners                *roleOwnersDo
+	Roles                     *rolesDo
 	ScoringHistory            *scoringHistoryDo
 	UserAchievements          *userAchievementsDo
 	UserInsights              *userInsightsDo
@@ -213,6 +223,8 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		Moods:                     q.Moods.WithContext(ctx),
 		Notifications:             q.Notifications.WithContext(ctx),
 		ProgressReports:           q.ProgressReports.WithContext(ctx),
+		RoleOwners:                q.RoleOwners.WithContext(ctx),
+		Roles:                     q.Roles.WithContext(ctx),
 		ScoringHistory:            q.ScoringHistory.WithContext(ctx),
 		UserAchievements:          q.UserAchievements.WithContext(ctx),
 		UserInsights:              q.UserInsights.WithContext(ctx),

@@ -10,12 +10,12 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func omit(columnName string) string {
-	return fmt.Sprintf("%s,omitempty", columnName)
-}
+// func omit(columnName string) string {
+// 	return fmt.Sprintf("%s,omitempty", columnName)
+// }
 
 func tag(columnName string) string {
-	return fmt.Sprintf("%s", columnName)
+	return columnName
 }
 
 func model(name string) string {
@@ -120,6 +120,102 @@ func main() {
 				"references": []string{"id"},
 			},
 			JSONTag: tag("user"),
+		}),
+	)
+
+	roles := g.GenerateModelAs(
+		"roles",
+		"Roles",
+
+		gen.FieldType("id", "uint"),
+		gen.FieldType("created_by_id", "uint"),
+		gen.FieldType("updated_by_id", "uint"),
+		gen.FieldType("permissions", "datatypes.JSON"),
+
+		gen.FieldJSONTagWithNS(func(columnName string) string {
+			switch columnName {
+			case "id":
+				return tag("id")
+			case "code":
+				return tag("code")
+			case "name":
+				return tag("name")
+			case "permissions":
+				return tag("permissions")
+			case "level":
+				return tag("level")
+			case "created_by_id":
+				return tag("created_by_id")
+			case "updated_by_id":
+				return tag("updated_by_id")
+			case "created_at":
+				return tag("created_at")
+			case "updated_at":
+				return tag("updated_at")
+			default:
+				return "-"
+			}
+		}),
+
+		// gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+		// 	RelatePointer: true,
+		// 	GORMTag: field.GormTag{
+		// 		"foreignKey": []string{"updated_by_id"},
+		// 		"references": []string{"id"},
+		// 	},
+		// 	JSONTag: tag("user"),
+		// }),
+	)
+
+	roleOwners := g.GenerateModelAs(
+		"role_owners",
+
+		"RoleOwners",
+		gen.FieldType("id", "uint"),
+		gen.FieldType("role_id", "uint"),
+		gen.FieldType("owner_id", "uint"),
+		gen.FieldType("created_by_id", "uint"),
+		gen.FieldType("updated_by_id", "uint"),
+
+		gen.FieldJSONTagWithNS(func(columnName string) string {
+			switch columnName {
+			case "id":
+				return tag("id")
+			case "role_id":
+				return tag("role_id")
+			case "owner_id":
+				return tag("owner_id")
+			case "type":
+				return tag("type")
+			case "status":
+				return tag("status")
+			case "created_by_id":
+				return tag("created_by_id")
+			case "created_at":
+				return tag("created_at")
+			case "deleted_at":
+				return tag("deleted_at")
+			default:
+				return "-"
+			}
+		}),
+
+		gen.FieldRelate(field.HasOne, "Role", roles, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"role_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Role"),
+		}),
+
+		gen.FieldRelate(field.HasOne, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"owner_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
 		}),
 	)
 
@@ -1476,7 +1572,10 @@ func main() {
 		progressReports,
 		userPreferences,
 		notifications,
+
 		authOTP,
+		roles,
+		roleOwners,
 	)
 
 	// Execute the generation

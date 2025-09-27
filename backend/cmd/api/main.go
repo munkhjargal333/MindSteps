@@ -12,7 +12,7 @@ import (
 
 	"mindsteps/config"
 	"mindsteps/database"
-	"mindsteps/internal/routers"
+	"mindsteps/routers"
 )
 
 func main() {

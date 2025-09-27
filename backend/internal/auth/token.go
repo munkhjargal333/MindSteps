@@ -10,9 +10,8 @@ import (
 type Token struct {
 	jwt.RegisteredClaims
 	SystemCode string   `json:"system_code"`
-	OrgId      uint     `json:"org_id"`
-	UserId     uint     `json:"user_id"`
-	UserPhone  string   `json:"user_phone"`
+	OrgID      uint     `json:"org_id"`
+	UserID     uint     `json:"user_id"`
 	UserEmail  string   `json:"user_email"`
 	Roles      []string `json:"roles"`
 	Level      int      `json:"level"`
