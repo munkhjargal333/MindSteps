@@ -16,7 +16,6 @@ func NewAuthHandler(service *services.AuthService) *AuthHandler {
 	return &AuthHandler{service: service}
 }
 
-// POST /register
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var f form.RegisterForm
 	if err := c.BodyParser(&f); err != nil {
@@ -33,7 +32,6 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	return shared.Response(c, user)
 }
 
-// POST /login
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var f form.LoginForm
 	if err := c.BodyParser(&f); err != nil {
@@ -45,6 +43,5 @@ func (h *AuthHandler) Login(c *fiber.Ctx) error {
 		return shared.ResponseUnauthorized(c)
 	}
 
-	// TODO: JWT generate
 	return shared.Response(c, user)
 }

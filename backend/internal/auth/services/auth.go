@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"mindsteps/database/model"
 	"mindsteps/internal/auth"
 	"mindsteps/internal/shared"
@@ -49,13 +50,14 @@ func (s *AuthService) Register(f *form.RegisterForm) (*model.Users, error) {
 func (s *AuthService) Login(f *form.LoginForm) (string, error) {
 	user, err := s.repo.GetByEmail(f.Email)
 	if err != nil {
-		return "", errors.New("email эсвэл нууц үг буруу байна")
+		return "", errors.New("email бүртгэлгүй байна")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(f.Password)); err != nil {
-		return "", errors.New("email эсвэл нууц үг буруу байна")
+		return "", err
 	}
 
+	fmt.Println(user)
 	claims := &auth.Token{
 		UserID: user.ID,
 	}

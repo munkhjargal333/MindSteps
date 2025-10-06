@@ -15,7 +15,7 @@ type Users struct {
 	ID             uint      `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
 	Name           string    `gorm:"column:name;type:character varying(100);not null" json:"name"`
 	Email          string    `gorm:"column:email;type:character varying(255);not null" json:"email"`
-	Password       string    `gorm:"column:password;type:character varying(255);not null" json:"password"`
+	Password       string    `gorm:"column:password;type:character varying(255);not null" json:"-"`
 	TotalScore     int       `gorm:"column:total_score;type:integer" json:"total_score"`
 	CurrentLevel   int       `gorm:"column:current_level;type:integer;default:1" json:"current_level"`
 	LevelProgress  int       `gorm:"column:level_progress;type:integer" json:"level_progress"`

@@ -13,7 +13,12 @@ type GJWT struct {
 	Public  *rsa.PublicKey
 }
 
-var Gjwt *GJWT
+type TokenGenerator interface {
+	GenerateToken(claims *Token, expiresMinut time.Duration) (string, error)
+	ReadToken(token string) (*Token, error)
+}
+
+var Gjwt TokenGenerator
 
 func (g *GJWT) GenerateToken(claims *Token, expiresMinut time.Duration) (string, error) {
 	claims.RegisteredClaims = jwt.RegisteredClaims{
