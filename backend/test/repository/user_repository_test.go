@@ -14,14 +14,14 @@ import (
 
 func setupTestRepo(t *testing.T) (repository.UserRepository, func()) {
 	config.MustLoad()
-	database.MustConnect(logLevel.Info) //
+	database.MustConnect(logLevel.Info)
 
-	db := database.DB
-	repo := repository.NewUserRepository(db)
+	tx := database.DB.Begin()
 
-	// Cleanup function: rollback transaction
+	repo := repository.NewUserRepository(tx)
+
 	cleanup := func() {
-		db.Rollback()
+		tx.Rollback()
 	}
 
 	return repo, cleanup
@@ -29,8 +29,7 @@ func setupTestRepo(t *testing.T) (repository.UserRepository, func()) {
 
 func TestUserRepository_Create(t *testing.T) {
 	repo, cleanup := setupTestRepo(t)
-	defer cleanup() // Тест дуусахад rollback
-
+	defer cleanup()
 	user := &model.Users{
 		Name:     "Transactional User",
 		Email:    "trans1@example.com",
