@@ -12,7 +12,8 @@ import (
 
 	"mindsteps/config"
 	"mindsteps/database"
-	"mindsteps/routers"
+	"mindsteps/internal/auth"
+	routers "mindsteps/routers"
 )
 
 func main() {
@@ -50,10 +51,10 @@ func main() {
 
 	app.Use(recover.New())
 
-	//auth.MustInitGjwt()
+	auth.MustInitGjwt()
 	routers.RegisterRoutes(app)
 
-	err := app.Listen(fmt.Sprintf(`:8080`)) // config.Port
+	err := app.Listen(fmt.Sprintf(`:8080`))
 	if err != nil {
 		log.Errorf("server stopped: %v", err)
 	}

@@ -57,7 +57,7 @@ func main() {
 			case "email":
 				return tag("email")
 			case "password":
-				return tag("password")
+				return tag("-")
 			case "total_score":
 				return tag("total_score")
 			case "current_level":

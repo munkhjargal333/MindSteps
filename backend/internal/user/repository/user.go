@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"mindsteps/database"
 	"mindsteps/database/model"
 
 	"gorm.io/gorm"
@@ -20,8 +19,9 @@ type userRepo struct {
 	db *gorm.DB
 }
 
-func NewUserRepository() UserRepository {
-	return &userRepo{db: database.DB}
+// Глобал DB-тай холбоогүй, гаднаас авна
+func NewUserRepository(db *gorm.DB) UserRepository {
+	return &userRepo{db: db}
 }
 
 func (r *userRepo) Create(user *model.Users) error {
