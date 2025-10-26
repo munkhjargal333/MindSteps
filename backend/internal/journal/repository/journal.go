@@ -12,7 +12,8 @@ type JournalRepository interface {
 	Update(journal *model.Journals) error
 	Delete(id uint) error
 	ListAll() ([]model.Journals, error)
-	ListByUserID(userID uint) ([]model.Journals, error)
+	ListByUserID(userID uint, limit int, offset int) ([]model.Journals, error)
+	CountByUserID(userID uint) (int64, error)
 }
 
 type journalRepo struct {
@@ -53,10 +54,23 @@ func (r *journalRepo) ListAll() ([]model.Journals, error) {
 	return journals, nil
 }
 
-func (r *journalRepo) ListByUserID(userID uint) ([]model.Journals, error) {
+func (r *journalRepo) ListByUserID(userID uint, limit int, offset int) ([]model.Journals, error) {
 	var journals []model.Journals
-	if err := r.db.Where("user_id = ?", userID).Find(&journals).Error; err != nil {
+	if err := r.db.Where("user_id = ?", userID).
+		Limit(limit).
+		Offset(offset).
+		Find(&journals).Error; err != nil {
 		return nil, err
 	}
 	return journals, nil
+}
+
+func (r *journalRepo) CountByUserID(userID uint) (int64, error) {
+	var count int64
+	if err := r.db.Model(&model.Journals{}).
+		Where("user_id = ?", userID).
+		Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
 }

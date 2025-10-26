@@ -4,6 +4,7 @@ import (
 	"mindsteps/database/model"
 	"mindsteps/internal/journal/form"
 	"mindsteps/internal/journal/repository"
+	"time"
 )
 
 type JournalService interface {
@@ -12,7 +13,7 @@ type JournalService interface {
 	Update(id uint, form *form.JournalForm) (*model.Journals, error)
 	Delete(id uint) error
 	ListAll() ([]model.Journals, error)
-	ListByUserID(userID uint) ([]model.Journals, error)
+	ListByUserID(userID uint, page, limit int) ([]model.Journals, int64, error)
 }
 
 type journalService struct {
@@ -27,7 +28,12 @@ func (s *journalService) Create(f *form.JournalForm) (*model.Journals, error) {
 	if err := f.Validate(); err != nil {
 		return nil, err
 	}
+
 	journal := form.NewJournalFromForm(*f)
+
+	journal.CreatedAt = time.Now()
+	//journal.WordCount = journal.
+
 	if err := s.repo.Create(journal); err != nil {
 		return nil, err
 	}
@@ -69,6 +75,24 @@ func (s *journalService) ListAll() ([]model.Journals, error) {
 	return s.repo.ListAll()
 }
 
-func (s *journalService) ListByUserID(userID uint) ([]model.Journals, error) {
-	return s.repo.ListByUserID(userID)
+func (s *journalService) ListByUserID(userID uint, page, limit int) ([]model.Journals, int64, error) {
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = 10
+	}
+	offset := (page - 1) * limit
+
+	journals, err := s.repo.ListByUserID(userID, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total, err := s.repo.CountByUserID(userID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return journals, total, nil
 }

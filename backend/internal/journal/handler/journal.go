@@ -18,19 +18,10 @@ func NewJournalHandler(s service.JournalService) *JournalHandler {
 	return &JournalHandler{service: s}
 }
 
-// Routes
-func (h *JournalHandler) RegisterRoutes(app *fiber.App) {
-	app.Post("/journals", auth.TokenMiddleware, h.Create)
-	app.Get("/journals", auth.TokenMiddleware, h.ListAll)
-	app.Get("/journals/:id", auth.TokenMiddleware, h.GetByID)
-	app.Put("/journals/:id", auth.TokenMiddleware, h.Update)
-	app.Delete("/journals/:id", auth.TokenMiddleware, h.Delete)
-	app.Get("/users/:user_id/journals", auth.TokenMiddleware, h.ListByUserID)
-}
-
 // Create new journal
 func (h *JournalHandler) Create(c *fiber.Ctx) error {
 	var f form.JournalForm
+
 	if err := c.BodyParser(&f); err != nil {
 		return shared.ResponseBadRequest(c, err.Error())
 	}
@@ -39,7 +30,11 @@ func (h *JournalHandler) Create(c *fiber.Ctx) error {
 	}
 
 	tokenInfo := auth.GetTokenInfo(c)
-	// User өөрийн ID-г зөвшөөрнө
+
+	if tokenInfo == nil {
+		return shared.ResponseUnauthorized(c)
+	}
+
 	f.UserID = tokenInfo.UserID
 
 	journal, err := h.service.Create(&f)
@@ -136,21 +131,25 @@ func (h *JournalHandler) ListAll(c *fiber.Ctx) error {
 }
 
 // List journals by user
+
 func (h *JournalHandler) ListByUserID(c *fiber.Ctx) error {
-	userID, err := strconv.Atoi(c.Params("user_id"))
-	if err != nil {
-		return shared.ResponseBadRequest(c, "Invalid user ID")
-	}
-
 	tokenInfo := auth.GetTokenInfo(c)
-	// Хэрэглэгч зөвхөн өөрийн journals-г харна
-	if uint(userID) != tokenInfo.UserID {
-		return shared.ResponseForbidden(c)
+	if tokenInfo == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
 	}
 
-	journals, err := h.service.ListByUserID(uint(userID))
+	page := c.QueryInt("page", 1)
+	limit := c.QueryInt("limit", 10)
+
+	journals, total, err := h.service.ListByUserID(tokenInfo.UserID, page, limit)
 	if err != nil {
-		return shared.ResponseBadRequest(c, err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.JSON(journals)
+
+	return c.JSON(fiber.Map{
+		"page":     page,
+		"limit":    limit,
+		"total":    total,
+		"journals": journals,
+	})
 }

@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+	"mindsteps/internal/auth"
 	"mindsteps/internal/shared"
 	"mindsteps/internal/user/services"
 
@@ -28,6 +30,22 @@ func (h *UserHandler) ListAll(c *fiber.Ctx) error {
 	}
 
 	return shared.Response(c, users)
+}
+
+func (h *UserHandler) Me(c *fiber.Ctx) error {
+
+	info := auth.GetTokenInfo(c)
+	if info == nil {
+		fmt.Printf("Token info: %+v\n", info)
+
+		return shared.ResponseErr(c, "invalid token or not logged in")
+	}
+	user, err := h.service.GetByID(info.UserID)
+	if err != nil {
+		return shared.ResponseErr(c, err.Error())
+	}
+
+	return shared.Response(c, user)
 }
 
 func (h *UserHandler) Delete(c *fiber.Ctx) error {

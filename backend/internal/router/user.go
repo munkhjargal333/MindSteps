@@ -2,6 +2,7 @@ package router
 
 import (
 	"mindsteps/database"
+	"mindsteps/internal/auth"
 	"mindsteps/internal/user/handler"
 	"mindsteps/internal/user/repository"
 	"mindsteps/internal/user/services"
@@ -16,7 +17,8 @@ func RegisterUserRoutes(api fiber.Router) {
 
 	// Public routes
 	user := api.Group("/user")
-	//user.Get("/me")
+	user.Get("/me", auth.TokenMiddleware, h.Me)
+
 	user.Get("/list", h.ListAll)
 	user.Delete("/delete/:id", h.Delete)
 }

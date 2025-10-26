@@ -22,9 +22,11 @@ func GetTokenFromHeader(c *fiber.Ctx, key, prefix string) (token string, err err
 }
 
 func GetInfoFromToken(token string) (*Token, error) {
+	fmt.Println(token)
 	info, err := Gjwt.ReadToken(token)
 	if err != nil {
 		log.Errorf("parse token error: %v", err)
+
 		return nil, err
 	}
 
@@ -40,7 +42,8 @@ func TokenMiddleware(c *fiber.Ctx) error {
 	if err != nil {
 		return shared.ResponseUnauthorized(c)
 	}
-	fmt.Println(claims)
+
+	//	fmt.Println(claims)
 
 	c.Locals("tokenInfo", claims)
 	return c.Next()

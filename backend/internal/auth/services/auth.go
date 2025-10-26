@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"mindsteps/database/model"
 	"mindsteps/internal/auth"
 	"mindsteps/internal/shared"
@@ -57,12 +56,12 @@ func (s *AuthService) Login(f *form.LoginForm) (string, error) {
 		return "", err
 	}
 
-	fmt.Println(user)
+	//fmt.Println(user)
 	claims := &auth.Token{
 		UserID: user.ID,
 	}
 
-	tokenStr, err := auth.Gjwt.GenerateToken(claims, 60)
+	tokenStr, err := auth.Gjwt.GenerateToken(claims, 600000)
 	if err != nil {
 		return "", err
 	}

@@ -24,5 +24,6 @@ func RegisterjournalRoutes(api fiber.Router) {
 	journal.Put("/:id", h.Update)
 	journal.Delete("/:id", h.Delete)
 
-	journal.Get("/user/:user_id", h.ListByUserID)
+	journal.Get("/me", h.ListByUserID)
+
 }

@@ -13,7 +13,7 @@ import (
 	"mindsteps/config"
 	"mindsteps/database"
 	"mindsteps/internal/auth"
-	routers "mindsteps/routers"
+	"mindsteps/internal/router"
 )
 
 func main() {
@@ -52,7 +52,7 @@ func main() {
 	app.Use(recover.New())
 
 	auth.MustInitGjwt()
-	routers.RegisterRoutes(app)
+	router.RegisterRoutes(app)
 
 	err := app.Listen(fmt.Sprintf(`:8080`))
 	if err != nil {
