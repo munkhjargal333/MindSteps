@@ -9,9 +9,11 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
+  register: (name: string, email: string, password: string, confirmPassword: string) => Promise<void>;
+  logout: () => Promise<void>;
+  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,51 +22,162 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  // Initialize auth on mount
   useEffect(() => {
     const initAuth = async () => {
-      const savedToken = localStorage.getItem('auth_token');
-      if (savedToken) {
-        try {
-          const userData = await apiClient.getMe(savedToken);
+      try {
+        // apiClient automatically loads token from localStorage
+        const savedToken = apiClient.getToken();
+        
+        if (savedToken) {
+          console.log('🔄 Initializing auth with saved token...');
+          const userData = await apiClient.getMe();
           setUser(userData);
           setToken(savedToken);
-        } catch (error) {
-          localStorage.removeItem('auth_token');
+          console.log('✅ Auth initialized:', userData.email);
+        } else {
+          console.log('ℹ️ No saved token found');
         }
+      } catch (error) {
+        console.error('❌ Auth initialization failed:', error);
+        apiClient.clearToken();
+        setUser(null);
+        setToken(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     initAuth();
   }, []);
 
+  // Listen for unauthorized events (from API client)
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      console.warn('⚠️ Unauthorized event detected');
+      setUser(null);
+      setToken(null);
+      setError('Your session has expired. Please login again.');
+      router.push('/login');
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('unauthorized', handleUnauthorized);
+      return () => window.removeEventListener('unauthorized', handleUnauthorized);
+    }
+  }, [router]);
+
   const login = async (email: string, password: string) => {
-    const response = await apiClient.login(email, password);
-    localStorage.setItem('auth_token', response.token);
-    setToken(response.token);
-    setUser(response.user);
-    router.push('/dashboard');
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('🔐 Attempting login for:', email);
+      const response = await apiClient.login(email, password);
+      
+      // apiClient automatically saves token
+      setToken(response.token);
+      
+      // Fetch user data
+      const userData = await apiClient.getMe();
+      setUser(userData);
+      
+      console.log('✅ Login successful:', userData.email);
+      router.push('/dashboard');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Login failed';
+      console.error('❌ Login error:', message);
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const register = async (name: string, email: string, password: string) => {
-    const response = await apiClient.register(name, email, password);
-    localStorage.setItem('auth_token', response.token);
-    setToken(response.token);
-    setUser(response.user);
-    router.push('/dashboard');
+  const register = async (
+    name: string, 
+    email: string, 
+    password: string, 
+    confirmPassword: string
+  ) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Validate passwords match
+      if (password !== confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
+      
+      console.log('📝 Attempting registration for:', email);
+      const response = await apiClient.register(name, email, password, confirmPassword);
+      
+      // apiClient automatically saves token
+      setToken(response.token);
+      
+      // Fetch user data
+      const userData = await apiClient.getMe();
+      setUser(userData);
+      
+      console.log('✅ Registration successful:', userData.email);
+      router.push('/dashboard');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Registration failed';
+      console.error('❌ Registration error:', message);
+      setError(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    setToken(null);
-    setUser(null);
-    router.push('/login');
+  const logout = async () => {
+    try {
+      setLoading(true);
+      console.log('👋 Logging out...');
+      
+      // Call logout endpoint
+      await apiClient.logout();
+      
+      // Clear state
+      setUser(null);
+      setToken(null);
+      setError(null);
+      
+      console.log('✅ Logout successful');
+      router.push('/login');
+    } catch (err) {
+      console.error('❌ Logout error:', err);
+      // Clear state even if logout fails
+      apiClient.clearToken();
+      setUser(null);
+      setToken(null);
+      router.push('/login');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearError = () => {
+    setError(null);
+  };
+
+  const value = {
+    user,
+    token,
+    loading,
+    error,
+    login,
+    register,
+    logout,
+    clearError,
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -72,6 +185,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
   return context;
+}
+
+// Protected route HOC
+export function withAuth<P extends object>(
+  Component: React.ComponentType<P>
+) {
+  return function ProtectedRoute(props: P) {
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+      if (!loading && !user) {
+        console.warn('🚫 Unauthorized access, redirecting to login');
+        router.push('/login');
+      }
+    }, [user, loading, router]);
+
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
+        </div>
+      );
+    }
+
+    if (!user) {
+      return null;
+    }
+
+    return <Component {...props} />;
+  };
 }

@@ -1,62 +1,123 @@
 package handler
 
 import (
-	"fmt"
 	"mindsteps/internal/auth"
 	"mindsteps/internal/shared"
-	"mindsteps/internal/user/services"
+	"mindsteps/internal/user/form"
+	"mindsteps/internal/user/service"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type UserHandler struct {
-	service *services.UserService
+	service service.UserService
 }
 
-func NewUserHandler(service *services.UserService) *UserHandler {
-	return &UserHandler{
-		service: service,
+func NewUserHandler(s service.UserService) *UserHandler {
+	return &UserHandler{service: s}
+}
+
+func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
+	tokenInfo := auth.GetTokenInfo(c)
+	if tokenInfo == nil {
+		return shared.ResponseUnauthorized(c)
 	}
-}
 
-func (h *UserHandler) ListAll(c *fiber.Ctx) error {
-	users, err := h.service.ListAll()
+	user, err := h.service.GetProfile(tokenInfo.UserID)
 	if err != nil {
-		return shared.ResponseErr(c, err.Error())
+		return shared.ResponseBadRequest(c, err.Error())
 	}
 
-	if len(users) == 0 {
-		return shared.ResponseNotFound(c)
-	}
-
-	return shared.Response(c, users)
+	return c.JSON(fiber.Map{
+		"success": true,
+		"user": fiber.Map{
+			"id":                user.ID,
+			"uuid":              user.UUID,
+			"name":              user.Name,
+			"email":             user.Email,
+			"profile_picture":   user.ProfilePicture,
+			"timezone":          user.Timezone,
+			"language":          user.Language,
+			"total_score":       user.TotalScore,
+			"current_level":     user.CurrentLevel,
+			"level_progress":    user.LevelProgress,
+			"is_email_verified": user.IsEmailVerified,
+			"email_verified_at": user.EmailVerifiedAt,
+			"last_login":        user.LastLogin,
+			"login_count":       user.LoginCount,
+			"created_at":        user.CreatedAt,
+		},
+	})
 }
 
-func (h *UserHandler) Me(c *fiber.Ctx) error {
-
-	info := auth.GetTokenInfo(c)
-	if info == nil {
-		fmt.Printf("Token info: %+v\n", info)
-
-		return shared.ResponseErr(c, "invalid token or not logged in")
+func (h *UserHandler) UpdateProfile(c *fiber.Ctx) error {
+	tokenInfo := auth.GetTokenInfo(c)
+	if tokenInfo == nil {
+		return shared.ResponseUnauthorized(c)
 	}
-	user, err := h.service.GetByID(info.UserID)
+
+	var f form.UpdateProfileForm
+	if err := c.BodyParser(&f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+	if err := f.Validate(); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	user, err := h.service.UpdateProfile(tokenInfo.UserID, &f)
 	if err != nil {
-		return shared.ResponseErr(c, err.Error())
+		return shared.ResponseBadRequest(c, err.Error())
 	}
 
-	return shared.Response(c, user)
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Профайл амжилттай шинэчлэгдлээ",
+		"user": fiber.Map{
+			"id":              user.ID,
+			"name":            user.Name,
+			"profile_picture": user.ProfilePicture,
+			"timezone":        user.Timezone,
+			"language":        user.Language,
+		},
+	})
 }
 
-func (h *UserHandler) Delete(c *fiber.Ctx) error {
-	id, err := c.ParamsInt("id")
-	if err != nil {
-		return shared.ResponseBadRequest(c, "invalid id")
+func (h *UserHandler) ChangePassword(c *fiber.Ctx) error {
+	tokenInfo := auth.GetTokenInfo(c)
+	if tokenInfo == nil {
+		return shared.ResponseUnauthorized(c)
 	}
 
-	if err := h.service.Delete(uint(id)); err != nil {
-		return shared.ResponseErr(c, err.Error())
+	var f form.ChangePasswordForm
+	if err := c.BodyParser(&f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+	if err := f.Validate(); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
 	}
 
-	return shared.Response(c, "Амжилттай устгалаа")
+	if err := h.service.ChangePassword(tokenInfo.UserID, &f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Нууц үг амжилттай солигдлоо",
+	})
+}
+
+func (h *UserHandler) DeleteAccount(c *fiber.Ctx) error {
+	tokenInfo := auth.GetTokenInfo(c)
+	if tokenInfo == nil {
+		return shared.ResponseUnauthorized(c)
+	}
+
+	if err := h.service.DeleteAccount(tokenInfo.UserID); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Таны бүртгэл амжилттай устгагдлаа",
+	})
 }

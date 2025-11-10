@@ -33,7 +33,7 @@ func (f LessonForm) Validate() error {
 func NewLessonFromForm(f LessonForm) *model.Lessons {
 	return &model.Lessons{
 		Title:           f.Title,
-		CategoryID:      f.CategoryID,
+		CategoryID:      int(f.CategoryID),
 		Description:     f.Description,
 		Content:         f.Content,
 		LessonType:      f.LessonType,

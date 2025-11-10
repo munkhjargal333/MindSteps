@@ -12,8 +12,7 @@ type JournalService interface {
 	GetByID(id uint) (*model.Journals, error)
 	Update(id uint, form *form.JournalForm) (*model.Journals, error)
 	Delete(id uint) error
-	ListAll() ([]model.Journals, error)
-	ListByUserID(userID uint, page, limit int) ([]model.Journals, int64, error)
+	ListByUserID(userID uint, page, limit int) ([]model.Journals, uint, error)
 }
 
 type journalService struct {
@@ -55,9 +54,9 @@ func (s *journalService) Update(id uint, f *form.JournalForm) (*model.Journals, 
 	}
 
 	// Update fields
+
 	journal.Title = f.Title
 	journal.Content = f.Content
-	journal.UserID = f.UserID
 	journal.IsPrivate = f.IsPrivate
 	journal.Tags = f.Tags
 
@@ -71,11 +70,7 @@ func (s *journalService) Delete(id uint) error {
 	return s.repo.Delete(id)
 }
 
-func (s *journalService) ListAll() ([]model.Journals, error) {
-	return s.repo.ListAll()
-}
-
-func (s *journalService) ListByUserID(userID uint, page, limit int) ([]model.Journals, int64, error) {
+func (s *journalService) ListByUserID(userID uint, page, limit int) ([]model.Journals, uint, error) {
 	if page < 1 {
 		page = 1
 	}

@@ -1,23 +1,25 @@
 package handler
 
 import (
-	"mindsteps/internal/auth/services"
+	"mindsteps/internal/auth/form"
+	"mindsteps/internal/auth/service"
 	"mindsteps/internal/shared"
-	"mindsteps/internal/user/form"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 type AuthHandler struct {
-	service *services.AuthService
+	service service.AuthService
 }
 
-func NewAuthHandler(service *services.AuthService) *AuthHandler {
-	return &AuthHandler{service: service}
+func NewAuthHandler(s service.AuthService) *AuthHandler {
+	return &AuthHandler{service: s}
 }
 
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	var f form.RegisterForm
+
 	if err := c.BodyParser(&f); err != nil {
 		return shared.ResponseBadRequest(c, err.Error())
 	}
@@ -25,23 +27,129 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 		return shared.ResponseBadRequest(c, err.Error())
 	}
 
-	user, err := h.service.Register(&f)
+	token, user, err := h.service.Register(&f)
 	if err != nil {
-		return shared.ResponseErr(c, err.Error())
+		return shared.ResponseBadRequest(c, err.Error())
 	}
-	return shared.Response(c, user)
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"success": true,
+		"message": "Амжилттай бүртгэгдлээ",
+		"token":   token,
+		"user": fiber.Map{
+			"id":    user.ID,
+			"uuid":  user.UUID,
+			"name":  user.Name,
+			"email": user.Email,
+		},
+	})
 }
 
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	var f form.LoginForm
+
 	if err := c.BodyParser(&f); err != nil {
 		return shared.ResponseBadRequest(c, err.Error())
 	}
+	if err := f.Validate(); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
 
-	user, err := h.service.Login(&f)
+	token, user, err := h.service.Login(&f)
 	if err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Амжилттай нэвтэрлээ",
+		"token":   token,
+		"user": fiber.Map{
+			"id":                user.ID,
+			"uuid":              user.UUID,
+			"name":              user.Name,
+			"email":             user.Email,
+			"total_score":       user.TotalScore,
+			"current_level":     user.CurrentLevel,
+			"is_email_verified": user.IsEmailVerified,
+		},
+	})
+}
+
+func (h *AuthHandler) Logout(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+	if authHeader == "" {
 		return shared.ResponseUnauthorized(c)
 	}
 
-	return shared.Response(c, user)
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+
+	if err := h.service.Logout(token); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Амжилттай гарлаа",
+	})
+}
+
+func (h *AuthHandler) ForgotPassword(c *fiber.Ctx) error {
+	var f form.ForgotPasswordForm
+
+	if err := c.BodyParser(&f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+	if err := f.Validate(); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	if err := h.service.ForgotPassword(&f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "OTP код таны email хаяг руу илгээгдлээ",
+	})
+}
+
+func (h *AuthHandler) ResetPassword(c *fiber.Ctx) error {
+	var f form.ResetPasswordForm
+
+	if err := c.BodyParser(&f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+	if err := f.Validate(); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	if err := h.service.ResetPassword(&f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Нууц үг амжилттай солигдлоо",
+	})
+}
+
+func (h *AuthHandler) VerifyOTP(c *fiber.Ctx) error {
+	var f form.VerifyOTPForm
+
+	if err := c.BodyParser(&f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+	if err := f.Validate(); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	if err := h.service.VerifyOTP(&f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"message": "Email амжилттай баталгаажлаа",
+	})
 }

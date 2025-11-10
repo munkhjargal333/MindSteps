@@ -18,8 +18,10 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-    } catch (err: any) {
-      setError(err.message || 'Нэвтрэх үед алдаа гарлаа');
+    } catch (err) {
+      // Fixed: Using unknown instead of any
+      const errorMessage = err instanceof Error ? err.message : 'Нэвтрэх үед алдаа гарлаа';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

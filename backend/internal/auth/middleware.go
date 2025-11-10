@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"fmt"
 	"mindsteps/internal/shared"
 	"strings"
 	"unicode/utf8"
@@ -22,7 +21,7 @@ func GetTokenFromHeader(c *fiber.Ctx, key, prefix string) (token string, err err
 }
 
 func GetInfoFromToken(token string) (*Token, error) {
-	fmt.Println(token)
+
 	info, err := Gjwt.ReadToken(token)
 	if err != nil {
 		log.Errorf("parse token error: %v", err)
@@ -58,7 +57,6 @@ func OtpMiddleware(c *fiber.Ctx) error {
 	if err != nil {
 		return shared.ResponseUnauthorized(c)
 	}
-	fmt.Println(claims)
 
 	c.Locals("tokenInfo", claims)
 	return c.Next()

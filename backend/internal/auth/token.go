@@ -15,7 +15,7 @@ type Token struct {
 	UserEmail  string   `json:"user_email"`
 	Roles      []string `json:"roles"`
 	Level      int      `json:"level"`
-	Otp        bool     `json:otp`
+	//Otp        bool     `json:otp`
 }
 
 func GetTokenInfo(c *fiber.Ctx) *Token {

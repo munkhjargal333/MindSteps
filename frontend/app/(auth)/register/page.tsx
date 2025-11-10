@@ -30,9 +30,11 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await register(name, email, password);
-    } catch (err: any) {
-      setError(err.message || 'Бүртгэл үүсгэхэд алдаа гарлаа');
+      await register(name, email, password, confirmPassword);
+    } catch (err) {
+      // Fixed: Using unknown instead of any
+      const errorMessage = err instanceof Error ? err.message : 'Бүртгэл үүсгэхэд алдаа гарлаа';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -1,132 +1,91 @@
 package repository
 
 import (
-	"errors"
-	"mindsteps/database"
+	"crypto/sha256"
+	"encoding/hex"
 	"mindsteps/database/model"
-
 	"time"
 
-	"mindsteps/internal/shared"
-
-	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
-type AuthOTP struct {
-	model.AuthOTP
+type AuthRepository interface {
+	CreateOTP(otp *model.AuthOTP) error
+	FindValidOTP(email, otpCode, otpType string) (*model.AuthOTP, error)
+	MarkOTPAsUsed(id uint) error
+	CreateSession(session *model.UserSessions) error
+	FindSessionByToken(tokenHash string) (*model.UserSessions, error)
+	RevokeSession(tokenHash string) error
+	CleanupExpiredOTPs() error
 }
 
-type User struct {
-	model.Users
+type authRepo struct {
+	db *gorm.DB
 }
 
-// NewAuthOTP creates a new AuthOTP with the phone number
-func NewAuthOTP(userID uint, messageID uint) *AuthOTP {
-	now := database.DB.NowFunc()
-
-	return &AuthOTP{
-		AuthOTP: model.AuthOTP{
-			UserID:    userID,
-			MessageID: messageID,
-			CreatedAt: now,
-		},
-	}
+func NewAuthRepository(db *gorm.DB) AuthRepository {
+	return &authRepo{db: db}
 }
 
-// FindAuthOTP finds the last not used and not expired AuthOTP by phone
-// returns nil if not found
-func FindAuthOTPByUserID(userID uint) *AuthOTP {
-	a := &AuthOTP{}
-	if err := database.DB.
-		Where("user_id = ?", userID).
-		Where("expired_at > ?", database.DB.NowFunc()).
-		Last(a).Error; err != nil {
-		if err != gorm.ErrRecordNotFound {
-			log.Errorf("AuthOTP (FindAuthOTP): %s", err.Error())
-		}
+func (r *authRepo) CreateOTP(otp *model.AuthOTP) error {
+	return r.db.Create(otp).Error
+}
 
-		return nil
+func (r *authRepo) FindValidOTP(email, otpCode, otpType string) (*model.AuthOTP, error) {
+	var otp model.AuthOTP
+	var user model.Users
+
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
 	}
 
-	return a
-}
-
-// SetExpiredAt sets the expired time of the AuthOTP based on the created time
-func (a *AuthOTP) SetExpiredAt(expire time.Duration) {
-	a.ExpiredAt = a.CreatedAt.Add(expire)
-}
-
-// SetOTP hashes the otp and sets it to the AuthOTP
-// returns error if hashing fails
-func (a *AuthOTP) SetOTP(otp string) error {
-	hash, err := shared.GenerateHashFromPassword(otp)
+	err := r.db.Where("user_id = ? AND otp_code = ? AND otp_type = ? AND is_used = ? AND expired_at > ? AND deleted_at IS NULL",
+		user.ID, otpCode, otpType, false, time.Now()).
+		First(&otp).Error
 
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	a.Otp = string(hash)
-
-	return nil
+	return &otp, nil
 }
 
-// Expired checks if the AuthOTP is expired
-func (a *AuthOTP) Expired() bool {
-	return a.ExpiredAt.Before(database.DB.NowFunc())
+func (r *authRepo) MarkOTPAsUsed(id uint) error {
+	now := time.Now()
+	return r.db.Model(&model.AuthOTP{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"is_used": true,
+		"used_at": now,
+	}).Error
 }
 
-// SameOTP checks if the given otp's hash is the same as the AuthOTP's otp hash
-// and save the AuthOTP as used
-func (a *AuthOTP) SameOTP(otp string) bool {
-	if a.ID == 0 {
-		return false
-	} else if a.Expired() {
-		return false
-	} else if err := shared.CompareHashAndPassword(a.Otp, otp); err != nil {
-		return false
-	}
-
-	if err := a.Delete(); err != nil {
-		log.Errorf("SameOTP (AuthOTP.Delete): %s", err.Error())
-
-		return false
-	}
-
-	return true
+func (r *authRepo) CreateSession(session *model.UserSessions) error {
+	return r.db.Create(session).Error
 }
 
-// Save saves the AuthOTP to the database
-// returns error if saving fails
-func (a *AuthOTP) Save() error {
-	return database.DB.Clauses(clause.Returning{}).Save(a).Error
-}
-
-// Delete deletes the AuthOTP from the database
-// returns error if deleting fails
-func (a *AuthOTP) Delete() error {
-	return database.DB.Delete(a).Error
-}
-
-func ChangeOtpPassword(email string, newPassword string) (*User, error) {
-	db := database.DB
-
-	var user User
-	if err := db.Unscoped().Where("email = ?", email).First(&user).Error; err != nil {
-		return nil, errors.New("Хэрэглэгч олдсонгүй")
-	}
-
-	// Hash the new password
-	hash, err := shared.GenerateHashFromPassword(newPassword)
+func (r *authRepo) FindSessionByToken(tokenHash string) (*model.UserSessions, error) {
+	var session model.UserSessions
+	err := r.db.Where("token_hash = ? AND is_active = ? AND expires_at > ?",
+		tokenHash, true, time.Now()).First(&session).Error
 	if err != nil {
-		return nil, errors.New("Нууц үг хашлахад алдаа гарлаа")
+		return nil, err
 	}
+	return &session, nil
+}
 
-	// Update the user's password
-	if err := db.Model(&user).Update("password", hash).Error; err != nil {
-		return nil, errors.New("Нууц үг хадгалахад алдаа гарлаа")
-	}
+func (r *authRepo) RevokeSession(tokenHash string) error {
+	now := time.Now()
+	return r.db.Model(&model.UserSessions{}).Where("token_hash = ?", tokenHash).Updates(map[string]interface{}{
+		"is_active":     false,
+		"revoked_at":    now,
+		"revoke_reason": "logout",
+	}).Error
+}
 
-	return &user, nil
+func (r *authRepo) CleanupExpiredOTPs() error {
+	return r.db.Where("expired_at < ? OR is_used = ?", time.Now().AddDate(0, 0, -1), true).
+		Delete(&model.AuthOTP{}).Error
+}
+
+func HashToken(token string) string {
+	hash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(hash[:])
 }

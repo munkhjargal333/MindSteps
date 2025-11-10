@@ -1,0 +1,97 @@
+@startuml Mood_Analysis_Full_EventDriven_With_Streams
+!theme plain
+title Дарааллын диаграм: Сэтгэл хөдлөл бүртгэх
+
+actor User
+participant "UI" as UI
+participant "MoodController" as MC
+participant "MoodService" as MS
+participant "Database" as DB
+participant "Redis Stream" as Redis
+participant "AIService" as AI
+participant "AIModel" as Model
+participant "GamificationService" as GS
+participant "NotificationService" as Notify
+
+== Mood Submission ==
+User -> UI: Сэтгэл хөдлөл бүртгэх
+activate UI
+
+UI -> MC: POST /api/moods
+activate MC
+
+MC -> MS: createMoodEntry(data)
+activate MS
+
+MS -> DB: INSERT mood_entry
+activate DB
+DB --> MS: moodEntryId
+deactivate DB
+
+MS -> Redis: XADD mood_stream {userId, moodEntryId}
+activate Redis
+Redis --> MS: OK
+deactivate Redis
+
+MS --> MC: 201 Created
+deactivate MS
+
+MC --> UI: Бүртгэл амжилттай
+deactivate MC
+
+UI --> User: Хариу: 201 Created
+deactivate UI
+
+== AI Analysis ==
+Redis -> AI: XREAD mood_stream
+activate AI
+
+AI -> DB: SELECT * FROM mood_entry WHERE id = moodEntryId
+activate DB
+DB --> AI: mood content
+deactivate DB
+
+AI -> Model: analyze(content)
+activate Model
+Model --> AI: {sentiment, emotions, coping}
+deactivate Model
+
+AI -> DB: INSERT ai_mood_analysis
+activate DB
+DB --> AI: analysisId
+deactivate DB
+
+AI -> Redis: XADD ai_analysis_completed {userId, moodEntryId, analysisId}
+deactivate AI
+
+== Gamification ==
+Redis -> GS: XREAD ai_analysis_completed
+activate GS
+
+GS -> DB: INSERT scoring_history
+activate DB
+DB --> GS: OK
+deactivate DB
+
+GS -> DB: UPDATE user_score
+activate DB
+DB --> GS: OK
+deactivate DB
+
+GS -> Redis: XADD gamification_completed {userId, moodEntryId, points}
+deactivate GS
+
+== Notification ==
+Redis -> Notify: XREAD ai_analysis_completed
+activate Notify
+
+Notify -> DB: INSERT notification {userId, type, message, status}
+activate DB
+DB --> Notify: notificationId
+deactivate DB
+
+Notify -> UI: pushNotification(userId, AI шинжилгээ + оноо)
+
+Notify -> Redis: XADD notification_sent {userId, moodEntryId, notificationId}
+deactivate Notify
+@enduml

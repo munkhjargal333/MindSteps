@@ -1,0 +1,95 @@
+@startuml Journal_Sequence_AI_Triggered_With_Gamification
+!theme plain
+title Дарааллын диаграм: Тэмдэглэл бичих
+
+actor User
+participant "UI" as UI
+participant "JournalController" as JC
+participant "JournalService" as JS
+participant "Database" as DB
+participant "Redis Stream" as Redis
+participant "AIService" as AI
+participant "AIModel" as Model
+participant "GamificationService" as GS
+participant "NotificationService" as Notify
+
+== Journal Submission Flow ==
+User -> UI: Журнал бичих
+activate UI
+
+UI -> JC: POST /api/journals
+activate JC
+
+JC -> JS: createJournal(userId, content)
+activate JS
+
+JS -> DB: INSERT journal
+activate DB
+DB --> JS: journalId
+deactivate DB
+
+JS -> Redis: XADD journal_stream {userId, journalId}
+activate Redis
+Redis --> JS: OK
+deactivate Redis
+
+JS --> JC: 201 Created
+deactivate JS
+JC --> UI: Журнал амжилттай хадгалагдлаа
+deactivate JC
+UI --> User: Хариу: 201 Created
+deactivate UI
+
+== AI Analysis Trigger ==
+Redis -> AI: XREAD journal_stream
+activate AI
+
+AI -> DB: SELECT * FROM journals WHERE id = journalId
+activate DB
+DB --> AI: journal content
+deactivate DB
+
+AI -> Model: analyze(content)
+activate Model
+Model --> AI: {sentiment, emotions, values}
+deactivate Model
+
+AI -> DB: INSERT ai_journal_analysis
+activate DB
+DB --> AI: analysisId
+deactivate DB
+
+AI -> Redis: XADD ai_journal_analysis_completed {userId, journalId, analysisId}
+deactivate AI
+
+== Gamification Trigger ==
+Redis -> GS: XREAD ai_journal_analysis_completed
+activate GS
+
+GS -> DB: INSERT scoring_history
+activate DB
+DB --> GS: OK
+deactivate DB
+
+
+GS -> DB: UPDATE user_score
+activate DB
+DB --> GS: OK
+deactivate DB
+
+GS -> Redis: XADD gamification_completed {userId, journalId, points}
+deactivate GS
+
+== Notification Trigger ==
+Redis -> Notify: XREAD ai_journal_analysis_completed
+activate Notify
+
+Notify -> DB: INSERT notification {userId, type, message, status}
+activate DB
+DB --> Notify: OK
+deactivate DB
+
+Notify -> UI: pushNotification(userId, AI шинжилгээ + оноо)
+deactivate Notify
+
+@enduml

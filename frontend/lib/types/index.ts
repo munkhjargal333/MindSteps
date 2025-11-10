@@ -1,7 +1,12 @@
+// ////////////////////////////////////////////////////////////////
+// USERS & LEVEL SYSTEM
+// ////////////////////////////////////////////////////////////////
+
 export interface User {
   id: number;
   name: string;
   email: string;
+  password: string;
   total_score: number;
   current_level: number;
   level_progress: number;
@@ -10,6 +15,7 @@ export interface User {
   is_active: boolean;
   last_login?: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface UserLevel {
@@ -18,12 +24,28 @@ export interface UserLevel {
   level_name: string;
   min_score: number;
   max_score: number;
-  description: string;
-  icon: string;
-  color: string;
-  badge_image: string;
-  perks: Record<string, any>;
+  description?: string;
+  icon?: string;
+  color?: string;
+  badge_image?: string;
+  perks?: string; // JSON format
+  created_at: string;
 }
+
+export interface UserStreak {
+  id: number;
+  user_id: number;
+  streak_type: 'journal' | 'mood' | 'meditation' | 'lesson';
+  current_streak: number;
+  longest_streak: number;
+  last_activity_date?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ////////////////////////////////////////////////////////////////
+// JOURNAL & MOOD
+// ////////////////////////////////////////////////////////////////
 
 export interface Journal {
   id: number;
@@ -31,38 +53,20 @@ export interface Journal {
   title: string;
   entry_date: string;
   content: string;
-  word_count: number;
+  word_count?: number;
   sentiment_score?: number;
   is_private: boolean;
-  tags?: string[];
+  tags?: string;
   created_at: string;
   updated_at: string;
-  ai_analysis?: AIJournalAnalysis;
 }
 
-export interface AIJournalAnalysis {
-  overall_sentiment: number;
-  primary_emotions: string[];
-  emotion_intensity: number;
-  emotional_depth_score: number;
-  self_reflection_score: number;
-  goal_alignment_score: number;
-  gratitude_score: number;
-  personalized_feedback: string;
-  final_points: number;
-}
-
-export interface MoodEntry {
+export interface MoodCategory {
   id: number;
-  user_id: number;
-  entry_date: string;
-  mood_id: number;
-  intensity: number;
-  when_felt: 'morning' | 'afternoon' | 'evening' | 'night';
-  trigger_event?: string;
-  coping_strategy?: string;
-  notes?: string;
-  mood?: Mood;
+  name: string;
+  color?: string;
+  icon?: string;
+  created_at: string;
 }
 
 export interface Mood {
@@ -70,16 +74,40 @@ export interface Mood {
   category_id: number;
   name: string;
   description?: string;
-  intensity_level: number;
-  emoji: string;
-  category?: MoodCategory;
+  intensity_level?: number;
+  emoji?: string;
+  created_at: string;
 }
 
-export interface MoodCategory {
+export interface MoodEntry {
   id: number;
+  user_id: number;
+  entry_date: string;
+  mood_id: number;
+  intensity?: number;
+  when_felt?: 'morning' | 'afternoon' | 'evening' | 'night';
+  trigger_event?: string;
+  coping_strategy?: string;
+  notes?: string;
+  location?: string;
+  weather?: string;
+  created_at: string;
+}
+
+// ////////////////////////////////////////////////////////////////
+// CORE VALUES & GOALS
+// ////////////////////////////////////////////////////////////////
+
+export interface CoreValue {
+  id: number;
+  user_id: number;
   name: string;
-  color: string;
-  icon: string;
+  description?: string;
+  priority_order?: number;
+  color?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Goal {
@@ -94,10 +122,11 @@ export interface Goal {
   progress_percentage: number;
   is_public: boolean;
   created_at: string;
-  milestones?: GoalMilestone[];
+  updated_at: string;
+  completed_at?: string;
 }
 
-export interface GoalMilestone {
+export interface Milestone {
   id: number;
   goal_id: number;
   title: string;
@@ -105,47 +134,55 @@ export interface GoalMilestone {
   target_date?: string;
   is_completed: boolean;
   completed_at?: string;
+  created_at: string;
 }
+
+// ////////////////////////////////////////////////////////////////
+// LESSONS & CONTENT
+// ////////////////////////////////////////////////////////////////
 
 export interface Lesson {
   id: number;
   category_id: number;
+  parent_id?: number;
   title: string;
   slug: string;
-  description: string;
-  content: string;
+  description?: string;
+  content?: string;
   lesson_type: 'article' | 'meditation' | 'video' | 'audio' | 'interactive';
   difficulty_level: 'beginner' | 'intermediate' | 'advanced';
   required_level: number;
-  estimated_duration: number;
+  estimated_duration?: number;
   points_reward: number;
   media_url?: string;
   thumbnail_url?: string;
-  tags?: string[];
+  tags?: string;
   is_premium: boolean;
   is_published: boolean;
   view_count: number;
+  sort_order?: number;
+  created_at: string;
+  updated_at: string;
+  published_at?: string;
 }
+
+// ////////////////////////////////////////////////////////////////
+// MEDITATION & PRACTICE
+// ////////////////////////////////////////////////////////////////
 
 export interface MeditationSession {
   id: number;
   user_id: number;
   technique_id?: number;
   session_date: string;
-  start_time: string;
-  duration_planned: number;
-  duration_actual: number;
+  start_time?: string;
+  duration_planned?: number;
+  duration_actual?: number;
   quality_rating?: number;
   mood_before?: string;
   mood_after?: string;
   notes?: string;
-}
-
-export interface UserStreak {
-  id: number;
-  user_id: number;
-  streak_type: 'journal' | 'mood' | 'meditation' | 'lesson';
-  current_streak: number;
-  longest_streak: number;
-  last_activity_date: string;
+  interruptions?: number;
+  environment?: string;
+  created_at: string;
 }

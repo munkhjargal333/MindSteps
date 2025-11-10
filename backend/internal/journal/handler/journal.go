@@ -81,10 +81,12 @@ func (h *JournalHandler) Update(c *fiber.Ctx) error {
 	}
 
 	tokenInfo := auth.GetTokenInfo(c)
+
 	journal, err := h.service.GetByID(uint(id))
 	if err != nil {
 		return shared.ResponseBadRequest(c, err.Error())
 	}
+
 	if journal.UserID != tokenInfo.UserID {
 		return shared.ResponseForbidden(c)
 	}
@@ -121,19 +123,11 @@ func (h *JournalHandler) Delete(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusNoContent)
 }
 
-// List all journals (admin / for now show all)
-func (h *JournalHandler) ListAll(c *fiber.Ctx) error {
-	journals, err := h.service.ListAll()
-	if err != nil {
-		return shared.ResponseBadRequest(c, err.Error())
-	}
-	return c.JSON(journals)
-}
-
 // List journals by user
 
 func (h *JournalHandler) ListByUserID(c *fiber.Ctx) error {
 	tokenInfo := auth.GetTokenInfo(c)
+
 	if tokenInfo == nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
 	}
@@ -141,6 +135,7 @@ func (h *JournalHandler) ListByUserID(c *fiber.Ctx) error {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
+	//fmt.Println(tokenInfo.UserID)
 	journals, total, err := h.service.ListByUserID(tokenInfo.UserID, page, limit)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})

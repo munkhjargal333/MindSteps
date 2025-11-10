@@ -16,3 +16,19 @@
     overflow: hidden;
   }
 }
+/* globals.css эсвэл module.css дотор */
+.container {
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 3rem;
+  }
+}

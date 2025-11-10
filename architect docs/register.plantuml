@@ -1,0 +1,159 @@
+@startuml Sequence_Diagram_Authentication
+!theme plain
+title Дарааллын диаграм - Бүртгэл ба Нэвтрэх
+
+actor User
+participant "UI" as UI
+participant "AuthController" as AC
+participant "AuthService" as AS
+participant "UserService" as US
+participant "Database" as DB
+participant "Redis" as Redis
+participant "EmailService" as ES
+
+== Бүртгэл ==
+
+User -> UI: Бүртгэл хэлбэр бөглөх
+activate UI
+
+UI -> AC: POST /api/auth/register
+activate AC
+
+AC -> AS: register(email, password, name)
+activate AS
+
+AS -> DB: check email exists
+activate DB
+DB --> AS: not exists
+deactivate DB
+
+AS -> AS: hash password (bcrypt)
+AS -> AS: generate OTP code
+
+AS -> DB: INSERT user (inactive)
+activate DB
+DB --> AS: userId
+deactivate DB
+
+AS -> DB: INSERT otp record
+activate DB
+DB --> AS: success
+deactivate DB
+
+AS -> Redis: XADD email_queue {userId, email, otp}
+activate Redis
+Redis --> AS: OK
+deactivate Redis
+
+AS --> AC: {userId, message: "OTP илгээх гэж байна"}
+deactivate AS
+
+AC --> UI: 201 Created
+deactivate AC
+
+UI --> User: OTP тун удахгүй илгээгдэнэ
+deactivate UI
+
+' Background Email Worker
+Redis -> ES: XREAD email_queue
+activate ES
+ES -> ES: sendOTP(email, code)
+deactivate ES
+
+== OTP Баталгаажуулах ==
+
+User -> UI: OTP код оруулах
+activate UI
+
+UI -> AC: POST /api/auth/verify-otp
+activate AC
+
+AC -> AS: verifyOTP(userId, code)
+activate AS
+
+AS -> DB: check OTP valid & not expired
+activate DB
+DB --> AS: otp record
+deactivate DB
+
+alt OTP valid
+    AS -> DB: UPDATE user set active & verified
+    activate DB
+    DB --> AS: success
+    deactivate DB
+    
+    AS -> AS: generate JWT token
+    
+    AS -> Redis: SET user_session:{token}
+    activate Redis
+    Redis --> AS: OK
+    deactivate Redis
+    
+    AS --> AC: {token, user}
+else OTP invalid
+    AS --> AC: error: invalid OTP
+end
+
+deactivate AS
+
+AC --> UI: 200 OK / 400 Error
+deactivate AC
+
+UI --> User: Амжилттай / Алдаа
+deactivate UI
+
+== Нэвтрэх ==
+
+User -> UI: Login form
+activate UI
+
+UI -> AC: POST /api/auth/login
+activate AC
+
+AC -> AS: login(email, password)
+activate AS
+
+AS -> DB: SELECT user by email
+activate DB
+DB --> AS: user
+deactivate DB
+
+AS -> AS: verify password (bcrypt compare)
+
+alt Password correct
+    AS -> AS: generate JWT token
+    
+    AS -> DB: INSERT session record
+    activate DB
+    DB --> AS: sessionId
+    deactivate DB
+    
+    AS -> Redis: SET user_session:{token} EX 86400
+    activate Redis
+    Redis --> AS: OK
+    deactivate Redis
+    
+    AS -> DB: UPDATE last_login
+    activate DB
+    DB --> AS: success
+    deactivate DB
+    
+    AS -> Redis: XADD user_activity {userId, action: "login"}
+    activate Redis
+    Redis --> AS: OK
+    deactivate Redis
+    
+    AS --> AC: {token, user}
+else Password incorrect
+    AS --> AC: error: invalid credentials
+end
+
+deactivate AS
+
+AC --> UI: 200 OK / 401 Unauthorized
+deactivate AC
+
+UI --> User: Dashboard / Алдаа
+deactivate UI
+
+@enduml

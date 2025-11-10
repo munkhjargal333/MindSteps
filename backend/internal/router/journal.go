@@ -18,12 +18,9 @@ func RegisterjournalRoutes(api fiber.Router) {
 
 	journal := api.Group("/journals", auth.TokenMiddleware)
 
+	journal.Get("/me", h.ListByUserID)
 	journal.Post("/", h.Create)
-	journal.Get("/", h.ListAll)
 	journal.Get("/:id", h.GetByID)
 	journal.Put("/:id", h.Update)
 	journal.Delete("/:id", h.Delete)
-
-	journal.Get("/me", h.ListByUserID)
-
 }
