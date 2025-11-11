@@ -59,6 +59,7 @@ export interface Journal {
   tags?: string;
   created_at: string;
   updated_at: string;
+  related_value_ids?: number;
 }
 
 export interface MoodCategory {

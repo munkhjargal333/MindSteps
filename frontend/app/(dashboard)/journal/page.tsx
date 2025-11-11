@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState , useCallback} from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { Journal } from '@/lib/types';
@@ -14,15 +14,10 @@ export default function JournalListPage() {
   const [total, setTotal] = useState(0);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (token) {
-      loadJournals();
-    }
-  }, [token, page]);
-
-  const loadJournals = async () => {
+  const loadJournals = useCallback(async () => {
     if (!token) return;
-    
+
+    setLoading(true);
     try {
       const data = await apiClient.getJournals(page, 10, token);
       setJournals(data.journals);
@@ -32,8 +27,13 @@ export default function JournalListPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, page]); 
 
+  useEffect(() => {
+    if (token) {
+      loadJournals();
+    }
+  }, [token, loadJournals]);
   const handleDelete = async (id: number) => {
     if (!token) return;
     

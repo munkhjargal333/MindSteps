@@ -19,27 +19,78 @@ import {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
 
 // Response types
-interface LoginResponse {
-  token: string;
-  user?: User;
+interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data?: T;
 }
 
-interface RegisterResponse {
-  token: string;
-  user?: User;
-}
+// interface PaginatedResponse<T> {
+//   page: number;
+//   limit: number;
+//   total: number;
+//   data: T[];
+// }
 
-interface PaginatedResponse<T> {
-  journals: T[];
+interface JournalListResponse {
+  journals: Journal[];
   total: number;
   page: number;
   limit: number;
 }
+
+interface MoodEntryListResponse {
+  entries: MoodEntry[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+interface GoalListResponse {
+  success: boolean;
+  summary: {
+    total: number;
+    active: number;
+    completed: number;
+    paused: number;
+  };
+  goals: {
+    active: Goal[];
+    completed: Goal[];
+    paused: Goal[];
+  };
+}
+
+interface GoalStatistics {
+  total_goals: number;
+  active_goals: number;
+  completed_goals: number;
+  paused_goals: number;
+  total_milestones: number;
+  completed_milestones: number;
+  average_progress: number;
+  goals_by_type: {
+    short_term: number;
+    long_term: number;
+    habit: number;
+  };
+  goals_by_priority: {
+    low: number;
+    medium: number;
+    high: number;
+  };
+}
+
 interface MoodStatistics {
-  average_intensity: number;
-  most_common_mood: string;
   total_entries: number;
-  mood_distribution: Record<string, number>;
+  period_days: number;
+  average_intensity?: number;
+  mood_distribution?: Record<number, number>;
+}
+
+interface CoreValueListResponse {
+  core_values: CoreValue[];
+  total: number;
 }
 
 class APIClient {
@@ -164,7 +215,7 @@ class APIClient {
   // ==================== AUTH ====================
   
   async register(name: string, email: string, password: string, confirmPassword: string) {
-    const { data } = await this.axiosInstance.post<{ token: string }>('/auth/register', {
+    const { data } = await this.axiosInstance.post<{ success: boolean; token: string; user: User }>('/auth/register', {
       name,
       email,
       password,
@@ -175,11 +226,11 @@ class APIClient {
       this.setToken(data.token);
     }
     
-    return { token: data.token };
+    return data;
   }
 
   async login(email: string, password: string) {
-    const { data } = await this.axiosInstance.post<{ token: string }>('/auth/login', {
+    const { data } = await this.axiosInstance.post<{ success: boolean; token: string; user: User }>('/auth/login', {
       email,
       password
     });
@@ -188,7 +239,7 @@ class APIClient {
       this.setToken(data.token);
     }
 
-    return { token: data.token };
+    return data;
   }
 
   async logout(token?: string) {
@@ -200,12 +251,12 @@ class APIClient {
   }
 
   async forgotPassword(email: string) {
-    const { data } = await this.axiosInstance.post('/auth/forgot-password', { email });
+    const { data } = await this.axiosInstance.post<ApiResponse<any>>('/auth/forgot-password', { email });
     return data;
   }
 
   async verifyOtp(email: string, otpCode: string) {
-    const { data } = await this.axiosInstance.post('/auth/verify-otp', {
+    const { data } = await this.axiosInstance.post<ApiResponse<any>>('/auth/verify-otp', {
       email,
       otp_code: otpCode
     });
@@ -213,7 +264,7 @@ class APIClient {
   }
 
   async resetPassword(email: string, otpCode: string, newPassword: string, confirmPassword: string) {
-    const { data } = await this.axiosInstance.post('/auth/reset-password', {
+    const { data } = await this.axiosInstance.post<ApiResponse<any>>('/auth/reset-password', {
       email,
       otp_code: otpCode,
       new_password: newPassword,
@@ -225,21 +276,21 @@ class APIClient {
   // ==================== USER ====================
   
   async getMe(token?: string) {
-    const { data } = await this.axiosInstance.get<User>('/users/me', this.getConfig(token));
-    return data;
+    const { data } = await this.axiosInstance.get<{ success: boolean; user: User }>('/users/me', this.getConfig(token));
+    return data.user;
   }
 
   async updateProfile(profileData: Partial<User>, token?: string) {
-    const { data } = await this.axiosInstance.put<User>(
+    const { data } = await this.axiosInstance.put<{ success: boolean; user: User }>(
       '/users/me',
       profileData,
       this.getConfig(token)
     );
-    return data;
+    return data.user;
   }
 
   async changePassword(currentPassword: string, newPassword: string, confirmPassword: string, token?: string) {
-    const { data } = await this.axiosInstance.post(
+    const { data } = await this.axiosInstance.post<ApiResponse<any>>(
       '/users/change-password',
       {
         current_password: currentPassword,
@@ -252,14 +303,14 @@ class APIClient {
   }
 
   async deleteAccount(token?: string) {
-    const { data } = await this.axiosInstance.delete('/users/me', this.getConfig(token));
+    const { data } = await this.axiosInstance.delete<ApiResponse<any>>('/users/me', this.getConfig(token));
     return data;
   }
 
   // ==================== JOURNALS ====================
   
   async getJournals(page = 1, limit = 10, token?: string) {
-    const { data } = await this.axiosInstance.get<PaginatedResponse<Journal>>(
+    const { data } = await this.axiosInstance.get<JournalListResponse>(
       '/journals/me',
       {
         ...this.getConfig(token),
@@ -278,11 +329,11 @@ class APIClient {
   }
 
   async createJournal(journalData: {
-    title: string;
+    title?: string;
     content: string;
     is_private?: boolean;
-    tags?: string[];
-    related_value_ids?: number[];
+    tags?: string;
+    related_value_ids?: number;
   }, token?: string) {
     const { data } = await this.axiosInstance.post<Journal>(
       '/journals',
@@ -310,10 +361,8 @@ class APIClient {
     tags?: string;
     from_date?: string;
     to_date?: string;
-    page?: number;
-    limit?: number;
   }, token?: string) {
-    const { data } = await this.axiosInstance.get<PaginatedResponse<Journal>>(
+    const { data } = await this.axiosInstance.get<{ journals: Journal[]; total: number }>(
       '/journals/search',
       {
         ...this.getConfig(token),
@@ -326,11 +375,11 @@ class APIClient {
   // ==================== CORE VALUES ====================
   
   async getCoreValues(token?: string) {
-    const { data } = await this.axiosInstance.get<CoreValue[]>(
+    const { data } = await this.axiosInstance.get<CoreValueListResponse>(
       '/core-values/me',
       this.getConfig(token)
     );
-    return data;
+    return data.core_values;
   }
 
   async getCoreValue(id: number, token?: string) {
@@ -345,9 +394,9 @@ class APIClient {
     name: string;
     description?: string;
     maslow_level_id?: number;
-    color?: string;
+    color: string;
     icon?: string;
-    priority_order?: number;
+    priority_order: number;
   }, token?: string) {
     const { data } = await this.axiosInstance.post<CoreValue>(
       '/core-values',
@@ -370,11 +419,45 @@ class APIClient {
     await this.axiosInstance.delete(`/core-values/${id}`, this.getConfig(token));
   }
 
-  // ==================== MOOD ====================
+  // ==================== MOOD CATEGORIES & MOODS ====================
+  
+  async getMoodCategories(token?: string) {
+    const { data } = await this.axiosInstance.get<MoodCategory[]>(
+      '/moods/categories',
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async getMoodsByCategory(categoryId: number, token?: string) {
+    const { data } = await this.axiosInstance.get<Mood[]>(
+      `/moods/categories/${categoryId}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async getAllMoods(token?: string) {
+    const { data } = await this.axiosInstance.get<Mood[]>(
+      '/moods/me',
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async getMood(id: number, token?: string) {
+    const { data } = await this.axiosInstance.get<Mood>(
+      `/moods/${id}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  // ==================== MOOD ENTRIES ====================
   
   async getMoodEntries(page = 1, limit = 10, token?: string) {
-    const { data } = await this.axiosInstance.get<PaginatedResponse<MoodEntry>>(
-      '/moods/me',
+    const { data } = await this.axiosInstance.get<MoodEntryListResponse>(
+      '/mood-entries/me',
       {
         ...this.getConfig(token),
         params: { page, limit }
@@ -385,7 +468,7 @@ class APIClient {
 
   async getMoodEntry(id: number, token?: string) {
     const { data } = await this.axiosInstance.get<MoodEntry>(
-      `/moods/${id}`,
+      `/mood-entries/${id}`,
       this.getConfig(token)
     );
     return data;
@@ -403,7 +486,7 @@ class APIClient {
     related_value_ids?: number[];
   }, token?: string) {
     const { data } = await this.axiosInstance.post<MoodEntry>(
-      '/moods',
+      '/mood-entries',
       moodData,
       this.getConfig(token)
     );
@@ -412,7 +495,7 @@ class APIClient {
 
   async updateMoodEntry(id: number, moodData: Partial<MoodEntry>, token?: string) {
     const { data } = await this.axiosInstance.put<MoodEntry>(
-      `/moods/${id}`,
+      `/mood-entries/${id}`,
       moodData,
       this.getConfig(token)
     );
@@ -420,12 +503,12 @@ class APIClient {
   }
 
   async deleteMoodEntry(id: number, token?: string) {
-    await this.axiosInstance.delete(`/moods/${id}`, this.getConfig(token));
+    await this.axiosInstance.delete(`/mood-entries/${id}`, this.getConfig(token));
   }
 
   async getMoodStatistics(days = 30, token?: string) {
     const { data } = await this.axiosInstance.get<MoodStatistics>(
-      '/moods/statistics',
+      '/mood-entries/statistics',
       {
         ...this.getConfig(token),
         params: { days }
@@ -437,49 +520,76 @@ class APIClient {
   // ==================== GOALS ====================
   
   async getGoals(token?: string) {
-    const { data } = await this.axiosInstance.get<Goal[]>(
+    const { data } = await this.axiosInstance.get<GoalListResponse>(
       '/goals/me',
       this.getConfig(token)
     );
     return data;
   }
 
+  async getGoalStatistics(token?: string) {
+    const { data } = await this.axiosInstance.get<{ success: boolean; statistics: GoalStatistics }>(
+      '/goals/statistics',
+      this.getConfig(token)
+    );
+    return data.statistics;
+  }
+
   async getGoal(id: number, token?: string) {
-    const { data } = await this.axiosInstance.get<Goal>(
+    const { data } = await this.axiosInstance.get<{ success: boolean; goal: Goal }>(
       `/goals/${id}`,
       this.getConfig(token)
     );
-    return data;
+    return data.goal;
   }
 
   async createGoal(goalData: {
-    value_id: number;
+    value_id?: number;
     title: string;
     description?: string;
     goal_type: string;
     target_date?: string;
-    priority?: string;
+    priority: string;
     is_public?: boolean;
   }, token?: string) {
-    const { data } = await this.axiosInstance.post<Goal>(
+    const { data } = await this.axiosInstance.post<{ success: boolean; goal: Goal }>(
       '/goals',
       goalData,
       this.getConfig(token)
     );
-    return data;
+    return data.goal;
   }
 
   async updateGoal(id: number, goalData: Partial<Goal>, token?: string) {
-    const { data } = await this.axiosInstance.put<Goal>(
+    const { data } = await this.axiosInstance.put<{ success: boolean; goal: Goal }>(
       `/goals/${id}`,
       goalData,
       this.getConfig(token)
     );
-    return data;
+    return data.goal;
   }
 
   async deleteGoal(id: number, token?: string) {
-    await this.axiosInstance.delete(`/goals/${id}`, this.getConfig(token));
+    const { data } = await this.axiosInstance.delete<ApiResponse<any>>(`/goals/${id}`, this.getConfig(token));
+    return data;
+  }
+
+  async pauseGoal(id: number, token?: string) {
+    const { data } = await this.axiosInstance.post<{ success: boolean; goal: Goal }>(
+      `/goals/${id}/pause`,
+      {},
+      this.getConfig(token)
+    );
+    return data.goal;
+  }
+
+  async resumeGoal(id: number, token?: string) {
+    const { data } = await this.axiosInstance.post<{ success: boolean; goal: Goal }>(
+      `/goals/${id}/resume`,
+      {},
+      this.getConfig(token)
+    );
+    return data.goal;
   }
 
   // ==================== MILESTONES ====================
@@ -488,39 +598,40 @@ class APIClient {
     title: string;
     description?: string;
     target_date?: string;
-    sort_order?: number;
+    sort_order: number;
   }, token?: string) {
-    const { data } = await this.axiosInstance.post<Milestone>(
+    const { data } = await this.axiosInstance.post<{ success: boolean; milestone: Milestone }>(
       `/goals/${goalId}/milestones`,
       milestoneData,
       this.getConfig(token)
     );
-    return data;
+    return data.milestone;
   }
 
   async updateMilestone(milestoneId: number, milestoneData: Partial<Milestone>, token?: string) {
-    const { data } = await this.axiosInstance.put<Milestone>(
+    const { data } = await this.axiosInstance.put<{ success: boolean; milestone: Milestone }>(
       `/goals/milestones/${milestoneId}`,
       milestoneData,
       this.getConfig(token)
     );
-    return data;
+    return data.milestone;
   }
 
   async completeMilestone(milestoneId: number, token?: string) {
-    const { data } = await this.axiosInstance.post(
+    const { data } = await this.axiosInstance.post<{
+      success: boolean;
+      milestone: Milestone;
+      goal_progress: {
+        percentage: number;
+        status: string;
+        is_complete: boolean;
+      };
+    }>(
       `/goals/milestones/${milestoneId}/complete`,
       {},
       this.getConfig(token)
     );
     return data;
-  }
-
-  async deleteMilestone(milestoneId: number, token?: string) {
-    await this.axiosInstance.delete(
-      `/goals/milestones/${milestoneId}`,
-      this.getConfig(token)
-    );
   }
 
   // ==================== LESSONS ====================
@@ -541,10 +652,34 @@ class APIClient {
     return data;
   }
 
-  async markLessonProgress(lessonId: number, progressData: any, token?: string) {
+  async markLessonProgress(lessonId: number, progressData: {
+    progress_percentage?: number;
+    status?: string;
+    time_spent?: number;
+  }, token?: string) {
     const { data } = await this.axiosInstance.post(
       `/lessons/${lessonId}/progress`,
       progressData,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+ 
+
+ async completeLesson(lessonId: number, token?: string) {
+    const { data } = await this.axiosInstance.post(
+      `/lessons/${lessonId}/complete`,
+      {},
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async rateLesson(lessonId: number, rating: number, review?: string, token?: string) {
+    const { data } = await this.axiosInstance.post(
+      `/lessons/${lessonId}/rate`,
+      { rating, review },
       this.getConfig(token)
     );
     return data;
@@ -560,7 +695,11 @@ class APIClient {
     return data;
   }
 
-  async createMeditationSession(sessionData: Partial<MeditationSession>, token?: string) {
+  async createMeditationSession(sessionData: {
+    meditation_id?: number;
+    duration_seconds?: number;
+    notes?: string;
+  }, token?: string) {
     const { data } = await this.axiosInstance.post<MeditationSession>(
       '/meditation/sessions',
       sessionData,
@@ -583,6 +722,19 @@ class APIClient {
   async getMeditationSession(id: number, token?: string) {
     const { data } = await this.axiosInstance.get<MeditationSession>(
       `/meditation/sessions/${id}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async completeMeditationSession(id: number, sessionData: {
+    duration_seconds: number;
+    completed_percentage: number;
+    notes?: string;
+  }, token?: string) {
+    const { data } = await this.axiosInstance.post(
+      `/meditation/sessions/${id}/complete`,
+      sessionData,
       this.getConfig(token)
     );
     return data;
@@ -612,7 +764,7 @@ class APIClient {
   // ==================== HEALTH CHECK ====================
   
   async healthCheck() {
-    const { data } = await this.axiosInstance.get('/health');
+    const { data } = await this.axiosInstance.get<{ status: string }>('/health');
     return data;
   }
 }

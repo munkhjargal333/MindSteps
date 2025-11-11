@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { useRouter, useParams } from 'next/navigation';
@@ -17,13 +17,7 @@ export default function JournalDetailPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    if (token && journalId) {
-      loadJournal();
-    }
-  }, [token, journalId]);
-
-  const loadJournal = async () => {
+  const loadJournal = useCallback(async () => {
     if (!token || !journalId) return;
     
     try {
@@ -36,7 +30,13 @@ export default function JournalDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, journalId, router]);
+
+  useEffect(() => {
+    if (token && journalId) {
+      loadJournal();
+    }
+  }, [token, journalId, loadJournal]);
 
   const handleDelete = async () => {
     if (!token || !journalId) return;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { useRouter, useParams } from 'next/navigation';
@@ -17,13 +17,7 @@ export default function JournalEditPage() {
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
 
-  useEffect(() => {
-    if (token && journalId) {
-      loadJournal();
-    }
-  }, [token, journalId]);
-
-  const loadJournal = async () => {
+  const loadJournal = useCallback(async () => {
     if (!token || !journalId) return;
     
     try {
@@ -38,7 +32,13 @@ export default function JournalEditPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, journalId, router]);
+
+  useEffect(() => {
+    if (token && journalId) {
+      loadJournal();
+    }
+  }, [token, journalId, loadJournal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

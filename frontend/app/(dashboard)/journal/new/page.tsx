@@ -28,12 +28,12 @@ export default function NewJournalPage() {
         content,
        // entry_date: new Date().toISOString().split('T')[0],
        // is_private: isPrivate,
-       // tags: tags,
+        tags: tags,
       //  word_count: content.split(/\s+/).length,
       }, token);
 
       router.push('/journal');
-    } catch (err) {
+    }catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Журнал хадгалахад алдаа гарлаа';
       setError(errorMessage);
     } finally {
