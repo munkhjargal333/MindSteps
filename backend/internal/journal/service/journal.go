@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"mindsteps/database/model"
 	"mindsteps/internal/journal/form"
 	"mindsteps/internal/journal/repository"
@@ -83,6 +84,8 @@ func (s *journalService) ListByUserID(userID uint, page, limit int) ([]model.Jou
 	if err != nil {
 		return nil, 0, err
 	}
+
+	fmt.Println("journals:", journals) // Debugging line
 
 	total, err := s.repo.CountByUserID(userID)
 	if err != nil {

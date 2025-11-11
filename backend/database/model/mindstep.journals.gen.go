@@ -12,20 +12,20 @@ const TableNameJournals = "mindstep.journals"
 
 // Journals mapped from table <mindstep.journals>
 type Journals struct {
-	ID               uint    `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"-"`
-	UserID           uint    `gorm:"column:user_id;type:bigint;not null" json:"-"`
-	Title            string  `gorm:"column:title;type:character varying(255)" json:"-"`
-	Content          string  `gorm:"column:content;type:text;not null" json:"-"`
-	ContentEncrypted string  `gorm:"column:content_encrypted;type:text" json:"-"`
-	EncryptionKeyID  int64   `gorm:"column:encryption_key_id;type:bigint" json:"-"`
-	WordCount        int     `gorm:"column:word_count;type:integer" json:"-"`
-	SentimentScore   float64 `gorm:"column:sentiment_score;type:numeric(4,2)" json:"-"`
-	IsPrivate        bool    `gorm:"column:is_private;type:boolean;default:true" json:"-"`
-	Tags             string  `gorm:"column:tags;type:text" json:"-"`
-	RelatedValueIds  int64   `gorm:"column:related_value_ids;type:bigint" json:"-"`
-	//AiDetectedValues string    `gorm:"column:ai_detected_values;type:bigint[]" json:"-"`
-	CreatedAt time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"-"`
-	UpdatedAt time.Time `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"-"`
+	ID               uint   `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	UserID           uint   `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	Title            string `gorm:"column:title;type:character varying(255)" json:"title"`
+	Content          string `gorm:"column:content;type:text;not null" json:"content"`
+	ContentEncrypted string `gorm:"column:content_encrypted;type:text" json:"content_encrypted"`
+	//EncryptionKeyID  int64   `gorm:"column:encryption_key_id;type:bigint" json:"encryption_key_id"`
+	WordCount       int     `gorm:"column:word_count;type:integer" json:"word_count"`
+	SentimentScore  float64 `gorm:"column:sentiment_score;type:numeric(4,2)" json:"sentiment_score"`
+	IsPrivate       bool    `gorm:"column:is_private;type:boolean;default:true" json:"is_private"`
+	Tags            string  `gorm:"column:tags;type:text" json:"tags"`
+	RelatedValueIds int64   `gorm:"column:related_value_ids;type:bigint" json:"related_value_ids"`
+	//AiDetectedValues string    `gorm:"column:ai_detected_values;type:bigint[]" json:"ai_detected_values"`
+	CreatedAt time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	UpdatedAt time.Time `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
 }
 
 // TableName Journals's table name
