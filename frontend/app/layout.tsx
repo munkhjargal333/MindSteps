@@ -1,12 +1,13 @@
 import { AuthProvider } from '@/context/AuthContext';
 import './globals.css';
+import "../app/logo.webp"
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Mindful - Таны сэтгэцийн аюулгүй орон зай',
   description: 'Журнал, сэтгэл санаа, зорилго, болон бясалгалын платформ',
   icons: {
-    icon: '/logo.webp', 
+    icon: 'logo.webp', 
   },
 };
 
