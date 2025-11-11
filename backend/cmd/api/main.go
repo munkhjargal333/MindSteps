@@ -34,7 +34,13 @@ func main() {
 		BodyLimit: 8.5 * 1024 * 1024,
 	})
 
-	app.Use(cors.New())
+	// app.Use(cors.New())
+	// CORS middleware нэмэх
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "https://frontend-ph3s57e5q-munkhjargals-projects.vercel.app, https://frontend-self-seven-0n06o3zbtn.vercel.app", // preview + prod
+		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
 	app.Use(logger.New(
 		logger.Config{
 			Format:     "${time} | ${status} | ${latency} | ${ip} | ${method} | ${path} | ${error}\n",

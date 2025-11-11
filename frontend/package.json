@@ -479,6 +479,7 @@
   "license": "ISC",
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.16",
-    "@types/js-cookie": "^3.0.6"
+    "@types/js-cookie": "^3.0.6",
+    "@types/react": "^19.2.2"
   }
 }
