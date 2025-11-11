@@ -85,7 +85,7 @@ export interface MoodEntry {
   user_id: number;
   entry_date: string;
   mood_id: number;
-  intensity?: number;
+  intensity: number;
   when_felt?: 'morning' | 'afternoon' | 'evening' | 'night';
   trigger_event?: string;
   coping_strategy?: string;

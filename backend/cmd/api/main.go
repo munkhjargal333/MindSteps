@@ -34,16 +34,16 @@ func main() {
 		BodyLimit: 8.5 * 1024 * 1024,
 	})
 
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-	}))
+	// app.Use(cors.New(cors.Config{
+	// 	AllowOrigins: "*",
+	// }))
 
 	// CORS middleware нэмэх
-	// app.Use(cors.New(cors.Config{
-	// 	AllowOrigins: "https://mind-steps-two.vercel.app", // frontend URL
-	// 	AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
-	// 	AllowHeaders: "Origin, Content-Type, Accept, Authorization",
-	// }))
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "https://mind-steps-two.vercel.app", // frontend URL
+		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
 	app.Use(logger.New(
 		logger.Config{
 			Format:     "${time} | ${status} | ${latency} | ${ip} | ${method} | ${path} | ${error}\n",
