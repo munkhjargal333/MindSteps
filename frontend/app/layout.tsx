@@ -5,6 +5,9 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Mindful - Таны сэтгэцийн аюулгүй орон зай',
   description: 'Журнал, сэтгэл санаа, зорилго, болон бясалгалын платформ',
+  icons: {
+    icon: '/logo.webp', 
+  },
 };
 
 export default function RootLayout({
