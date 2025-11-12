@@ -66,7 +66,7 @@ export interface MoodCategory {
   id: number;
   name: string;
   color?: string;
-  icon?: string;
+  emoji?: string;
   created_at: string;
 }
 
@@ -79,20 +79,31 @@ export interface Mood {
   emoji?: string;
   created_at: string;
 }
-
+export interface PlutchikMood {
+  id: number;
+  category_id: number;
+  name_mn: string;
+  name_en: string;
+  //description?: string;
+  intensity_level: number;
+  emoji: string;
+  color: string;
+  created_at: string;
+}
 export interface MoodEntry {
   id: number;
   user_id: number;
   entry_date: string;
   mood_id: number;
   intensity: number;
-  when_felt?: 'morning' | 'afternoon' | 'evening' | 'night';
+  when_felt?: string;
   trigger_event?: string;
   coping_strategy?: string;
   notes?: string;
   location?: string;
   weather?: string;
   created_at: string;
+  PlutchikEmotions:  PlutchikMood
 }
 
 // ////////////////////////////////////////////////////////////////

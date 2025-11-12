@@ -38,6 +38,17 @@ func newDeletedDataLog(db *gorm.DB, opts ...gen.DOOption) deletedDataLog {
 	_deletedDataLog.DeletedByID = field.NewUint(tableName, "deleted_by_id")
 	_deletedDataLog.CanRecover = field.NewBool(tableName, "can_recover")
 	_deletedDataLog.RecoveryExpiresAt = field.NewTime(tableName, "recovery_expires_at")
+	_deletedDataLog.User = deletedDataLogBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_deletedDataLog.DeletedBy = deletedDataLogBelongsToDeletedBy{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("DeletedBy", "model.Users"),
+	}
 
 	_deletedDataLog.fillFieldMap()
 
@@ -59,6 +70,9 @@ type deletedDataLog struct {
 	DeletedByID       field.Uint
 	CanRecover        field.Bool
 	RecoveryExpiresAt field.Time
+	User              deletedDataLogBelongsToUser
+
+	DeletedBy deletedDataLogBelongsToDeletedBy
 
 	fieldMap map[string]field.Expr
 }
@@ -114,7 +128,7 @@ func (d *deletedDataLog) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (d *deletedDataLog) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 11)
+	d.fieldMap = make(map[string]field.Expr, 13)
 	d.fieldMap["id"] = d.ID
 	d.fieldMap["user_id"] = d.UserID
 	d.fieldMap["table_name"] = d.TableName_
@@ -126,16 +140,185 @@ func (d *deletedDataLog) fillFieldMap() {
 	d.fieldMap["deleted_by_id"] = d.DeletedByID
 	d.fieldMap["can_recover"] = d.CanRecover
 	d.fieldMap["recovery_expires_at"] = d.RecoveryExpiresAt
+
 }
 
 func (d deletedDataLog) clone(db *gorm.DB) deletedDataLog {
 	d.deletedDataLogDo.ReplaceConnPool(db.Statement.ConnPool)
+	d.User.db = db.Session(&gorm.Session{Initialized: true})
+	d.User.db.Statement.ConnPool = db.Statement.ConnPool
+	d.DeletedBy.db = db.Session(&gorm.Session{Initialized: true})
+	d.DeletedBy.db.Statement.ConnPool = db.Statement.ConnPool
 	return d
 }
 
 func (d deletedDataLog) replaceDB(db *gorm.DB) deletedDataLog {
 	d.deletedDataLogDo.ReplaceDB(db)
+	d.User.db = db.Session(&gorm.Session{})
+	d.DeletedBy.db = db.Session(&gorm.Session{})
 	return d
+}
+
+type deletedDataLogBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a deletedDataLogBelongsToUser) Where(conds ...field.Expr) *deletedDataLogBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a deletedDataLogBelongsToUser) WithContext(ctx context.Context) *deletedDataLogBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a deletedDataLogBelongsToUser) Session(session *gorm.Session) *deletedDataLogBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a deletedDataLogBelongsToUser) Model(m *model.DeletedDataLog) *deletedDataLogBelongsToUserTx {
+	return &deletedDataLogBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a deletedDataLogBelongsToUser) Unscoped() *deletedDataLogBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type deletedDataLogBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a deletedDataLogBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a deletedDataLogBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a deletedDataLogBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a deletedDataLogBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a deletedDataLogBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a deletedDataLogBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a deletedDataLogBelongsToUserTx) Unscoped() *deletedDataLogBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type deletedDataLogBelongsToDeletedBy struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a deletedDataLogBelongsToDeletedBy) Where(conds ...field.Expr) *deletedDataLogBelongsToDeletedBy {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a deletedDataLogBelongsToDeletedBy) WithContext(ctx context.Context) *deletedDataLogBelongsToDeletedBy {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a deletedDataLogBelongsToDeletedBy) Session(session *gorm.Session) *deletedDataLogBelongsToDeletedBy {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a deletedDataLogBelongsToDeletedBy) Model(m *model.DeletedDataLog) *deletedDataLogBelongsToDeletedByTx {
+	return &deletedDataLogBelongsToDeletedByTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a deletedDataLogBelongsToDeletedBy) Unscoped() *deletedDataLogBelongsToDeletedBy {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type deletedDataLogBelongsToDeletedByTx struct{ tx *gorm.Association }
+
+func (a deletedDataLogBelongsToDeletedByTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a deletedDataLogBelongsToDeletedByTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a deletedDataLogBelongsToDeletedByTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a deletedDataLogBelongsToDeletedByTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a deletedDataLogBelongsToDeletedByTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a deletedDataLogBelongsToDeletedByTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a deletedDataLogBelongsToDeletedByTx) Unscoped() *deletedDataLogBelongsToDeletedByTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type deletedDataLogDo struct{ gen.DO }

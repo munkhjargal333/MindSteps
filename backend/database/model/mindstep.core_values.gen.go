@@ -12,17 +12,19 @@ const TableNameCoreValues = "mindstep.core_values"
 
 // CoreValues mapped from table <mindstep.core_values>
 type CoreValues struct {
-	ID            uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID        uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
-	MaslowLevelID int       `gorm:"column:maslow_level_id;type:integer" json:"maslow_level_id"`
-	Name          string    `gorm:"column:name;type:character varying(100);not null" json:"name"`
-	Description   string    `gorm:"column:description;type:text" json:"description"`
-	PriorityOrder int       `gorm:"column:priority_order;type:integer" json:"priority_order"`
-	Color         string    `gorm:"column:color;type:character varying(7)" json:"color"`
-	Icon          string    `gorm:"column:icon;type:character varying(50)" json:"icon"`
-	IsActive      bool      `gorm:"column:is_active;type:boolean;default:true" json:"is_active"`
-	CreatedAt     time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
-	UpdatedAt     time.Time `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	ID            uint          `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	UserID        uint          `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	MaslowLevelID int           `gorm:"column:maslow_level_id;type:integer" json:"maslow_level_id"`
+	Name          string        `gorm:"column:name;type:character varying(100);not null" json:"name"`
+	Description   string        `gorm:"column:description;type:text" json:"description"`
+	PriorityOrder int           `gorm:"column:priority_order;type:integer" json:"priority_order"`
+	Color         string        `gorm:"column:color;type:character varying(7)" json:"color"`
+	Icon          string        `gorm:"column:icon;type:character varying(50)" json:"icon"`
+	IsActive      bool          `gorm:"column:is_active;type:boolean;default:true" json:"is_active"`
+	CreatedAt     time.Time     `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	UpdatedAt     time.Time     `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	User          *Users        `gorm:"foreignKey:user_id;references:id" json:"User"`
+	MaslowLevel   *MaslowLevels `gorm:"foreignKey:maslow_level_id;references:id" json:"MaslowLevel"`
 }
 
 // TableName CoreValues's table name

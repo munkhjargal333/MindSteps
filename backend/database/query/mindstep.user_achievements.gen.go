@@ -39,6 +39,11 @@ func newUserAchievements(db *gorm.DB, opts ...gen.DOOption) userAchievements {
 	_userAchievements.UnlockedAt = field.NewTime(tableName, "unlocked_at")
 	_userAchievements.IsFeatured = field.NewBool(tableName, "is_featured")
 	_userAchievements.Rarity = field.NewString(tableName, "rarity")
+	_userAchievements.User = userAchievementsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_userAchievements.fillFieldMap()
 
@@ -61,6 +66,7 @@ type userAchievements struct {
 	UnlockedAt          field.Time
 	IsFeatured          field.Bool
 	Rarity              field.String
+	User                userAchievementsBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -117,7 +123,7 @@ func (u *userAchievements) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (u *userAchievements) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 12)
+	u.fieldMap = make(map[string]field.Expr, 13)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["user_id"] = u.UserID
 	u.fieldMap["achievement_type"] = u.AchievementType
@@ -130,16 +136,101 @@ func (u *userAchievements) fillFieldMap() {
 	u.fieldMap["unlocked_at"] = u.UnlockedAt
 	u.fieldMap["is_featured"] = u.IsFeatured
 	u.fieldMap["rarity"] = u.Rarity
+
 }
 
 func (u userAchievements) clone(db *gorm.DB) userAchievements {
 	u.userAchievementsDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.User.db = db.Session(&gorm.Session{Initialized: true})
+	u.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u userAchievements) replaceDB(db *gorm.DB) userAchievements {
 	u.userAchievementsDo.ReplaceDB(db)
+	u.User.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type userAchievementsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userAchievementsBelongsToUser) Where(conds ...field.Expr) *userAchievementsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userAchievementsBelongsToUser) WithContext(ctx context.Context) *userAchievementsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userAchievementsBelongsToUser) Session(session *gorm.Session) *userAchievementsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userAchievementsBelongsToUser) Model(m *model.UserAchievements) *userAchievementsBelongsToUserTx {
+	return &userAchievementsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userAchievementsBelongsToUser) Unscoped() *userAchievementsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userAchievementsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a userAchievementsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userAchievementsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userAchievementsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userAchievementsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userAchievementsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userAchievementsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userAchievementsBelongsToUserTx) Unscoped() *userAchievementsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type userAchievementsDo struct{ gen.DO }

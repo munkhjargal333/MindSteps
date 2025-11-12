@@ -33,6 +33,7 @@ type ProgressReports struct {
 	IsExported                  bool           `gorm:"column:is_exported;type:boolean" json:"is_exported"`
 	ExportedAt                  time.Time      `gorm:"column:exported_at;type:timestamp without time zone" json:"exported_at"`
 	GeneratedAt                 time.Time      `gorm:"column:generated_at;type:timestamp without time zone;default:now()" json:"generated_at"`
+	User                        *Users         `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName ProgressReports's table name

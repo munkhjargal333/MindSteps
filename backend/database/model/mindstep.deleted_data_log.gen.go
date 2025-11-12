@@ -26,6 +26,8 @@ type DeletedDataLog struct {
 	DeletedByID       uint           `gorm:"column:deleted_by_id;type:bigint" json:"deleted_by_id"`
 	CanRecover        bool           `gorm:"column:can_recover;type:boolean" json:"can_recover"`
 	RecoveryExpiresAt time.Time      `gorm:"column:recovery_expires_at;type:timestamp without time zone" json:"recovery_expires_at"`
+	User              *Users         `gorm:"foreignKey:user_id;references:id" json:"User"`
+	DeletedBy         *Users         `gorm:"foreignKey:deleted_by_id;references:id" json:"DeletedBy"`
 }
 
 // TableName DeletedDataLog's table name

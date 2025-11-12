@@ -38,6 +38,28 @@ func newUserDataAccessLog(db *gorm.DB, opts ...gen.DOOption) userDataAccessLog {
 	_userDataAccessLog.UserAgent = field.NewString(tableName, "user_agent")
 	_userDataAccessLog.SessionID = field.NewUint(tableName, "session_id")
 	_userDataAccessLog.AccessedAt = field.NewTime(tableName, "accessed_at")
+	_userDataAccessLog.User = userDataAccessLogBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_userDataAccessLog.AccessedBy = userDataAccessLogBelongsToAccessedBy{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("AccessedBy", "model.Users"),
+	}
+
+	_userDataAccessLog.Session = userDataAccessLogBelongsToSession{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Session", "model.UserSessions"),
+		User: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Session.User", "model.Users"),
+		},
+	}
 
 	_userDataAccessLog.fillFieldMap()
 
@@ -59,6 +81,11 @@ type userDataAccessLog struct {
 	UserAgent    field.String
 	SessionID    field.Uint
 	AccessedAt   field.Time
+	User         userDataAccessLogBelongsToUser
+
+	AccessedBy userDataAccessLogBelongsToAccessedBy
+
+	Session userDataAccessLogBelongsToSession
 
 	fieldMap map[string]field.Expr
 }
@@ -114,7 +141,7 @@ func (u *userDataAccessLog) GetFieldByName(fieldName string) (field.OrderExpr, b
 }
 
 func (u *userDataAccessLog) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 11)
+	u.fieldMap = make(map[string]field.Expr, 14)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["user_id"] = u.UserID
 	u.fieldMap["accessed_by_id"] = u.AccessedByID
@@ -126,16 +153,273 @@ func (u *userDataAccessLog) fillFieldMap() {
 	u.fieldMap["user_agent"] = u.UserAgent
 	u.fieldMap["session_id"] = u.SessionID
 	u.fieldMap["accessed_at"] = u.AccessedAt
+
 }
 
 func (u userDataAccessLog) clone(db *gorm.DB) userDataAccessLog {
 	u.userDataAccessLogDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.User.db = db.Session(&gorm.Session{Initialized: true})
+	u.User.db.Statement.ConnPool = db.Statement.ConnPool
+	u.AccessedBy.db = db.Session(&gorm.Session{Initialized: true})
+	u.AccessedBy.db.Statement.ConnPool = db.Statement.ConnPool
+	u.Session.db = db.Session(&gorm.Session{Initialized: true})
+	u.Session.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u userDataAccessLog) replaceDB(db *gorm.DB) userDataAccessLog {
 	u.userDataAccessLogDo.ReplaceDB(db)
+	u.User.db = db.Session(&gorm.Session{})
+	u.AccessedBy.db = db.Session(&gorm.Session{})
+	u.Session.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type userDataAccessLogBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userDataAccessLogBelongsToUser) Where(conds ...field.Expr) *userDataAccessLogBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userDataAccessLogBelongsToUser) WithContext(ctx context.Context) *userDataAccessLogBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userDataAccessLogBelongsToUser) Session(session *gorm.Session) *userDataAccessLogBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userDataAccessLogBelongsToUser) Model(m *model.UserDataAccessLog) *userDataAccessLogBelongsToUserTx {
+	return &userDataAccessLogBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userDataAccessLogBelongsToUser) Unscoped() *userDataAccessLogBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userDataAccessLogBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a userDataAccessLogBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userDataAccessLogBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userDataAccessLogBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userDataAccessLogBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userDataAccessLogBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userDataAccessLogBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userDataAccessLogBelongsToUserTx) Unscoped() *userDataAccessLogBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type userDataAccessLogBelongsToAccessedBy struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userDataAccessLogBelongsToAccessedBy) Where(conds ...field.Expr) *userDataAccessLogBelongsToAccessedBy {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userDataAccessLogBelongsToAccessedBy) WithContext(ctx context.Context) *userDataAccessLogBelongsToAccessedBy {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userDataAccessLogBelongsToAccessedBy) Session(session *gorm.Session) *userDataAccessLogBelongsToAccessedBy {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userDataAccessLogBelongsToAccessedBy) Model(m *model.UserDataAccessLog) *userDataAccessLogBelongsToAccessedByTx {
+	return &userDataAccessLogBelongsToAccessedByTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userDataAccessLogBelongsToAccessedBy) Unscoped() *userDataAccessLogBelongsToAccessedBy {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userDataAccessLogBelongsToAccessedByTx struct{ tx *gorm.Association }
+
+func (a userDataAccessLogBelongsToAccessedByTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userDataAccessLogBelongsToAccessedByTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userDataAccessLogBelongsToAccessedByTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userDataAccessLogBelongsToAccessedByTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userDataAccessLogBelongsToAccessedByTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userDataAccessLogBelongsToAccessedByTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userDataAccessLogBelongsToAccessedByTx) Unscoped() *userDataAccessLogBelongsToAccessedByTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type userDataAccessLogBelongsToSession struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	User struct {
+		field.RelationField
+	}
+}
+
+func (a userDataAccessLogBelongsToSession) Where(conds ...field.Expr) *userDataAccessLogBelongsToSession {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userDataAccessLogBelongsToSession) WithContext(ctx context.Context) *userDataAccessLogBelongsToSession {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userDataAccessLogBelongsToSession) Session(session *gorm.Session) *userDataAccessLogBelongsToSession {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userDataAccessLogBelongsToSession) Model(m *model.UserDataAccessLog) *userDataAccessLogBelongsToSessionTx {
+	return &userDataAccessLogBelongsToSessionTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userDataAccessLogBelongsToSession) Unscoped() *userDataAccessLogBelongsToSession {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userDataAccessLogBelongsToSessionTx struct{ tx *gorm.Association }
+
+func (a userDataAccessLogBelongsToSessionTx) Find() (result *model.UserSessions, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userDataAccessLogBelongsToSessionTx) Append(values ...*model.UserSessions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userDataAccessLogBelongsToSessionTx) Replace(values ...*model.UserSessions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userDataAccessLogBelongsToSessionTx) Delete(values ...*model.UserSessions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userDataAccessLogBelongsToSessionTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userDataAccessLogBelongsToSessionTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userDataAccessLogBelongsToSessionTx) Unscoped() *userDataAccessLogBelongsToSessionTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type userDataAccessLogDo struct{ gen.DO }

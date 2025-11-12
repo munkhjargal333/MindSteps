@@ -27,6 +27,8 @@ type AIMoodAnalysis struct {
 	WarningFlags               string         `gorm:"column:warning_flags;type:text[]" json:"warning_flags"`
 	PointsEarned               int            `gorm:"column:points_earned;type:integer" json:"points_earned"`
 	CreatedAt                  time.Time      `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	MoodEntry                  *MoodEntries   `gorm:"foreignKey:mood_entry_id;references:id" json:"MoodEntry"`
+	User                       *Users         `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName AIMoodAnalysis's table name

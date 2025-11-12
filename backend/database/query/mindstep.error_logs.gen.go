@@ -42,6 +42,17 @@ func newErrorLogs(db *gorm.DB, opts ...gen.DOOption) errorLogs {
 	_errorLogs.ResolvedByID = field.NewUint(tableName, "resolved_by_id")
 	_errorLogs.ResolutionNotes = field.NewString(tableName, "resolution_notes")
 	_errorLogs.CreatedAt = field.NewTime(tableName, "created_at")
+	_errorLogs.User = errorLogsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_errorLogs.ResolvedBy = errorLogsBelongsToResolvedBy{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("ResolvedBy", "model.Users"),
+	}
 
 	_errorLogs.fillFieldMap()
 
@@ -67,6 +78,9 @@ type errorLogs struct {
 	ResolvedByID    field.Uint
 	ResolutionNotes field.String
 	CreatedAt       field.Time
+	User            errorLogsBelongsToUser
+
+	ResolvedBy errorLogsBelongsToResolvedBy
 
 	fieldMap map[string]field.Expr
 }
@@ -124,7 +138,7 @@ func (e *errorLogs) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (e *errorLogs) fillFieldMap() {
-	e.fieldMap = make(map[string]field.Expr, 15)
+	e.fieldMap = make(map[string]field.Expr, 17)
 	e.fieldMap["id"] = e.ID
 	e.fieldMap["user_id"] = e.UserID
 	e.fieldMap["error_type"] = e.ErrorType
@@ -140,16 +154,185 @@ func (e *errorLogs) fillFieldMap() {
 	e.fieldMap["resolved_by_id"] = e.ResolvedByID
 	e.fieldMap["resolution_notes"] = e.ResolutionNotes
 	e.fieldMap["created_at"] = e.CreatedAt
+
 }
 
 func (e errorLogs) clone(db *gorm.DB) errorLogs {
 	e.errorLogsDo.ReplaceConnPool(db.Statement.ConnPool)
+	e.User.db = db.Session(&gorm.Session{Initialized: true})
+	e.User.db.Statement.ConnPool = db.Statement.ConnPool
+	e.ResolvedBy.db = db.Session(&gorm.Session{Initialized: true})
+	e.ResolvedBy.db.Statement.ConnPool = db.Statement.ConnPool
 	return e
 }
 
 func (e errorLogs) replaceDB(db *gorm.DB) errorLogs {
 	e.errorLogsDo.ReplaceDB(db)
+	e.User.db = db.Session(&gorm.Session{})
+	e.ResolvedBy.db = db.Session(&gorm.Session{})
 	return e
+}
+
+type errorLogsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a errorLogsBelongsToUser) Where(conds ...field.Expr) *errorLogsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a errorLogsBelongsToUser) WithContext(ctx context.Context) *errorLogsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a errorLogsBelongsToUser) Session(session *gorm.Session) *errorLogsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a errorLogsBelongsToUser) Model(m *model.ErrorLogs) *errorLogsBelongsToUserTx {
+	return &errorLogsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a errorLogsBelongsToUser) Unscoped() *errorLogsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type errorLogsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a errorLogsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a errorLogsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a errorLogsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a errorLogsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a errorLogsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a errorLogsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a errorLogsBelongsToUserTx) Unscoped() *errorLogsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type errorLogsBelongsToResolvedBy struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a errorLogsBelongsToResolvedBy) Where(conds ...field.Expr) *errorLogsBelongsToResolvedBy {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a errorLogsBelongsToResolvedBy) WithContext(ctx context.Context) *errorLogsBelongsToResolvedBy {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a errorLogsBelongsToResolvedBy) Session(session *gorm.Session) *errorLogsBelongsToResolvedBy {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a errorLogsBelongsToResolvedBy) Model(m *model.ErrorLogs) *errorLogsBelongsToResolvedByTx {
+	return &errorLogsBelongsToResolvedByTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a errorLogsBelongsToResolvedBy) Unscoped() *errorLogsBelongsToResolvedBy {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type errorLogsBelongsToResolvedByTx struct{ tx *gorm.Association }
+
+func (a errorLogsBelongsToResolvedByTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a errorLogsBelongsToResolvedByTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a errorLogsBelongsToResolvedByTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a errorLogsBelongsToResolvedByTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a errorLogsBelongsToResolvedByTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a errorLogsBelongsToResolvedByTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a errorLogsBelongsToResolvedByTx) Unscoped() *errorLogsBelongsToResolvedByTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type errorLogsDo struct{ gen.DO }

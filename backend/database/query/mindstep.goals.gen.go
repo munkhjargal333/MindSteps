@@ -41,6 +41,27 @@ func newGoals(db *gorm.DB, opts ...gen.DOOption) goals {
 	_goals.CreatedAt = field.NewTime(tableName, "created_at")
 	_goals.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_goals.CompletedAt = field.NewTime(tableName, "completed_at")
+	_goals.User = goalsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_goals.Value = goalsBelongsToValue{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Value", "model.CoreValues"),
+		User: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Value.User", "model.Users"),
+		},
+		MaslowLevel: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Value.MaslowLevel", "model.MaslowLevels"),
+		},
+	}
 
 	_goals.fillFieldMap()
 
@@ -65,6 +86,9 @@ type goals struct {
 	CreatedAt          field.Time
 	UpdatedAt          field.Time
 	CompletedAt        field.Time
+	User               goalsBelongsToUser
+
+	Value goalsBelongsToValue
 
 	fieldMap map[string]field.Expr
 }
@@ -119,7 +143,7 @@ func (g *goals) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (g *goals) fillFieldMap() {
-	g.fieldMap = make(map[string]field.Expr, 14)
+	g.fieldMap = make(map[string]field.Expr, 16)
 	g.fieldMap["id"] = g.ID
 	g.fieldMap["user_id"] = g.UserID
 	g.fieldMap["value_id"] = g.ValueID
@@ -134,16 +158,192 @@ func (g *goals) fillFieldMap() {
 	g.fieldMap["created_at"] = g.CreatedAt
 	g.fieldMap["updated_at"] = g.UpdatedAt
 	g.fieldMap["completed_at"] = g.CompletedAt
+
 }
 
 func (g goals) clone(db *gorm.DB) goals {
 	g.goalsDo.ReplaceConnPool(db.Statement.ConnPool)
+	g.User.db = db.Session(&gorm.Session{Initialized: true})
+	g.User.db.Statement.ConnPool = db.Statement.ConnPool
+	g.Value.db = db.Session(&gorm.Session{Initialized: true})
+	g.Value.db.Statement.ConnPool = db.Statement.ConnPool
 	return g
 }
 
 func (g goals) replaceDB(db *gorm.DB) goals {
 	g.goalsDo.ReplaceDB(db)
+	g.User.db = db.Session(&gorm.Session{})
+	g.Value.db = db.Session(&gorm.Session{})
 	return g
+}
+
+type goalsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a goalsBelongsToUser) Where(conds ...field.Expr) *goalsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a goalsBelongsToUser) WithContext(ctx context.Context) *goalsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a goalsBelongsToUser) Session(session *gorm.Session) *goalsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a goalsBelongsToUser) Model(m *model.Goals) *goalsBelongsToUserTx {
+	return &goalsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a goalsBelongsToUser) Unscoped() *goalsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type goalsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a goalsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a goalsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a goalsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a goalsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a goalsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a goalsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a goalsBelongsToUserTx) Unscoped() *goalsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type goalsBelongsToValue struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	User struct {
+		field.RelationField
+	}
+	MaslowLevel struct {
+		field.RelationField
+	}
+}
+
+func (a goalsBelongsToValue) Where(conds ...field.Expr) *goalsBelongsToValue {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a goalsBelongsToValue) WithContext(ctx context.Context) *goalsBelongsToValue {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a goalsBelongsToValue) Session(session *gorm.Session) *goalsBelongsToValue {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a goalsBelongsToValue) Model(m *model.Goals) *goalsBelongsToValueTx {
+	return &goalsBelongsToValueTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a goalsBelongsToValue) Unscoped() *goalsBelongsToValue {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type goalsBelongsToValueTx struct{ tx *gorm.Association }
+
+func (a goalsBelongsToValueTx) Find() (result *model.CoreValues, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a goalsBelongsToValueTx) Append(values ...*model.CoreValues) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a goalsBelongsToValueTx) Replace(values ...*model.CoreValues) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a goalsBelongsToValueTx) Delete(values ...*model.CoreValues) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a goalsBelongsToValueTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a goalsBelongsToValueTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a goalsBelongsToValueTx) Unscoped() *goalsBelongsToValueTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type goalsDo struct{ gen.DO }

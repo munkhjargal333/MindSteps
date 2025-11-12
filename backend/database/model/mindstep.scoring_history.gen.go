@@ -24,6 +24,7 @@ type ScoringHistory struct {
 	Description  string         `gorm:"column:description;type:text" json:"description"`
 	Metadata     datatypes.JSON `gorm:"column:metadata;type:jsonb" json:"metadata"`
 	CreatedAt    time.Time      `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	User         *Users         `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName ScoringHistory's table name

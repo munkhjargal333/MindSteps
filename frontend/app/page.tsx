@@ -58,7 +58,7 @@ export default function HomePage() {
             <span className="text-indigo-600">Хөгжлийн аялал</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            Өдрийн журнал, сэтгэл санааны хяналт, зорилго удирдлага болон AI шинжилгээг
+            Өдрийн тэмдэглэл, сэтгэл санааны хяналт, зорилго удирдлага болон AI шинжилгээг
             нэгтгэсэн хувийн хөгжлийн цогц систем
           </p>
           <button
@@ -78,7 +78,7 @@ export default function HomePage() {
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           <div className="bg-white rounded-xl p-6 shadow-md">
             <div className="text-4xl mb-4">📔</div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Өдрийн журнал</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Өдрийн тэмдэглэл</h3>
             <p className="text-gray-600">
               Бодол санааг тэмдэглэж, AI шинжилгээгээр үнэт зүйлсээ илрүүл
             </p>

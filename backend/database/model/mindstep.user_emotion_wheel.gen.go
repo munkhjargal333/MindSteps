@@ -12,15 +12,20 @@ const TableNameUserEmotionWheel = "mindstep.user_emotion_wheel"
 
 // UserEmotionWheel mapped from table <mindstep.user_emotion_wheel>
 type UserEmotionWheel struct {
-	ID                    uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID                uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
-	MoodEntryID           uint      `gorm:"column:mood_entry_id;type:bigint" json:"mood_entry_id"`
-	JournalID             uint      `gorm:"column:journal_id;type:bigint" json:"journal_id"`
-	PlutchikEmotionID     int       `gorm:"column:plutchik_emotion_id;type:integer;not null" json:"plutchik_emotion_id"`
-	Intensity             int       `gorm:"column:intensity;type:integer" json:"intensity"`
-	DetectedCombinationID int       `gorm:"column:detected_combination_id;type:integer" json:"detected_combination_id"`
-	IsAiDetected          bool      `gorm:"column:is_ai_detected;type:boolean" json:"is_ai_detected"`
-	RecordedAt            time.Time `gorm:"column:recorded_at;type:timestamp without time zone;default:now()" json:"recorded_at"`
+	ID                    uint                  `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	UserID                uint                  `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	MoodEntryID           uint                  `gorm:"column:mood_entry_id;type:bigint" json:"mood_entry_id"`
+	JournalID             uint                  `gorm:"column:journal_id;type:bigint" json:"journal_id"`
+	PlutchikEmotionID     int                   `gorm:"column:plutchik_emotion_id;type:integer;not null" json:"plutchik_emotion_id"`
+	Intensity             int                   `gorm:"column:intensity;type:integer" json:"intensity"`
+	DetectedCombinationID int                   `gorm:"column:detected_combination_id;type:integer" json:"detected_combination_id"`
+	IsAiDetected          bool                  `gorm:"column:is_ai_detected;type:boolean" json:"is_ai_detected"`
+	RecordedAt            time.Time             `gorm:"column:recorded_at;type:timestamp without time zone;default:now()" json:"recorded_at"`
+	User                  *Users                `gorm:"foreignKey:user_id;references:id" json:"User"`
+	MoodEntry             *MoodEntries          `gorm:"foreignKey:mood_entry_id;references:id" json:"MoodEntry"`
+	Journal               *Journals             `gorm:"foreignKey:journal_id;references:id" json:"Journal"`
+	PlutchikEmotion       *PlutchikEmotions     `gorm:"foreignKey:plutchik_emotion_id;references:id" json:"PlutchikEmotion"`
+	DetectedCombination   *PlutchikCombinations `gorm:"foreignKey:detected_combination_id;references:id" json:"DetectedCombination"`
 }
 
 // TableName UserEmotionWheel's table name

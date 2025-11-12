@@ -12,15 +12,17 @@ const TableNameValueReflections = "mindstep.value_reflections"
 
 // ValueReflections mapped from table <mindstep.value_reflections>
 type ValueReflections struct {
-	ID             uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID         uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
-	ValueID        uint      `gorm:"column:value_id;type:bigint;not null" json:"value_id"`
-	SourceType     string    `gorm:"column:source_type;type:character varying(20);not null" json:"source_type"`
-	SourceID       uint      `gorm:"column:source_id;type:bigint" json:"source_id"`
-	ReflectionDate time.Time `gorm:"column:reflection_date;type:date;not null;default:CURRENT_DATE" json:"reflection_date"`
-	AlignmentScore int       `gorm:"column:alignment_score;type:integer" json:"alignment_score"`
-	Notes          string    `gorm:"column:notes;type:text" json:"notes"`
-	CreatedAt      time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	ID             uint        `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	UserID         uint        `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	ValueID        uint        `gorm:"column:value_id;type:bigint;not null" json:"value_id"`
+	SourceType     string      `gorm:"column:source_type;type:character varying(20);not null" json:"source_type"`
+	SourceID       uint        `gorm:"column:source_id;type:bigint" json:"source_id"`
+	ReflectionDate time.Time   `gorm:"column:reflection_date;type:date;not null;default:CURRENT_DATE" json:"reflection_date"`
+	AlignmentScore int         `gorm:"column:alignment_score;type:integer" json:"alignment_score"`
+	Notes          string      `gorm:"column:notes;type:text" json:"notes"`
+	CreatedAt      time.Time   `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	User           *Users      `gorm:"foreignKey:user_id;references:id" json:"User"`
+	Value          *CoreValues `gorm:"foreignKey:value_id;references:id" json:"Value"`
 }
 
 // TableName ValueReflections's table name

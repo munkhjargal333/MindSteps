@@ -7,6 +7,7 @@ import {
   UserStreak,
   MoodCategory,
   Mood,
+  PlutchikMood,
   MoodEntry,
   Goal,
   Lesson,
@@ -423,15 +424,15 @@ class APIClient {
   
   async getMoodCategories(token?: string) {
     const { data } = await this.axiosInstance.get<MoodCategory[]>(
-      '/moods/categories',
+      'moods/types/categories',
       this.getConfig(token)
     );
     return data;
   }
 
   async getMoodsByCategory(categoryId: number, token?: string) {
-    const { data } = await this.axiosInstance.get<Mood[]>(
-      `/moods/categories/${categoryId}`,
+    const { data } = await this.axiosInstance.get<PlutchikMood[]>(
+      `/moods/types/categories/${categoryId}`,
       this.getConfig(token)
     );
     return data;
@@ -476,6 +477,7 @@ class APIClient {
 
   async createMoodEntry(moodData: {
     mood_id: number;
+    plutchik_id?: number;
     intensity: number;
     when_felt?: string;
     trigger_event?: string;

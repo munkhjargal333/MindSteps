@@ -25,6 +25,8 @@ type UserLessonProgress struct {
 	IsBookmarked       bool      `gorm:"column:is_bookmarked;type:boolean" json:"is_bookmarked"`
 	CreatedAt          time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
 	UpdatedAt          time.Time `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	Lesson             *Lessons  `gorm:"foreignKey:lesson_id;references:id" json:"Lesson"`
+	User               *Users    `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName UserLessonProgress's table name

@@ -12,14 +12,15 @@ const TableNameMoods = "mindstep.moods"
 
 // Moods mapped from table <mindstep.moods>
 type Moods struct {
-	ID             int       `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
-	CategoryID     int       `gorm:"column:category_id;type:integer;not null" json:"category_id"`
-	NameEn         string    `gorm:"column:name_en;type:character varying(50);not null" json:"name_en"`
-	NameMn         string    `gorm:"column:name_mn;type:character varying(50);not null" json:"name_mn"`
-	Description    string    `gorm:"column:description;type:text" json:"description"`
-	IntensityLevel int       `gorm:"column:intensity_level;type:integer" json:"intensity_level"`
-	Emoji          string    `gorm:"column:emoji;type:character varying(10)" json:"emoji"`
-	CreatedAt      time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	ID             int             `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
+	CategoryID     int             `gorm:"column:category_id;type:integer;not null" json:"category_id"`
+	NameEn         string          `gorm:"column:name_en;type:character varying(50);not null" json:"name_en"`
+	NameMn         string          `gorm:"column:name_mn;type:character varying(50);not null" json:"name_mn"`
+	Description    string          `gorm:"column:description;type:text" json:"description"`
+	IntensityLevel int             `gorm:"column:intensity_level;type:integer" json:"intensity_level"`
+	Emoji          string          `gorm:"column:emoji;type:character varying(10)" json:"emoji"`
+	CreatedAt      time.Time       `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	Category       *MoodCategories `gorm:"foreignKey:category_id;references:id" json:"Category"`
 }
 
 // TableName Moods's table name

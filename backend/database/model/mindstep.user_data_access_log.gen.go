@@ -12,17 +12,20 @@ const TableNameUserDataAccessLog = "mindstep.user_data_access_log"
 
 // UserDataAccessLog mapped from table <mindstep.user_data_access_log>
 type UserDataAccessLog struct {
-	ID           uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID       uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
-	AccessedByID uint      `gorm:"column:accessed_by_id;type:bigint;not null" json:"accessed_by_id"`
-	AccessType   string    `gorm:"column:access_type;type:character varying(50)" json:"access_type"`
-	TableName_   string    `gorm:"column:table_name;type:character varying(100)" json:"table_name"`
-	RecordID     uint      `gorm:"column:record_id;type:bigint" json:"record_id"`
-	AccessReason string    `gorm:"column:access_reason;type:character varying(100)" json:"access_reason"`
-	IPAddress    string    `gorm:"column:ip_address;type:inet" json:"ip_address"`
-	UserAgent    string    `gorm:"column:user_agent;type:text" json:"user_agent"`
-	SessionID    uint      `gorm:"column:session_id;type:bigint" json:"session_id"`
-	AccessedAt   time.Time `gorm:"column:accessed_at;type:timestamp without time zone;default:now()" json:"accessed_at"`
+	ID           uint          `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	UserID       uint          `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	AccessedByID uint          `gorm:"column:accessed_by_id;type:bigint;not null" json:"accessed_by_id"`
+	AccessType   string        `gorm:"column:access_type;type:character varying(50)" json:"access_type"`
+	TableName_   string        `gorm:"column:table_name;type:character varying(100)" json:"table_name"`
+	RecordID     uint          `gorm:"column:record_id;type:bigint" json:"record_id"`
+	AccessReason string        `gorm:"column:access_reason;type:character varying(100)" json:"access_reason"`
+	IPAddress    string        `gorm:"column:ip_address;type:inet" json:"ip_address"`
+	UserAgent    string        `gorm:"column:user_agent;type:text" json:"user_agent"`
+	SessionID    uint          `gorm:"column:session_id;type:bigint" json:"session_id"`
+	AccessedAt   time.Time     `gorm:"column:accessed_at;type:timestamp without time zone;default:now()" json:"accessed_at"`
+	User         *Users        `gorm:"foreignKey:user_id;references:id" json:"User"`
+	AccessedBy   *Users        `gorm:"foreignKey:accessed_by_id;references:id" json:"AccessedBy"`
+	Session      *UserSessions `gorm:"foreignKey:session_id;references:id" json:"Session"`
 }
 
 // TableName UserDataAccessLog's table name

@@ -36,6 +36,65 @@ func newUserEmotionWheel(db *gorm.DB, opts ...gen.DOOption) userEmotionWheel {
 	_userEmotionWheel.DetectedCombinationID = field.NewInt(tableName, "detected_combination_id")
 	_userEmotionWheel.IsAiDetected = field.NewBool(tableName, "is_ai_detected")
 	_userEmotionWheel.RecordedAt = field.NewTime(tableName, "recorded_at")
+	_userEmotionWheel.User = userEmotionWheelBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_userEmotionWheel.MoodEntry = userEmotionWheelBelongsToMoodEntry{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("MoodEntry", "model.MoodEntries"),
+		User: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("MoodEntry.User", "model.Users"),
+		},
+		MoodCategories: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("MoodEntry.MoodCategories", "model.MoodCategories"),
+		},
+		PlutchikEmotions: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("MoodEntry.PlutchikEmotions", "model.PlutchikEmotions"),
+		},
+	}
+
+	_userEmotionWheel.Journal = userEmotionWheelBelongsToJournal{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Journal", "model.Journals"),
+		User: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Journal.User", "model.Users"),
+		},
+	}
+
+	_userEmotionWheel.PlutchikEmotion = userEmotionWheelBelongsToPlutchikEmotion{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("PlutchikEmotion", "model.PlutchikEmotions"),
+	}
+
+	_userEmotionWheel.DetectedCombination = userEmotionWheelBelongsToDetectedCombination{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("DetectedCombination", "model.PlutchikCombinations"),
+		Emotion1: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("DetectedCombination.Emotion1", "model.PlutchikEmotions"),
+		},
+		Emotion2: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("DetectedCombination.Emotion2", "model.PlutchikEmotions"),
+		},
+	}
 
 	_userEmotionWheel.fillFieldMap()
 
@@ -55,6 +114,15 @@ type userEmotionWheel struct {
 	DetectedCombinationID field.Int
 	IsAiDetected          field.Bool
 	RecordedAt            field.Time
+	User                  userEmotionWheelBelongsToUser
+
+	MoodEntry userEmotionWheelBelongsToMoodEntry
+
+	Journal userEmotionWheelBelongsToJournal
+
+	PlutchikEmotion userEmotionWheelBelongsToPlutchikEmotion
+
+	DetectedCombination userEmotionWheelBelongsToDetectedCombination
 
 	fieldMap map[string]field.Expr
 }
@@ -108,7 +176,7 @@ func (u *userEmotionWheel) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (u *userEmotionWheel) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 9)
+	u.fieldMap = make(map[string]field.Expr, 14)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["user_id"] = u.UserID
 	u.fieldMap["mood_entry_id"] = u.MoodEntryID
@@ -118,16 +186,458 @@ func (u *userEmotionWheel) fillFieldMap() {
 	u.fieldMap["detected_combination_id"] = u.DetectedCombinationID
 	u.fieldMap["is_ai_detected"] = u.IsAiDetected
 	u.fieldMap["recorded_at"] = u.RecordedAt
+
 }
 
 func (u userEmotionWheel) clone(db *gorm.DB) userEmotionWheel {
 	u.userEmotionWheelDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.User.db = db.Session(&gorm.Session{Initialized: true})
+	u.User.db.Statement.ConnPool = db.Statement.ConnPool
+	u.MoodEntry.db = db.Session(&gorm.Session{Initialized: true})
+	u.MoodEntry.db.Statement.ConnPool = db.Statement.ConnPool
+	u.Journal.db = db.Session(&gorm.Session{Initialized: true})
+	u.Journal.db.Statement.ConnPool = db.Statement.ConnPool
+	u.PlutchikEmotion.db = db.Session(&gorm.Session{Initialized: true})
+	u.PlutchikEmotion.db.Statement.ConnPool = db.Statement.ConnPool
+	u.DetectedCombination.db = db.Session(&gorm.Session{Initialized: true})
+	u.DetectedCombination.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u userEmotionWheel) replaceDB(db *gorm.DB) userEmotionWheel {
 	u.userEmotionWheelDo.ReplaceDB(db)
+	u.User.db = db.Session(&gorm.Session{})
+	u.MoodEntry.db = db.Session(&gorm.Session{})
+	u.Journal.db = db.Session(&gorm.Session{})
+	u.PlutchikEmotion.db = db.Session(&gorm.Session{})
+	u.DetectedCombination.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type userEmotionWheelBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userEmotionWheelBelongsToUser) Where(conds ...field.Expr) *userEmotionWheelBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userEmotionWheelBelongsToUser) WithContext(ctx context.Context) *userEmotionWheelBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userEmotionWheelBelongsToUser) Session(session *gorm.Session) *userEmotionWheelBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userEmotionWheelBelongsToUser) Model(m *model.UserEmotionWheel) *userEmotionWheelBelongsToUserTx {
+	return &userEmotionWheelBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userEmotionWheelBelongsToUser) Unscoped() *userEmotionWheelBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userEmotionWheelBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a userEmotionWheelBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userEmotionWheelBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userEmotionWheelBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userEmotionWheelBelongsToUserTx) Unscoped() *userEmotionWheelBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type userEmotionWheelBelongsToMoodEntry struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	User struct {
+		field.RelationField
+	}
+	MoodCategories struct {
+		field.RelationField
+	}
+	PlutchikEmotions struct {
+		field.RelationField
+	}
+}
+
+func (a userEmotionWheelBelongsToMoodEntry) Where(conds ...field.Expr) *userEmotionWheelBelongsToMoodEntry {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userEmotionWheelBelongsToMoodEntry) WithContext(ctx context.Context) *userEmotionWheelBelongsToMoodEntry {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userEmotionWheelBelongsToMoodEntry) Session(session *gorm.Session) *userEmotionWheelBelongsToMoodEntry {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userEmotionWheelBelongsToMoodEntry) Model(m *model.UserEmotionWheel) *userEmotionWheelBelongsToMoodEntryTx {
+	return &userEmotionWheelBelongsToMoodEntryTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userEmotionWheelBelongsToMoodEntry) Unscoped() *userEmotionWheelBelongsToMoodEntry {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userEmotionWheelBelongsToMoodEntryTx struct{ tx *gorm.Association }
+
+func (a userEmotionWheelBelongsToMoodEntryTx) Find() (result *model.MoodEntries, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userEmotionWheelBelongsToMoodEntryTx) Append(values ...*model.MoodEntries) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToMoodEntryTx) Replace(values ...*model.MoodEntries) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToMoodEntryTx) Delete(values ...*model.MoodEntries) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToMoodEntryTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userEmotionWheelBelongsToMoodEntryTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userEmotionWheelBelongsToMoodEntryTx) Unscoped() *userEmotionWheelBelongsToMoodEntryTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type userEmotionWheelBelongsToJournal struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	User struct {
+		field.RelationField
+	}
+}
+
+func (a userEmotionWheelBelongsToJournal) Where(conds ...field.Expr) *userEmotionWheelBelongsToJournal {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userEmotionWheelBelongsToJournal) WithContext(ctx context.Context) *userEmotionWheelBelongsToJournal {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userEmotionWheelBelongsToJournal) Session(session *gorm.Session) *userEmotionWheelBelongsToJournal {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userEmotionWheelBelongsToJournal) Model(m *model.UserEmotionWheel) *userEmotionWheelBelongsToJournalTx {
+	return &userEmotionWheelBelongsToJournalTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userEmotionWheelBelongsToJournal) Unscoped() *userEmotionWheelBelongsToJournal {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userEmotionWheelBelongsToJournalTx struct{ tx *gorm.Association }
+
+func (a userEmotionWheelBelongsToJournalTx) Find() (result *model.Journals, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userEmotionWheelBelongsToJournalTx) Append(values ...*model.Journals) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToJournalTx) Replace(values ...*model.Journals) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToJournalTx) Delete(values ...*model.Journals) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToJournalTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userEmotionWheelBelongsToJournalTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userEmotionWheelBelongsToJournalTx) Unscoped() *userEmotionWheelBelongsToJournalTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type userEmotionWheelBelongsToPlutchikEmotion struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotion) Where(conds ...field.Expr) *userEmotionWheelBelongsToPlutchikEmotion {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotion) WithContext(ctx context.Context) *userEmotionWheelBelongsToPlutchikEmotion {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotion) Session(session *gorm.Session) *userEmotionWheelBelongsToPlutchikEmotion {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotion) Model(m *model.UserEmotionWheel) *userEmotionWheelBelongsToPlutchikEmotionTx {
+	return &userEmotionWheelBelongsToPlutchikEmotionTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotion) Unscoped() *userEmotionWheelBelongsToPlutchikEmotion {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userEmotionWheelBelongsToPlutchikEmotionTx struct{ tx *gorm.Association }
+
+func (a userEmotionWheelBelongsToPlutchikEmotionTx) Find() (result *model.PlutchikEmotions, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotionTx) Append(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotionTx) Replace(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotionTx) Delete(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotionTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotionTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userEmotionWheelBelongsToPlutchikEmotionTx) Unscoped() *userEmotionWheelBelongsToPlutchikEmotionTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type userEmotionWheelBelongsToDetectedCombination struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	Emotion1 struct {
+		field.RelationField
+	}
+	Emotion2 struct {
+		field.RelationField
+	}
+}
+
+func (a userEmotionWheelBelongsToDetectedCombination) Where(conds ...field.Expr) *userEmotionWheelBelongsToDetectedCombination {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userEmotionWheelBelongsToDetectedCombination) WithContext(ctx context.Context) *userEmotionWheelBelongsToDetectedCombination {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userEmotionWheelBelongsToDetectedCombination) Session(session *gorm.Session) *userEmotionWheelBelongsToDetectedCombination {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userEmotionWheelBelongsToDetectedCombination) Model(m *model.UserEmotionWheel) *userEmotionWheelBelongsToDetectedCombinationTx {
+	return &userEmotionWheelBelongsToDetectedCombinationTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userEmotionWheelBelongsToDetectedCombination) Unscoped() *userEmotionWheelBelongsToDetectedCombination {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userEmotionWheelBelongsToDetectedCombinationTx struct{ tx *gorm.Association }
+
+func (a userEmotionWheelBelongsToDetectedCombinationTx) Find() (result *model.PlutchikCombinations, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userEmotionWheelBelongsToDetectedCombinationTx) Append(values ...*model.PlutchikCombinations) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToDetectedCombinationTx) Replace(values ...*model.PlutchikCombinations) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToDetectedCombinationTx) Delete(values ...*model.PlutchikCombinations) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userEmotionWheelBelongsToDetectedCombinationTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userEmotionWheelBelongsToDetectedCombinationTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userEmotionWheelBelongsToDetectedCombinationTx) Unscoped() *userEmotionWheelBelongsToDetectedCombinationTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type userEmotionWheelDo struct{ gen.DO }

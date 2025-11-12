@@ -41,6 +41,11 @@ func newNotifications(db *gorm.DB, opts ...gen.DOOption) notifications {
 	_notifications.Metadata = field.NewField(tableName, "metadata")
 	_notifications.Priority = field.NewString(tableName, "priority")
 	_notifications.CreatedAt = field.NewTime(tableName, "created_at")
+	_notifications.User = notificationsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_notifications.fillFieldMap()
 
@@ -65,6 +70,7 @@ type notifications struct {
 	Metadata         field.Field
 	Priority         field.String
 	CreatedAt        field.Time
+	User             notificationsBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -123,7 +129,7 @@ func (n *notifications) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (n *notifications) fillFieldMap() {
-	n.fieldMap = make(map[string]field.Expr, 14)
+	n.fieldMap = make(map[string]field.Expr, 15)
 	n.fieldMap["id"] = n.ID
 	n.fieldMap["user_id"] = n.UserID
 	n.fieldMap["notification_type"] = n.NotificationType
@@ -138,16 +144,101 @@ func (n *notifications) fillFieldMap() {
 	n.fieldMap["metadata"] = n.Metadata
 	n.fieldMap["priority"] = n.Priority
 	n.fieldMap["created_at"] = n.CreatedAt
+
 }
 
 func (n notifications) clone(db *gorm.DB) notifications {
 	n.notificationsDo.ReplaceConnPool(db.Statement.ConnPool)
+	n.User.db = db.Session(&gorm.Session{Initialized: true})
+	n.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return n
 }
 
 func (n notifications) replaceDB(db *gorm.DB) notifications {
 	n.notificationsDo.ReplaceDB(db)
+	n.User.db = db.Session(&gorm.Session{})
 	return n
+}
+
+type notificationsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a notificationsBelongsToUser) Where(conds ...field.Expr) *notificationsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a notificationsBelongsToUser) WithContext(ctx context.Context) *notificationsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a notificationsBelongsToUser) Session(session *gorm.Session) *notificationsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a notificationsBelongsToUser) Model(m *model.Notifications) *notificationsBelongsToUserTx {
+	return &notificationsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a notificationsBelongsToUser) Unscoped() *notificationsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type notificationsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a notificationsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a notificationsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a notificationsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a notificationsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a notificationsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a notificationsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a notificationsBelongsToUserTx) Unscoped() *notificationsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type notificationsDo struct{ gen.DO }

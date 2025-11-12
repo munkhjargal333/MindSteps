@@ -34,6 +34,33 @@ func newRoleOwners(db *gorm.DB, opts ...gen.DOOption) roleOwners {
 	_roleOwners.AssignedByID = field.NewUint(tableName, "assigned_by_id")
 	_roleOwners.CreatedAt = field.NewTime(tableName, "created_at")
 	_roleOwners.RevokedAt = field.NewTime(tableName, "revoked_at")
+	_roleOwners.Role = roleOwnersBelongsToRole{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Role", "model.Roles"),
+		CreatedBy: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Role.CreatedBy", "model.Users"),
+		},
+		UpdatedBy: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Role.UpdatedBy", "model.Users"),
+		},
+	}
+
+	_roleOwners.Owner = roleOwnersBelongsToOwner{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Owner", "model.Users"),
+	}
+
+	_roleOwners.AssignedBy = roleOwnersBelongsToAssignedBy{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("AssignedBy", "model.Users"),
+	}
 
 	_roleOwners.fillFieldMap()
 
@@ -51,6 +78,11 @@ type roleOwners struct {
 	AssignedByID field.Uint
 	CreatedAt    field.Time
 	RevokedAt    field.Time
+	Role         roleOwnersBelongsToRole
+
+	Owner roleOwnersBelongsToOwner
+
+	AssignedBy roleOwnersBelongsToAssignedBy
 
 	fieldMap map[string]field.Expr
 }
@@ -100,7 +132,7 @@ func (r *roleOwners) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (r *roleOwners) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 7)
+	r.fieldMap = make(map[string]field.Expr, 10)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["role_id"] = r.RoleID
 	r.fieldMap["owner_id"] = r.OwnerID
@@ -108,16 +140,276 @@ func (r *roleOwners) fillFieldMap() {
 	r.fieldMap["assigned_by_id"] = r.AssignedByID
 	r.fieldMap["created_at"] = r.CreatedAt
 	r.fieldMap["revoked_at"] = r.RevokedAt
+
 }
 
 func (r roleOwners) clone(db *gorm.DB) roleOwners {
 	r.roleOwnersDo.ReplaceConnPool(db.Statement.ConnPool)
+	r.Role.db = db.Session(&gorm.Session{Initialized: true})
+	r.Role.db.Statement.ConnPool = db.Statement.ConnPool
+	r.Owner.db = db.Session(&gorm.Session{Initialized: true})
+	r.Owner.db.Statement.ConnPool = db.Statement.ConnPool
+	r.AssignedBy.db = db.Session(&gorm.Session{Initialized: true})
+	r.AssignedBy.db.Statement.ConnPool = db.Statement.ConnPool
 	return r
 }
 
 func (r roleOwners) replaceDB(db *gorm.DB) roleOwners {
 	r.roleOwnersDo.ReplaceDB(db)
+	r.Role.db = db.Session(&gorm.Session{})
+	r.Owner.db = db.Session(&gorm.Session{})
+	r.AssignedBy.db = db.Session(&gorm.Session{})
 	return r
+}
+
+type roleOwnersBelongsToRole struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	CreatedBy struct {
+		field.RelationField
+	}
+	UpdatedBy struct {
+		field.RelationField
+	}
+}
+
+func (a roleOwnersBelongsToRole) Where(conds ...field.Expr) *roleOwnersBelongsToRole {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a roleOwnersBelongsToRole) WithContext(ctx context.Context) *roleOwnersBelongsToRole {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a roleOwnersBelongsToRole) Session(session *gorm.Session) *roleOwnersBelongsToRole {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a roleOwnersBelongsToRole) Model(m *model.RoleOwners) *roleOwnersBelongsToRoleTx {
+	return &roleOwnersBelongsToRoleTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a roleOwnersBelongsToRole) Unscoped() *roleOwnersBelongsToRole {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type roleOwnersBelongsToRoleTx struct{ tx *gorm.Association }
+
+func (a roleOwnersBelongsToRoleTx) Find() (result *model.Roles, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a roleOwnersBelongsToRoleTx) Append(values ...*model.Roles) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a roleOwnersBelongsToRoleTx) Replace(values ...*model.Roles) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a roleOwnersBelongsToRoleTx) Delete(values ...*model.Roles) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a roleOwnersBelongsToRoleTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a roleOwnersBelongsToRoleTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a roleOwnersBelongsToRoleTx) Unscoped() *roleOwnersBelongsToRoleTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type roleOwnersBelongsToOwner struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a roleOwnersBelongsToOwner) Where(conds ...field.Expr) *roleOwnersBelongsToOwner {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a roleOwnersBelongsToOwner) WithContext(ctx context.Context) *roleOwnersBelongsToOwner {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a roleOwnersBelongsToOwner) Session(session *gorm.Session) *roleOwnersBelongsToOwner {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a roleOwnersBelongsToOwner) Model(m *model.RoleOwners) *roleOwnersBelongsToOwnerTx {
+	return &roleOwnersBelongsToOwnerTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a roleOwnersBelongsToOwner) Unscoped() *roleOwnersBelongsToOwner {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type roleOwnersBelongsToOwnerTx struct{ tx *gorm.Association }
+
+func (a roleOwnersBelongsToOwnerTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a roleOwnersBelongsToOwnerTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a roleOwnersBelongsToOwnerTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a roleOwnersBelongsToOwnerTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a roleOwnersBelongsToOwnerTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a roleOwnersBelongsToOwnerTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a roleOwnersBelongsToOwnerTx) Unscoped() *roleOwnersBelongsToOwnerTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type roleOwnersBelongsToAssignedBy struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a roleOwnersBelongsToAssignedBy) Where(conds ...field.Expr) *roleOwnersBelongsToAssignedBy {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a roleOwnersBelongsToAssignedBy) WithContext(ctx context.Context) *roleOwnersBelongsToAssignedBy {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a roleOwnersBelongsToAssignedBy) Session(session *gorm.Session) *roleOwnersBelongsToAssignedBy {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a roleOwnersBelongsToAssignedBy) Model(m *model.RoleOwners) *roleOwnersBelongsToAssignedByTx {
+	return &roleOwnersBelongsToAssignedByTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a roleOwnersBelongsToAssignedBy) Unscoped() *roleOwnersBelongsToAssignedBy {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type roleOwnersBelongsToAssignedByTx struct{ tx *gorm.Association }
+
+func (a roleOwnersBelongsToAssignedByTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a roleOwnersBelongsToAssignedByTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a roleOwnersBelongsToAssignedByTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a roleOwnersBelongsToAssignedByTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a roleOwnersBelongsToAssignedByTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a roleOwnersBelongsToAssignedByTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a roleOwnersBelongsToAssignedByTx) Unscoped() *roleOwnersBelongsToAssignedByTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type roleOwnersDo struct{ gen.DO }

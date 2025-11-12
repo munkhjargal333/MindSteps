@@ -22,6 +22,7 @@ type UserStreaks struct {
 	TotalActivities  int       `gorm:"column:total_activities;type:integer" json:"total_activities"`
 	CreatedAt        time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
 	UpdatedAt        time.Time `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	User             *Users    `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName UserStreaks's table name

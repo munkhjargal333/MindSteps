@@ -13,7 +13,7 @@ type MoodService interface {
 	Update(id uint, form *form.MoodForm) (*model.Moods, error)
 	Delete(id uint) error
 	List(page, limit int) ([]model.Moods, int64, error)
-	ListByCategoryID(categoryID int) ([]model.Moods, error)
+	ListByCategoryID(categoryID int) ([]model.PlutchikEmotions, error)
 }
 
 type moodService struct {
@@ -102,6 +102,6 @@ func (s *moodService) List(page, limit int) ([]model.Moods, int64, error) {
 }
 
 // List moods by category ID
-func (s *moodService) ListByCategoryID(categoryID int) ([]model.Moods, error) {
+func (s *moodService) ListByCategoryID(categoryID int) ([]model.PlutchikEmotions, error) {
 	return s.repo.ListByCategoryID(categoryID)
 }

@@ -20,10 +20,10 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
 
-    // ✅ Дүрмүүдийг энд нэмж бичнэ
     rules: {
       "@typescript-eslint/no-explicit-any": "off", // эсвэл "warn"
-      "@typescript-eslint/no-unused-vars": "warn", // compile зогсоохгүй зөвхөн анхааруулна
+      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+      "react/no-unescaped-entities": "off",
     },
   },
 ];

@@ -37,6 +37,11 @@ func newSystemSettings(db *gorm.DB, opts ...gen.DOOption) systemSettings {
 	_systemSettings.UpdatedByID = field.NewUint(tableName, "updated_by_id")
 	_systemSettings.CreatedAt = field.NewTime(tableName, "created_at")
 	_systemSettings.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_systemSettings.UpdatedBy = systemSettingsBelongsToUpdatedBy{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("UpdatedBy", "model.Users"),
+	}
 
 	_systemSettings.fillFieldMap()
 
@@ -57,6 +62,7 @@ type systemSettings struct {
 	UpdatedByID  field.Uint
 	CreatedAt    field.Time
 	UpdatedAt    field.Time
+	UpdatedBy    systemSettingsBelongsToUpdatedBy
 
 	fieldMap map[string]field.Expr
 }
@@ -111,7 +117,7 @@ func (s *systemSettings) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (s *systemSettings) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 10)
+	s.fieldMap = make(map[string]field.Expr, 11)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["setting_key"] = s.SettingKey
 	s.fieldMap["setting_value"] = s.SettingValue
@@ -122,16 +128,101 @@ func (s *systemSettings) fillFieldMap() {
 	s.fieldMap["updated_by_id"] = s.UpdatedByID
 	s.fieldMap["created_at"] = s.CreatedAt
 	s.fieldMap["updated_at"] = s.UpdatedAt
+
 }
 
 func (s systemSettings) clone(db *gorm.DB) systemSettings {
 	s.systemSettingsDo.ReplaceConnPool(db.Statement.ConnPool)
+	s.UpdatedBy.db = db.Session(&gorm.Session{Initialized: true})
+	s.UpdatedBy.db.Statement.ConnPool = db.Statement.ConnPool
 	return s
 }
 
 func (s systemSettings) replaceDB(db *gorm.DB) systemSettings {
 	s.systemSettingsDo.ReplaceDB(db)
+	s.UpdatedBy.db = db.Session(&gorm.Session{})
 	return s
+}
+
+type systemSettingsBelongsToUpdatedBy struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a systemSettingsBelongsToUpdatedBy) Where(conds ...field.Expr) *systemSettingsBelongsToUpdatedBy {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a systemSettingsBelongsToUpdatedBy) WithContext(ctx context.Context) *systemSettingsBelongsToUpdatedBy {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a systemSettingsBelongsToUpdatedBy) Session(session *gorm.Session) *systemSettingsBelongsToUpdatedBy {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a systemSettingsBelongsToUpdatedBy) Model(m *model.SystemSettings) *systemSettingsBelongsToUpdatedByTx {
+	return &systemSettingsBelongsToUpdatedByTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a systemSettingsBelongsToUpdatedBy) Unscoped() *systemSettingsBelongsToUpdatedBy {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type systemSettingsBelongsToUpdatedByTx struct{ tx *gorm.Association }
+
+func (a systemSettingsBelongsToUpdatedByTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a systemSettingsBelongsToUpdatedByTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a systemSettingsBelongsToUpdatedByTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a systemSettingsBelongsToUpdatedByTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a systemSettingsBelongsToUpdatedByTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a systemSettingsBelongsToUpdatedByTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a systemSettingsBelongsToUpdatedByTx) Unscoped() *systemSettingsBelongsToUpdatedByTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type systemSettingsDo struct{ gen.DO }

@@ -25,7 +25,7 @@ export default function JournalDetailPage() {
       setJournal(data);
     } catch (error) {
       console.error('Error loading journal:', error);
-      alert('Журнал ачаалахад алдаа гарлаа');
+      alert('Тэмдэглэл ачаалахад алдаа гарлаа');
       router.push('/journal');
     } finally {
       setLoading(false);
@@ -41,18 +41,18 @@ export default function JournalDetailPage() {
   const handleDelete = async () => {
     if (!token || !journalId) return;
     
-    const confirmed = confirm('Энэ журналыг устгахдаа итгэлтэй байна уу?');
+    const confirmed = confirm('Энэ тэмдэглийг устгахдаа итгэлтэй байна уу?');
     if (!confirmed) return;
     
     setDeleting(true);
     
     try {
       await apiClient.deleteJournal(journalId, token);
-      alert('Журнал амжилттай устгагдлаа');
+      alert('Тэмдэглэл амжилттай устгагдлаа');
       router.push('/journal');
     } catch (error) {
       console.error('Error deleting journal:', error);
-      alert('Журнал устгахад алдаа гарлаа');
+      alert('Тэмдэглэл устгахад алдаа гарлаа');
       setDeleting(false);
     }
   };
@@ -81,7 +81,7 @@ export default function JournalDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
         <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <div className="text-base sm:text-lg text-gray-600">Журнал ачаалж байна...</div>
+        <div className="text-base sm:text-lg text-gray-600">Тэмдэглэл ачаалж байна...</div>
       </div>
     );
   }
@@ -91,7 +91,7 @@ export default function JournalDetailPage() {
       <div className="text-center py-16 px-4">
         <div className="text-5xl mb-4">😕</div>
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-4">
-          Журнал олдсонгүй
+          тэмдэглэл олдсонгүй
         </h2>
         <Link
           href="/journal"

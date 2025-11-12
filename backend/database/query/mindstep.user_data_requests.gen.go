@@ -47,6 +47,17 @@ func newUserDataRequests(db *gorm.DB, opts ...gen.DOOption) userDataRequests {
 	_userDataRequests.Notes = field.NewString(tableName, "notes")
 	_userDataRequests.ErrorMessage = field.NewString(tableName, "error_message")
 	_userDataRequests.CreatedAt = field.NewTime(tableName, "created_at")
+	_userDataRequests.User = userDataRequestsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_userDataRequests.ProcessedBy = userDataRequestsBelongsToProcessedBy{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("ProcessedBy", "model.Users"),
+	}
 
 	_userDataRequests.fillFieldMap()
 
@@ -77,6 +88,9 @@ type userDataRequests struct {
 	Notes               field.String
 	ErrorMessage        field.String
 	CreatedAt           field.Time
+	User                userDataRequestsBelongsToUser
+
+	ProcessedBy userDataRequestsBelongsToProcessedBy
 
 	fieldMap map[string]field.Expr
 }
@@ -141,7 +155,7 @@ func (u *userDataRequests) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (u *userDataRequests) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 20)
+	u.fieldMap = make(map[string]field.Expr, 22)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["user_id"] = u.UserID
 	u.fieldMap["request_type"] = u.RequestType
@@ -162,16 +176,185 @@ func (u *userDataRequests) fillFieldMap() {
 	u.fieldMap["notes"] = u.Notes
 	u.fieldMap["error_message"] = u.ErrorMessage
 	u.fieldMap["created_at"] = u.CreatedAt
+
 }
 
 func (u userDataRequests) clone(db *gorm.DB) userDataRequests {
 	u.userDataRequestsDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.User.db = db.Session(&gorm.Session{Initialized: true})
+	u.User.db.Statement.ConnPool = db.Statement.ConnPool
+	u.ProcessedBy.db = db.Session(&gorm.Session{Initialized: true})
+	u.ProcessedBy.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u userDataRequests) replaceDB(db *gorm.DB) userDataRequests {
 	u.userDataRequestsDo.ReplaceDB(db)
+	u.User.db = db.Session(&gorm.Session{})
+	u.ProcessedBy.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type userDataRequestsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userDataRequestsBelongsToUser) Where(conds ...field.Expr) *userDataRequestsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userDataRequestsBelongsToUser) WithContext(ctx context.Context) *userDataRequestsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userDataRequestsBelongsToUser) Session(session *gorm.Session) *userDataRequestsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userDataRequestsBelongsToUser) Model(m *model.UserDataRequests) *userDataRequestsBelongsToUserTx {
+	return &userDataRequestsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userDataRequestsBelongsToUser) Unscoped() *userDataRequestsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userDataRequestsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a userDataRequestsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userDataRequestsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userDataRequestsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userDataRequestsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userDataRequestsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userDataRequestsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userDataRequestsBelongsToUserTx) Unscoped() *userDataRequestsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type userDataRequestsBelongsToProcessedBy struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userDataRequestsBelongsToProcessedBy) Where(conds ...field.Expr) *userDataRequestsBelongsToProcessedBy {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userDataRequestsBelongsToProcessedBy) WithContext(ctx context.Context) *userDataRequestsBelongsToProcessedBy {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userDataRequestsBelongsToProcessedBy) Session(session *gorm.Session) *userDataRequestsBelongsToProcessedBy {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userDataRequestsBelongsToProcessedBy) Model(m *model.UserDataRequests) *userDataRequestsBelongsToProcessedByTx {
+	return &userDataRequestsBelongsToProcessedByTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userDataRequestsBelongsToProcessedBy) Unscoped() *userDataRequestsBelongsToProcessedBy {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userDataRequestsBelongsToProcessedByTx struct{ tx *gorm.Association }
+
+func (a userDataRequestsBelongsToProcessedByTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userDataRequestsBelongsToProcessedByTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userDataRequestsBelongsToProcessedByTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userDataRequestsBelongsToProcessedByTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userDataRequestsBelongsToProcessedByTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userDataRequestsBelongsToProcessedByTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userDataRequestsBelongsToProcessedByTx) Unscoped() *userDataRequestsBelongsToProcessedByTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type userDataRequestsDo struct{ gen.DO }

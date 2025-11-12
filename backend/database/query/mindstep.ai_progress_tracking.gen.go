@@ -46,6 +46,11 @@ func newAIProgressTracking(db *gorm.DB, opts ...gen.DOOption) aIProgressTracking
 	_aIProgressTracking.ImprovementBonusPoints = field.NewInt(tableName, "improvement_bonus_points")
 	_aIProgressTracking.ConsistencyBonusPoints = field.NewInt(tableName, "consistency_bonus_points")
 	_aIProgressTracking.GeneratedAt = field.NewTime(tableName, "generated_at")
+	_aIProgressTracking.User = aIProgressTrackingBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_aIProgressTracking.fillFieldMap()
 
@@ -75,6 +80,7 @@ type aIProgressTracking struct {
 	ImprovementBonusPoints    field.Int
 	ConsistencyBonusPoints    field.Int
 	GeneratedAt               field.Time
+	User                      aIProgressTrackingBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -138,7 +144,7 @@ func (a *aIProgressTracking) GetFieldByName(fieldName string) (field.OrderExpr, 
 }
 
 func (a *aIProgressTracking) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 19)
+	a.fieldMap = make(map[string]field.Expr, 20)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["user_id"] = a.UserID
 	a.fieldMap["analysis_period"] = a.AnalysisPeriod
@@ -158,16 +164,101 @@ func (a *aIProgressTracking) fillFieldMap() {
 	a.fieldMap["improvement_bonus_points"] = a.ImprovementBonusPoints
 	a.fieldMap["consistency_bonus_points"] = a.ConsistencyBonusPoints
 	a.fieldMap["generated_at"] = a.GeneratedAt
+
 }
 
 func (a aIProgressTracking) clone(db *gorm.DB) aIProgressTracking {
 	a.aIProgressTrackingDo.ReplaceConnPool(db.Statement.ConnPool)
+	a.User.db = db.Session(&gorm.Session{Initialized: true})
+	a.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return a
 }
 
 func (a aIProgressTracking) replaceDB(db *gorm.DB) aIProgressTracking {
 	a.aIProgressTrackingDo.ReplaceDB(db)
+	a.User.db = db.Session(&gorm.Session{})
 	return a
+}
+
+type aIProgressTrackingBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a aIProgressTrackingBelongsToUser) Where(conds ...field.Expr) *aIProgressTrackingBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a aIProgressTrackingBelongsToUser) WithContext(ctx context.Context) *aIProgressTrackingBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a aIProgressTrackingBelongsToUser) Session(session *gorm.Session) *aIProgressTrackingBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a aIProgressTrackingBelongsToUser) Model(m *model.AIProgressTracking) *aIProgressTrackingBelongsToUserTx {
+	return &aIProgressTrackingBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a aIProgressTrackingBelongsToUser) Unscoped() *aIProgressTrackingBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type aIProgressTrackingBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a aIProgressTrackingBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a aIProgressTrackingBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a aIProgressTrackingBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a aIProgressTrackingBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a aIProgressTrackingBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a aIProgressTrackingBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a aIProgressTrackingBelongsToUserTx) Unscoped() *aIProgressTrackingBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type aIProgressTrackingDo struct{ gen.DO }

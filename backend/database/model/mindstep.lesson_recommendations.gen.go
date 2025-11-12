@@ -12,17 +12,20 @@ const TableNameLessonRecommendations = "mindstep.lesson_recommendations"
 
 // LessonRecommendations mapped from table <mindstep.lesson_recommendations>
 type LessonRecommendations struct {
-	ID                   uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID               uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
-	LessonID             uint      `gorm:"column:lesson_id;type:bigint;not null" json:"lesson_id"`
-	RecommendationReason string    `gorm:"column:recommendation_reason;type:character varying(50)" json:"recommendation_reason"`
-	RelatedValueID       uint      `gorm:"column:related_value_id;type:bigint" json:"related_value_id"`
-	RelatedPatternID     uint      `gorm:"column:related_pattern_id;type:bigint" json:"related_pattern_id"`
-	PriorityScore        int       `gorm:"column:priority_score;type:integer" json:"priority_score"`
-	IsDismissed          bool      `gorm:"column:is_dismissed;type:boolean" json:"is_dismissed"`
-	DismissedAt          time.Time `gorm:"column:dismissed_at;type:timestamp without time zone" json:"dismissed_at"`
-	ViewedAt             time.Time `gorm:"column:viewed_at;type:timestamp without time zone" json:"viewed_at"`
-	CreatedAt            time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	ID                   uint        `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	UserID               uint        `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	LessonID             uint        `gorm:"column:lesson_id;type:bigint;not null" json:"lesson_id"`
+	RecommendationReason string      `gorm:"column:recommendation_reason;type:character varying(50)" json:"recommendation_reason"`
+	RelatedValueID       uint        `gorm:"column:related_value_id;type:bigint" json:"related_value_id"`
+	RelatedPatternID     uint        `gorm:"column:related_pattern_id;type:bigint" json:"related_pattern_id"`
+	PriorityScore        int         `gorm:"column:priority_score;type:integer" json:"priority_score"`
+	IsDismissed          bool        `gorm:"column:is_dismissed;type:boolean" json:"is_dismissed"`
+	DismissedAt          time.Time   `gorm:"column:dismissed_at;type:timestamp without time zone" json:"dismissed_at"`
+	ViewedAt             time.Time   `gorm:"column:viewed_at;type:timestamp without time zone" json:"viewed_at"`
+	CreatedAt            time.Time   `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	User                 *Users      `gorm:"foreignKey:user_id;references:id" json:"User"`
+	Lesson               *Lessons    `gorm:"foreignKey:lesson_id;references:id" json:"Lesson"`
+	RelatedValue         *CoreValues `gorm:"foreignKey:related_value_id;references:id" json:"RelatedValue"`
 }
 
 // TableName LessonRecommendations's table name

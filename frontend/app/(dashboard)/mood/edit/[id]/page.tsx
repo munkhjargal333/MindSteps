@@ -5,11 +5,11 @@ import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { MoodEntry } from '@/lib/types';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
-// Artifact-аас MoodListPage функцийг copy хийнэ
 
 // ==================== EDIT MOOD PAGE ====================
-export function EditMoodPage({ id }: { id: number }) {
+export default function EditMoodPage() {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -21,6 +21,8 @@ export function EditMoodPage({ id }: { id: number }) {
   const [notes, setNotes] = useState('');
   const [location, setLocation] = useState('');
   const [weather, setWeather] = useState('');
+  const params = useParams();
+  const id = Number(params?.id);
 
   useEffect(() => {
     loadEntry();
@@ -53,7 +55,7 @@ export function EditMoodPage({ id }: { id: number }) {
     try {
       await apiClient.updateMoodEntry(id, {
         intensity,
-        //when_felt: whenFelt || undefined,
+        when_felt: whenFelt || undefined,
         trigger_event: triggerEvent || undefined,
         coping_strategy: copingStrategy || undefined,
         notes: notes || undefined,
@@ -98,9 +100,9 @@ export function EditMoodPage({ id }: { id: number }) {
         </Link>
       </div>
 
-      {/* <h1 className="text-3xl font-bold text-gray-900 mb-8">
-        ✏️ {entry.mood?.emoji} {entry.mood?.name} засах
-      </h1> */}
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        ✏️ {entry.PlutchikEmotions?.emoji} {entry.PlutchikEmotions?.name_mn} засах
+      </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-xl shadow-lg p-6">
         
@@ -129,12 +131,13 @@ export function EditMoodPage({ id }: { id: number }) {
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Хэзээ мэдэрсэн бэ?
           </label>
-          <input
-            type="datetime-local"
-            value={whenFelt}
-            onChange={(e) => setWhenFelt(e.target.value)}
-            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
-          />
+              <input
+                type="text"
+                placeholder="Жишээ нь: Өчигдөр орой 8 цагт, Ажлын дараа гэх мэт"
+                value={whenFelt}
+                onChange={(e) => setWhenFelt(e.target.value)}
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none placeholder-gray-400"
+              />
         </div>
 
         {/* TRIGGER */}

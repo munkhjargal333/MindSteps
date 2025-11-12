@@ -24,6 +24,7 @@ type SystemAuditLog struct {
 	IPAddress  string         `gorm:"column:ip_address;type:inet" json:"ip_address"`
 	UserAgent  string         `gorm:"column:user_agent;type:text" json:"user_agent"`
 	CreatedAt  time.Time      `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	User       *Users         `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName SystemAuditLog's table name

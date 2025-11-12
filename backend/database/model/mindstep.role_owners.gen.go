@@ -19,6 +19,9 @@ type RoleOwners struct {
 	AssignedByID uint      `gorm:"column:assigned_by_id;type:bigint" json:"assigned_by_id"`
 	CreatedAt    time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
 	RevokedAt    time.Time `gorm:"column:revoked_at;type:timestamp without time zone" json:"revoked_at"`
+	Role         *Roles    `gorm:"foreignKey:role_id;references:id" json:"Role"`
+	Owner        *Users    `gorm:"foreignKey:owner_id;references:id" json:"Owner"`
+	AssignedBy   *Users    `gorm:"foreignKey:assigned_by_id;references:id" json:"AssignedBy"`
 }
 
 // TableName RoleOwners's table name

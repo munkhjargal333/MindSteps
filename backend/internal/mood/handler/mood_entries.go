@@ -71,9 +71,9 @@ func (h *MoodEntryHandler) Update(c *fiber.Ctx) error {
 	if err := c.BodyParser(&f); err != nil {
 		return shared.ResponseBadRequest(c, err.Error())
 	}
-	if err := f.Validate(); err != nil {
-		return shared.ResponseBadRequest(c, err.Error())
-	}
+	// if err := f.Validate(); err != nil {
+	// 	return shared.ResponseBadRequest(c, err.Error())
+	// }
 
 	tokenInfo := auth.GetTokenInfo(c)
 	entry, err := h.service.GetByID(uint(id))

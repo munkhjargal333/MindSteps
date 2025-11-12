@@ -33,6 +33,7 @@ type AIProgressTracking struct {
 	ImprovementBonusPoints    int            `gorm:"column:improvement_bonus_points;type:integer" json:"improvement_bonus_points"`
 	ConsistencyBonusPoints    int            `gorm:"column:consistency_bonus_points;type:integer" json:"consistency_bonus_points"`
 	GeneratedAt               time.Time      `gorm:"column:generated_at;type:timestamp without time zone;default:now()" json:"generated_at"`
+	User                      *Users         `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName AIProgressTracking's table name

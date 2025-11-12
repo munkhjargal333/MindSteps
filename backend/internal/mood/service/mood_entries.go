@@ -36,7 +36,7 @@ func (s *moodEntryService) Create(f *form.MoodEntryForm) (*model.MoodEntries, er
 
 	entry := form.NewMoodEntryFromForm(*f)
 	entry.CreatedAt = time.Now()
-	entry.UpdatedAt = time.Now()
+	//entry.UpdatedAt = time.Now()
 
 	if err := s.repo.Create(entry); err != nil {
 		return nil, err
@@ -50,16 +50,16 @@ func (s *moodEntryService) GetByID(id uint) (*model.MoodEntries, error) {
 }
 
 func (s *moodEntryService) Update(id uint, f *form.MoodEntryForm) (*model.MoodEntries, error) {
-	if err := f.Validate(); err != nil {
-		return nil, err
-	}
+	// if err := f.Validate(); err != nil {
+	// 	return nil, err
+	// }
 
 	entry, err := s.repo.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	entry.MoodID = f.MoodID
+	//entry.MoodID = f.MoodID
 	entry.Intensity = f.Intensity
 	entry.WhenFelt = f.WhenFelt
 	entry.TriggerEvent = f.TriggerEvent

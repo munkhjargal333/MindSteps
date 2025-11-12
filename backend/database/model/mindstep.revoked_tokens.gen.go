@@ -18,6 +18,7 @@ type RevokedTokens struct {
 	RevokedAt time.Time `gorm:"column:revoked_at;type:timestamp without time zone;default:now()" json:"revoked_at"`
 	ExpiresAt time.Time `gorm:"column:expires_at;type:timestamp without time zone;not null" json:"expires_at"`
 	Reason    string    `gorm:"column:reason;type:character varying(50)" json:"reason"`
+	User      *Users    `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName RevokedTokens's table name

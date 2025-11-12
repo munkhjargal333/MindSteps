@@ -36,6 +36,17 @@ func newRoles(db *gorm.DB, opts ...gen.DOOption) roles {
 	_roles.CreatedAt = field.NewTime(tableName, "created_at")
 	_roles.UpdatedByID = field.NewUint(tableName, "updated_by_id")
 	_roles.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_roles.CreatedBy = rolesBelongsToCreatedBy{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("CreatedBy", "model.Users"),
+	}
+
+	_roles.UpdatedBy = rolesBelongsToUpdatedBy{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("UpdatedBy", "model.Users"),
+	}
 
 	_roles.fillFieldMap()
 
@@ -55,6 +66,9 @@ type roles struct {
 	CreatedAt   field.Time
 	UpdatedByID field.Uint
 	UpdatedAt   field.Time
+	CreatedBy   rolesBelongsToCreatedBy
+
+	UpdatedBy rolesBelongsToUpdatedBy
 
 	fieldMap map[string]field.Expr
 }
@@ -104,7 +118,7 @@ func (r *roles) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (r *roles) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 9)
+	r.fieldMap = make(map[string]field.Expr, 11)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["level"] = r.Level
 	r.fieldMap["code"] = r.Code
@@ -114,16 +128,185 @@ func (r *roles) fillFieldMap() {
 	r.fieldMap["created_at"] = r.CreatedAt
 	r.fieldMap["updated_by_id"] = r.UpdatedByID
 	r.fieldMap["updated_at"] = r.UpdatedAt
+
 }
 
 func (r roles) clone(db *gorm.DB) roles {
 	r.rolesDo.ReplaceConnPool(db.Statement.ConnPool)
+	r.CreatedBy.db = db.Session(&gorm.Session{Initialized: true})
+	r.CreatedBy.db.Statement.ConnPool = db.Statement.ConnPool
+	r.UpdatedBy.db = db.Session(&gorm.Session{Initialized: true})
+	r.UpdatedBy.db.Statement.ConnPool = db.Statement.ConnPool
 	return r
 }
 
 func (r roles) replaceDB(db *gorm.DB) roles {
 	r.rolesDo.ReplaceDB(db)
+	r.CreatedBy.db = db.Session(&gorm.Session{})
+	r.UpdatedBy.db = db.Session(&gorm.Session{})
 	return r
+}
+
+type rolesBelongsToCreatedBy struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a rolesBelongsToCreatedBy) Where(conds ...field.Expr) *rolesBelongsToCreatedBy {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a rolesBelongsToCreatedBy) WithContext(ctx context.Context) *rolesBelongsToCreatedBy {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a rolesBelongsToCreatedBy) Session(session *gorm.Session) *rolesBelongsToCreatedBy {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a rolesBelongsToCreatedBy) Model(m *model.Roles) *rolesBelongsToCreatedByTx {
+	return &rolesBelongsToCreatedByTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a rolesBelongsToCreatedBy) Unscoped() *rolesBelongsToCreatedBy {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type rolesBelongsToCreatedByTx struct{ tx *gorm.Association }
+
+func (a rolesBelongsToCreatedByTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a rolesBelongsToCreatedByTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a rolesBelongsToCreatedByTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a rolesBelongsToCreatedByTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a rolesBelongsToCreatedByTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a rolesBelongsToCreatedByTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a rolesBelongsToCreatedByTx) Unscoped() *rolesBelongsToCreatedByTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type rolesBelongsToUpdatedBy struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a rolesBelongsToUpdatedBy) Where(conds ...field.Expr) *rolesBelongsToUpdatedBy {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a rolesBelongsToUpdatedBy) WithContext(ctx context.Context) *rolesBelongsToUpdatedBy {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a rolesBelongsToUpdatedBy) Session(session *gorm.Session) *rolesBelongsToUpdatedBy {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a rolesBelongsToUpdatedBy) Model(m *model.Roles) *rolesBelongsToUpdatedByTx {
+	return &rolesBelongsToUpdatedByTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a rolesBelongsToUpdatedBy) Unscoped() *rolesBelongsToUpdatedBy {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type rolesBelongsToUpdatedByTx struct{ tx *gorm.Association }
+
+func (a rolesBelongsToUpdatedByTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a rolesBelongsToUpdatedByTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a rolesBelongsToUpdatedByTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a rolesBelongsToUpdatedByTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a rolesBelongsToUpdatedByTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a rolesBelongsToUpdatedByTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a rolesBelongsToUpdatedByTx) Unscoped() *rolesBelongsToUpdatedByTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type rolesDo struct{ gen.DO }

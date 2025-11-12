@@ -54,6 +54,22 @@ func newAIJournalDetailedAnalysis(db *gorm.DB, opts ...gen.DOOption) aIJournalDe
 	_aIJournalDetailedAnalysis.ProcessingDuration = field.NewInt(tableName, "processing_duration")
 	_aIJournalDetailedAnalysis.ModelName = field.NewString(tableName, "model_name")
 	_aIJournalDetailedAnalysis.CreatedAt = field.NewTime(tableName, "created_at")
+	_aIJournalDetailedAnalysis.Journal = aIJournalDetailedAnalysisBelongsToJournal{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Journal", "model.Journals"),
+		User: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Journal.User", "model.Users"),
+		},
+	}
+
+	_aIJournalDetailedAnalysis.User = aIJournalDetailedAnalysisBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_aIJournalDetailedAnalysis.fillFieldMap()
 
@@ -91,6 +107,9 @@ type aIJournalDetailedAnalysis struct {
 	ProcessingDuration   field.Int
 	ModelName            field.String
 	CreatedAt            field.Time
+	Journal              aIJournalDetailedAnalysisBelongsToJournal
+
+	User aIJournalDetailedAnalysisBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -164,7 +183,7 @@ func (a *aIJournalDetailedAnalysis) GetFieldByName(fieldName string) (field.Orde
 }
 
 func (a *aIJournalDetailedAnalysis) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 27)
+	a.fieldMap = make(map[string]field.Expr, 29)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["journal_id"] = a.JournalID
 	a.fieldMap["user_id"] = a.UserID
@@ -192,16 +211,189 @@ func (a *aIJournalDetailedAnalysis) fillFieldMap() {
 	a.fieldMap["processing_duration"] = a.ProcessingDuration
 	a.fieldMap["model_name"] = a.ModelName
 	a.fieldMap["created_at"] = a.CreatedAt
+
 }
 
 func (a aIJournalDetailedAnalysis) clone(db *gorm.DB) aIJournalDetailedAnalysis {
 	a.aIJournalDetailedAnalysisDo.ReplaceConnPool(db.Statement.ConnPool)
+	a.Journal.db = db.Session(&gorm.Session{Initialized: true})
+	a.Journal.db.Statement.ConnPool = db.Statement.ConnPool
+	a.User.db = db.Session(&gorm.Session{Initialized: true})
+	a.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return a
 }
 
 func (a aIJournalDetailedAnalysis) replaceDB(db *gorm.DB) aIJournalDetailedAnalysis {
 	a.aIJournalDetailedAnalysisDo.ReplaceDB(db)
+	a.Journal.db = db.Session(&gorm.Session{})
+	a.User.db = db.Session(&gorm.Session{})
 	return a
+}
+
+type aIJournalDetailedAnalysisBelongsToJournal struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	User struct {
+		field.RelationField
+	}
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournal) Where(conds ...field.Expr) *aIJournalDetailedAnalysisBelongsToJournal {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournal) WithContext(ctx context.Context) *aIJournalDetailedAnalysisBelongsToJournal {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournal) Session(session *gorm.Session) *aIJournalDetailedAnalysisBelongsToJournal {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournal) Model(m *model.AIJournalDetailedAnalysis) *aIJournalDetailedAnalysisBelongsToJournalTx {
+	return &aIJournalDetailedAnalysisBelongsToJournalTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournal) Unscoped() *aIJournalDetailedAnalysisBelongsToJournal {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type aIJournalDetailedAnalysisBelongsToJournalTx struct{ tx *gorm.Association }
+
+func (a aIJournalDetailedAnalysisBelongsToJournalTx) Find() (result *model.Journals, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournalTx) Append(values ...*model.Journals) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournalTx) Replace(values ...*model.Journals) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournalTx) Delete(values ...*model.Journals) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournalTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournalTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a aIJournalDetailedAnalysisBelongsToJournalTx) Unscoped() *aIJournalDetailedAnalysisBelongsToJournalTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type aIJournalDetailedAnalysisBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUser) Where(conds ...field.Expr) *aIJournalDetailedAnalysisBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUser) WithContext(ctx context.Context) *aIJournalDetailedAnalysisBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUser) Session(session *gorm.Session) *aIJournalDetailedAnalysisBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUser) Model(m *model.AIJournalDetailedAnalysis) *aIJournalDetailedAnalysisBelongsToUserTx {
+	return &aIJournalDetailedAnalysisBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUser) Unscoped() *aIJournalDetailedAnalysisBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type aIJournalDetailedAnalysisBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a aIJournalDetailedAnalysisBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a aIJournalDetailedAnalysisBelongsToUserTx) Unscoped() *aIJournalDetailedAnalysisBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type aIJournalDetailedAnalysisDo struct{ gen.DO }

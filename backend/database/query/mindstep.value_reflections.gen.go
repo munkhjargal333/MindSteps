@@ -36,6 +36,27 @@ func newValueReflections(db *gorm.DB, opts ...gen.DOOption) valueReflections {
 	_valueReflections.AlignmentScore = field.NewInt(tableName, "alignment_score")
 	_valueReflections.Notes = field.NewString(tableName, "notes")
 	_valueReflections.CreatedAt = field.NewTime(tableName, "created_at")
+	_valueReflections.User = valueReflectionsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_valueReflections.Value = valueReflectionsBelongsToValue{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Value", "model.CoreValues"),
+		User: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Value.User", "model.Users"),
+		},
+		MaslowLevel: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Value.MaslowLevel", "model.MaslowLevels"),
+		},
+	}
 
 	_valueReflections.fillFieldMap()
 
@@ -55,6 +76,9 @@ type valueReflections struct {
 	AlignmentScore field.Int
 	Notes          field.String
 	CreatedAt      field.Time
+	User           valueReflectionsBelongsToUser
+
+	Value valueReflectionsBelongsToValue
 
 	fieldMap map[string]field.Expr
 }
@@ -108,7 +132,7 @@ func (v *valueReflections) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (v *valueReflections) fillFieldMap() {
-	v.fieldMap = make(map[string]field.Expr, 9)
+	v.fieldMap = make(map[string]field.Expr, 11)
 	v.fieldMap["id"] = v.ID
 	v.fieldMap["user_id"] = v.UserID
 	v.fieldMap["value_id"] = v.ValueID
@@ -118,16 +142,192 @@ func (v *valueReflections) fillFieldMap() {
 	v.fieldMap["alignment_score"] = v.AlignmentScore
 	v.fieldMap["notes"] = v.Notes
 	v.fieldMap["created_at"] = v.CreatedAt
+
 }
 
 func (v valueReflections) clone(db *gorm.DB) valueReflections {
 	v.valueReflectionsDo.ReplaceConnPool(db.Statement.ConnPool)
+	v.User.db = db.Session(&gorm.Session{Initialized: true})
+	v.User.db.Statement.ConnPool = db.Statement.ConnPool
+	v.Value.db = db.Session(&gorm.Session{Initialized: true})
+	v.Value.db.Statement.ConnPool = db.Statement.ConnPool
 	return v
 }
 
 func (v valueReflections) replaceDB(db *gorm.DB) valueReflections {
 	v.valueReflectionsDo.ReplaceDB(db)
+	v.User.db = db.Session(&gorm.Session{})
+	v.Value.db = db.Session(&gorm.Session{})
 	return v
+}
+
+type valueReflectionsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a valueReflectionsBelongsToUser) Where(conds ...field.Expr) *valueReflectionsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a valueReflectionsBelongsToUser) WithContext(ctx context.Context) *valueReflectionsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a valueReflectionsBelongsToUser) Session(session *gorm.Session) *valueReflectionsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a valueReflectionsBelongsToUser) Model(m *model.ValueReflections) *valueReflectionsBelongsToUserTx {
+	return &valueReflectionsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a valueReflectionsBelongsToUser) Unscoped() *valueReflectionsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type valueReflectionsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a valueReflectionsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a valueReflectionsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a valueReflectionsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a valueReflectionsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a valueReflectionsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a valueReflectionsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a valueReflectionsBelongsToUserTx) Unscoped() *valueReflectionsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type valueReflectionsBelongsToValue struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	User struct {
+		field.RelationField
+	}
+	MaslowLevel struct {
+		field.RelationField
+	}
+}
+
+func (a valueReflectionsBelongsToValue) Where(conds ...field.Expr) *valueReflectionsBelongsToValue {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a valueReflectionsBelongsToValue) WithContext(ctx context.Context) *valueReflectionsBelongsToValue {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a valueReflectionsBelongsToValue) Session(session *gorm.Session) *valueReflectionsBelongsToValue {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a valueReflectionsBelongsToValue) Model(m *model.ValueReflections) *valueReflectionsBelongsToValueTx {
+	return &valueReflectionsBelongsToValueTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a valueReflectionsBelongsToValue) Unscoped() *valueReflectionsBelongsToValue {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type valueReflectionsBelongsToValueTx struct{ tx *gorm.Association }
+
+func (a valueReflectionsBelongsToValueTx) Find() (result *model.CoreValues, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a valueReflectionsBelongsToValueTx) Append(values ...*model.CoreValues) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a valueReflectionsBelongsToValueTx) Replace(values ...*model.CoreValues) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a valueReflectionsBelongsToValueTx) Delete(values ...*model.CoreValues) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a valueReflectionsBelongsToValueTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a valueReflectionsBelongsToValueTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a valueReflectionsBelongsToValueTx) Unscoped() *valueReflectionsBelongsToValueTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type valueReflectionsDo struct{ gen.DO }

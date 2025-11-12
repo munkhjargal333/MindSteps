@@ -38,6 +38,17 @@ func newUserConsciousnessTracking(db *gorm.DB, opts ...gen.DOOption) userConscio
 	_userConsciousnessTracking.ConfidenceScore = field.NewFloat64(tableName, "confidence_score")
 	_userConsciousnessTracking.Notes = field.NewString(tableName, "notes")
 	_userConsciousnessTracking.CreatedAt = field.NewTime(tableName, "created_at")
+	_userConsciousnessTracking.User = userConsciousnessTrackingBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_userConsciousnessTracking.PrimaryLevel = userConsciousnessTrackingBelongsToPrimaryLevel{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("PrimaryLevel", "model.ConsciousnessLevels"),
+	}
 
 	_userConsciousnessTracking.fillFieldMap()
 
@@ -59,6 +70,9 @@ type userConsciousnessTracking struct {
 	ConfidenceScore    field.Float64
 	Notes              field.String
 	CreatedAt          field.Time
+	User               userConsciousnessTrackingBelongsToUser
+
+	PrimaryLevel userConsciousnessTrackingBelongsToPrimaryLevel
 
 	fieldMap map[string]field.Expr
 }
@@ -116,7 +130,7 @@ func (u *userConsciousnessTracking) GetFieldByName(fieldName string) (field.Orde
 }
 
 func (u *userConsciousnessTracking) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 11)
+	u.fieldMap = make(map[string]field.Expr, 13)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["user_id"] = u.UserID
 	u.fieldMap["measurement_date"] = u.MeasurementDate
@@ -128,16 +142,185 @@ func (u *userConsciousnessTracking) fillFieldMap() {
 	u.fieldMap["confidence_score"] = u.ConfidenceScore
 	u.fieldMap["notes"] = u.Notes
 	u.fieldMap["created_at"] = u.CreatedAt
+
 }
 
 func (u userConsciousnessTracking) clone(db *gorm.DB) userConsciousnessTracking {
 	u.userConsciousnessTrackingDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.User.db = db.Session(&gorm.Session{Initialized: true})
+	u.User.db.Statement.ConnPool = db.Statement.ConnPool
+	u.PrimaryLevel.db = db.Session(&gorm.Session{Initialized: true})
+	u.PrimaryLevel.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u userConsciousnessTracking) replaceDB(db *gorm.DB) userConsciousnessTracking {
 	u.userConsciousnessTrackingDo.ReplaceDB(db)
+	u.User.db = db.Session(&gorm.Session{})
+	u.PrimaryLevel.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type userConsciousnessTrackingBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userConsciousnessTrackingBelongsToUser) Where(conds ...field.Expr) *userConsciousnessTrackingBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userConsciousnessTrackingBelongsToUser) WithContext(ctx context.Context) *userConsciousnessTrackingBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userConsciousnessTrackingBelongsToUser) Session(session *gorm.Session) *userConsciousnessTrackingBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userConsciousnessTrackingBelongsToUser) Model(m *model.UserConsciousnessTracking) *userConsciousnessTrackingBelongsToUserTx {
+	return &userConsciousnessTrackingBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userConsciousnessTrackingBelongsToUser) Unscoped() *userConsciousnessTrackingBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userConsciousnessTrackingBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a userConsciousnessTrackingBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userConsciousnessTrackingBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userConsciousnessTrackingBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userConsciousnessTrackingBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userConsciousnessTrackingBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userConsciousnessTrackingBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userConsciousnessTrackingBelongsToUserTx) Unscoped() *userConsciousnessTrackingBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type userConsciousnessTrackingBelongsToPrimaryLevel struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevel) Where(conds ...field.Expr) *userConsciousnessTrackingBelongsToPrimaryLevel {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevel) WithContext(ctx context.Context) *userConsciousnessTrackingBelongsToPrimaryLevel {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevel) Session(session *gorm.Session) *userConsciousnessTrackingBelongsToPrimaryLevel {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevel) Model(m *model.UserConsciousnessTracking) *userConsciousnessTrackingBelongsToPrimaryLevelTx {
+	return &userConsciousnessTrackingBelongsToPrimaryLevelTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevel) Unscoped() *userConsciousnessTrackingBelongsToPrimaryLevel {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userConsciousnessTrackingBelongsToPrimaryLevelTx struct{ tx *gorm.Association }
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevelTx) Find() (result *model.ConsciousnessLevels, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevelTx) Append(values ...*model.ConsciousnessLevels) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevelTx) Replace(values ...*model.ConsciousnessLevels) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevelTx) Delete(values ...*model.ConsciousnessLevels) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevelTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevelTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userConsciousnessTrackingBelongsToPrimaryLevelTx) Unscoped() *userConsciousnessTrackingBelongsToPrimaryLevelTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type userConsciousnessTrackingDo struct{ gen.DO }

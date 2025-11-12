@@ -20,7 +20,7 @@ func MustConnect(logLevel logger.LogLevel) {
 
 	// Construct DSN for GORM and connection string for pgxpool
 	dsn := fmt.Sprintf(
-		`host=%s port=%d dbname=%s user=%s password=%s sslmode=require TimeZone=Asia/Ulaanbaatar search_path=%s`,
+		`host=%s port=%d dbname=%s user=%s password=%s sslmode=require TimeZone=Asia/Ulaanbaatar search_path=%s&disable_prepared_statement=true`,
 		config.DB.Host,
 		config.DB.Port,
 		config.DB.Name,

@@ -35,6 +35,17 @@ func newPlutchikCombinations(db *gorm.DB, opts ...gen.DOOption) plutchikCombinat
 	_plutchikCombinations.CombinationType = field.NewString(tableName, "combination_type")
 	_plutchikCombinations.Description = field.NewString(tableName, "description")
 	_plutchikCombinations.CreatedAt = field.NewTime(tableName, "created_at")
+	_plutchikCombinations.Emotion1 = plutchikCombinationsBelongsToEmotion1{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Emotion1", "model.PlutchikEmotions"),
+	}
+
+	_plutchikCombinations.Emotion2 = plutchikCombinationsBelongsToEmotion2{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Emotion2", "model.PlutchikEmotions"),
+	}
 
 	_plutchikCombinations.fillFieldMap()
 
@@ -53,6 +64,9 @@ type plutchikCombinations struct {
 	CombinationType field.String
 	Description     field.String
 	CreatedAt       field.Time
+	Emotion1        plutchikCombinationsBelongsToEmotion1
+
+	Emotion2 plutchikCombinationsBelongsToEmotion2
 
 	fieldMap map[string]field.Expr
 }
@@ -105,7 +119,7 @@ func (p *plutchikCombinations) GetFieldByName(fieldName string) (field.OrderExpr
 }
 
 func (p *plutchikCombinations) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 8)
+	p.fieldMap = make(map[string]field.Expr, 10)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["emotion1_id"] = p.Emotion1ID
 	p.fieldMap["emotion2_id"] = p.Emotion2ID
@@ -114,16 +128,185 @@ func (p *plutchikCombinations) fillFieldMap() {
 	p.fieldMap["combination_type"] = p.CombinationType
 	p.fieldMap["description"] = p.Description
 	p.fieldMap["created_at"] = p.CreatedAt
+
 }
 
 func (p plutchikCombinations) clone(db *gorm.DB) plutchikCombinations {
 	p.plutchikCombinationsDo.ReplaceConnPool(db.Statement.ConnPool)
+	p.Emotion1.db = db.Session(&gorm.Session{Initialized: true})
+	p.Emotion1.db.Statement.ConnPool = db.Statement.ConnPool
+	p.Emotion2.db = db.Session(&gorm.Session{Initialized: true})
+	p.Emotion2.db.Statement.ConnPool = db.Statement.ConnPool
 	return p
 }
 
 func (p plutchikCombinations) replaceDB(db *gorm.DB) plutchikCombinations {
 	p.plutchikCombinationsDo.ReplaceDB(db)
+	p.Emotion1.db = db.Session(&gorm.Session{})
+	p.Emotion2.db = db.Session(&gorm.Session{})
 	return p
+}
+
+type plutchikCombinationsBelongsToEmotion1 struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a plutchikCombinationsBelongsToEmotion1) Where(conds ...field.Expr) *plutchikCombinationsBelongsToEmotion1 {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a plutchikCombinationsBelongsToEmotion1) WithContext(ctx context.Context) *plutchikCombinationsBelongsToEmotion1 {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a plutchikCombinationsBelongsToEmotion1) Session(session *gorm.Session) *plutchikCombinationsBelongsToEmotion1 {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a plutchikCombinationsBelongsToEmotion1) Model(m *model.PlutchikCombinations) *plutchikCombinationsBelongsToEmotion1Tx {
+	return &plutchikCombinationsBelongsToEmotion1Tx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a plutchikCombinationsBelongsToEmotion1) Unscoped() *plutchikCombinationsBelongsToEmotion1 {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type plutchikCombinationsBelongsToEmotion1Tx struct{ tx *gorm.Association }
+
+func (a plutchikCombinationsBelongsToEmotion1Tx) Find() (result *model.PlutchikEmotions, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a plutchikCombinationsBelongsToEmotion1Tx) Append(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a plutchikCombinationsBelongsToEmotion1Tx) Replace(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a plutchikCombinationsBelongsToEmotion1Tx) Delete(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a plutchikCombinationsBelongsToEmotion1Tx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a plutchikCombinationsBelongsToEmotion1Tx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a plutchikCombinationsBelongsToEmotion1Tx) Unscoped() *plutchikCombinationsBelongsToEmotion1Tx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type plutchikCombinationsBelongsToEmotion2 struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a plutchikCombinationsBelongsToEmotion2) Where(conds ...field.Expr) *plutchikCombinationsBelongsToEmotion2 {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a plutchikCombinationsBelongsToEmotion2) WithContext(ctx context.Context) *plutchikCombinationsBelongsToEmotion2 {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a plutchikCombinationsBelongsToEmotion2) Session(session *gorm.Session) *plutchikCombinationsBelongsToEmotion2 {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a plutchikCombinationsBelongsToEmotion2) Model(m *model.PlutchikCombinations) *plutchikCombinationsBelongsToEmotion2Tx {
+	return &plutchikCombinationsBelongsToEmotion2Tx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a plutchikCombinationsBelongsToEmotion2) Unscoped() *plutchikCombinationsBelongsToEmotion2 {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type plutchikCombinationsBelongsToEmotion2Tx struct{ tx *gorm.Association }
+
+func (a plutchikCombinationsBelongsToEmotion2Tx) Find() (result *model.PlutchikEmotions, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a plutchikCombinationsBelongsToEmotion2Tx) Append(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a plutchikCombinationsBelongsToEmotion2Tx) Replace(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a plutchikCombinationsBelongsToEmotion2Tx) Delete(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a plutchikCombinationsBelongsToEmotion2Tx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a plutchikCombinationsBelongsToEmotion2Tx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a plutchikCombinationsBelongsToEmotion2Tx) Unscoped() *plutchikCombinationsBelongsToEmotion2Tx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type plutchikCombinationsDo struct{ gen.DO }

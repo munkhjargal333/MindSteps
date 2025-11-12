@@ -50,6 +50,11 @@ func newDetectedPatterns(db *gorm.DB, opts ...gen.DOOption) detectedPatterns {
 	_detectedPatterns.AcknowledgedAt = field.NewTime(tableName, "acknowledged_at")
 	_detectedPatterns.CreatedAt = field.NewTime(tableName, "created_at")
 	_detectedPatterns.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_detectedPatterns.User = detectedPatternsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_detectedPatterns.fillFieldMap()
 
@@ -83,6 +88,7 @@ type detectedPatterns struct {
 	AcknowledgedAt       field.Time
 	CreatedAt            field.Time
 	UpdatedAt            field.Time
+	User                 detectedPatternsBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -150,7 +156,7 @@ func (d *detectedPatterns) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (d *detectedPatterns) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 23)
+	d.fieldMap = make(map[string]field.Expr, 24)
 	d.fieldMap["id"] = d.ID
 	d.fieldMap["user_id"] = d.UserID
 	d.fieldMap["pattern_type"] = d.PatternType
@@ -174,16 +180,101 @@ func (d *detectedPatterns) fillFieldMap() {
 	d.fieldMap["acknowledged_at"] = d.AcknowledgedAt
 	d.fieldMap["created_at"] = d.CreatedAt
 	d.fieldMap["updated_at"] = d.UpdatedAt
+
 }
 
 func (d detectedPatterns) clone(db *gorm.DB) detectedPatterns {
 	d.detectedPatternsDo.ReplaceConnPool(db.Statement.ConnPool)
+	d.User.db = db.Session(&gorm.Session{Initialized: true})
+	d.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return d
 }
 
 func (d detectedPatterns) replaceDB(db *gorm.DB) detectedPatterns {
 	d.detectedPatternsDo.ReplaceDB(db)
+	d.User.db = db.Session(&gorm.Session{})
 	return d
+}
+
+type detectedPatternsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a detectedPatternsBelongsToUser) Where(conds ...field.Expr) *detectedPatternsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a detectedPatternsBelongsToUser) WithContext(ctx context.Context) *detectedPatternsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a detectedPatternsBelongsToUser) Session(session *gorm.Session) *detectedPatternsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a detectedPatternsBelongsToUser) Model(m *model.DetectedPatterns) *detectedPatternsBelongsToUserTx {
+	return &detectedPatternsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a detectedPatternsBelongsToUser) Unscoped() *detectedPatternsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type detectedPatternsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a detectedPatternsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a detectedPatternsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a detectedPatternsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a detectedPatternsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a detectedPatternsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a detectedPatternsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a detectedPatternsBelongsToUserTx) Unscoped() *detectedPatternsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type detectedPatternsDo struct{ gen.DO }

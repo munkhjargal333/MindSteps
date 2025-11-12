@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import Link from 'next/link';
+import StatCard from '@/components/dashboard/StatCard';
+import QuickActionCard from '@/components/dashboard/QuickActionCard';
 
 interface UserStats {
   total_journals?: number;
@@ -19,7 +20,6 @@ export default function DashboardPage() {
 
   const loadStats = useCallback(async () => {
     if (!token) return;
-    
     try {
       const data = await apiClient.getUserStats(token);
       setStats(data);
@@ -47,24 +47,21 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-      
+
       {/* USER HEADER */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 text-white mb-6 sm:mb-8 shadow-xl">
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4">
           Сайн байна уу, {user?.name}!
         </h1>
-        
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2.5 sm:py-3">
             <span className="text-xs sm:text-sm opacity-90 block">Түвшин</span>
             <div className="text-xl sm:text-2xl font-bold">{user?.current_level}</div>
           </div>
-          
           <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2.5 sm:py-3">
             <span className="text-xs sm:text-sm opacity-90 block">Нийт оноо</span>
             <div className="text-xl sm:text-2xl font-bold">{user?.total_score}</div>
           </div>
-          
           <div className="flex-1">
             <div className="text-xs sm:text-sm opacity-90 mb-1.5 sm:mb-2">Түвшин явц</div>
             <div className="bg-white/30 rounded-full h-2.5 sm:h-3">
@@ -80,101 +77,25 @@ export default function DashboardPage() {
 
       {/* STATISTICS */}
       <div className="mb-6 sm:mb-8">
-        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">
-          📊 Таны статистик
-        </h2>
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">📊 Таны статистик</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
-          
-          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-all hover:scale-105">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm text-gray-600 mb-1">Журнал</p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {stats?.total_journals || 0}
-                </p>
-              </div>
-              <div className="bg-blue-500 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center text-xl sm:text-2xl ml-2">
-                📔
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-all hover:scale-105">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm text-gray-600 mb-1">Сэтгэл</p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {stats?.total_mood_entries || 0}
-                </p>
-              </div>
-              <div className="bg-green-500 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center text-xl sm:text-2xl ml-2">
-                😊
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-all hover:scale-105">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm text-gray-600 mb-1">Бясалгал</p>
-                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
-                  {stats?.total_meditation_minutes || 0}м
-                </p>
-              </div>
-              <div className="bg-purple-500 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center text-xl sm:text-2xl ml-2">
-                🧘
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 hover:shadow-lg transition-all hover:scale-105">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm text-gray-600 mb-1">Streak</p>
-                <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                  {stats?.streaks?.[0]?.current_streak || 0}
-                </p>
-              </div>
-              <div className="bg-orange-500 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center text-xl sm:text-2xl ml-2">
-                🔥
-              </div>
-            </div>
-          </div>
+          <StatCard label="Тэмдэглэл" value={stats?.total_journals || 0} icon="📔" colorClass="bg-blue-500" />
+          <StatCard label="Сэтгэл" value={stats?.total_mood_entries || 0} icon="😊" colorClass="bg-green-500" />
+          <StatCard label="Бясалгал" value={`${stats?.total_meditation_minutes || 0}м`} icon="🧘" colorClass="bg-purple-500" />
+          <StatCard label="Streak" value={stats?.streaks?.[0]?.current_streak || 0} icon="🔥" colorClass="bg-orange-500" />
         </div>
       </div>
 
       {/* QUICK ACTIONS */}
       <div>
-        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">
-          🚀 Хурдан үйлдэл
-        </h2>
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">🚀 Хурдан үйлдэл</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-          
-          <Link href="/journal/new" className="block group">
-            <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl p-5 sm:p-6 text-white hover:scale-105 active:scale-95 transition-transform shadow-lg">
-              <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">✏️</div>
-              <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Журнал бичих</h3>
-              <p className="text-xs sm:text-sm opacity-90">Өнөөдрийн сэтгэгдлээ бичээрэй</p>
-            </div>
-          </Link>
-
-          <Link href="/mood/track" className="block group">
-            <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-xl p-5 sm:p-6 text-white hover:scale-105 active:scale-95 transition-transform shadow-lg">
-              <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">💭</div>
-              <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Сэтгэл санаа</h3>
-              <p className="text-xs sm:text-sm opacity-90">Өнөөдрийн сэтгэлээ тэмдэглэх</p>
-            </div>
-          </Link>
-
-          <Link href="/meditation/session" className="block group">
-            <div className="bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl p-5 sm:p-6 text-white hover:scale-105 active:scale-95 transition-transform shadow-lg">
-              <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">🧘‍♀️</div>
-              <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Бясалгал</h3>
-              <p className="text-xs sm:text-sm opacity-90">Бясалгал эхлүүлэх</p>
-            </div>
-          </Link>
+          <QuickActionCard href="/journal/new" icon="✏️" title="Өдрийн тэмдэглэл бичих" description="Өнөөдрийн сэтгэгдлээ бичээрэй" gradient="bg-gradient-to-br from-blue-400 to-blue-600" />
+          <QuickActionCard href="/mood/track" icon="💭" title="Сэтгэл санаа" description="Өнөөдрийн сэтгэлээ тэмдэглэх" gradient="bg-gradient-to-br from-green-400 to-green-600" />
+          <QuickActionCard href="/meditation/session" icon="🧘‍♀️" title="Бясалгал" description="Бясалгал эхлүүлэх" gradient="bg-gradient-to-br from-purple-400 to-purple-600" />
         </div>
       </div>
+
     </div>
   );
 }

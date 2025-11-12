@@ -32,6 +32,22 @@ func newLessonReactions(db *gorm.DB, opts ...gen.DOOption) lessonReactions {
 	_lessonReactions.UserID = field.NewUint(tableName, "user_id")
 	_lessonReactions.ReactionType = field.NewString(tableName, "reaction_type")
 	_lessonReactions.CreatedAt = field.NewTime(tableName, "created_at")
+	_lessonReactions.Lesson = lessonReactionsBelongsToLesson{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Lesson", "model.Lessons"),
+		Category: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Lesson.Category", "model.LessonCategories"),
+		},
+	}
+
+	_lessonReactions.User = lessonReactionsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_lessonReactions.fillFieldMap()
 
@@ -47,6 +63,9 @@ type lessonReactions struct {
 	UserID       field.Uint
 	ReactionType field.String
 	CreatedAt    field.Time
+	Lesson       lessonReactionsBelongsToLesson
+
+	User lessonReactionsBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -96,22 +115,195 @@ func (l *lessonReactions) GetFieldByName(fieldName string) (field.OrderExpr, boo
 }
 
 func (l *lessonReactions) fillFieldMap() {
-	l.fieldMap = make(map[string]field.Expr, 5)
+	l.fieldMap = make(map[string]field.Expr, 7)
 	l.fieldMap["id"] = l.ID
 	l.fieldMap["lesson_id"] = l.LessonID
 	l.fieldMap["user_id"] = l.UserID
 	l.fieldMap["reaction_type"] = l.ReactionType
 	l.fieldMap["created_at"] = l.CreatedAt
+
 }
 
 func (l lessonReactions) clone(db *gorm.DB) lessonReactions {
 	l.lessonReactionsDo.ReplaceConnPool(db.Statement.ConnPool)
+	l.Lesson.db = db.Session(&gorm.Session{Initialized: true})
+	l.Lesson.db.Statement.ConnPool = db.Statement.ConnPool
+	l.User.db = db.Session(&gorm.Session{Initialized: true})
+	l.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return l
 }
 
 func (l lessonReactions) replaceDB(db *gorm.DB) lessonReactions {
 	l.lessonReactionsDo.ReplaceDB(db)
+	l.Lesson.db = db.Session(&gorm.Session{})
+	l.User.db = db.Session(&gorm.Session{})
 	return l
+}
+
+type lessonReactionsBelongsToLesson struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	Category struct {
+		field.RelationField
+	}
+}
+
+func (a lessonReactionsBelongsToLesson) Where(conds ...field.Expr) *lessonReactionsBelongsToLesson {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a lessonReactionsBelongsToLesson) WithContext(ctx context.Context) *lessonReactionsBelongsToLesson {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a lessonReactionsBelongsToLesson) Session(session *gorm.Session) *lessonReactionsBelongsToLesson {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a lessonReactionsBelongsToLesson) Model(m *model.LessonReactions) *lessonReactionsBelongsToLessonTx {
+	return &lessonReactionsBelongsToLessonTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a lessonReactionsBelongsToLesson) Unscoped() *lessonReactionsBelongsToLesson {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type lessonReactionsBelongsToLessonTx struct{ tx *gorm.Association }
+
+func (a lessonReactionsBelongsToLessonTx) Find() (result *model.Lessons, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a lessonReactionsBelongsToLessonTx) Append(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a lessonReactionsBelongsToLessonTx) Replace(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a lessonReactionsBelongsToLessonTx) Delete(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a lessonReactionsBelongsToLessonTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a lessonReactionsBelongsToLessonTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a lessonReactionsBelongsToLessonTx) Unscoped() *lessonReactionsBelongsToLessonTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type lessonReactionsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a lessonReactionsBelongsToUser) Where(conds ...field.Expr) *lessonReactionsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a lessonReactionsBelongsToUser) WithContext(ctx context.Context) *lessonReactionsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a lessonReactionsBelongsToUser) Session(session *gorm.Session) *lessonReactionsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a lessonReactionsBelongsToUser) Model(m *model.LessonReactions) *lessonReactionsBelongsToUserTx {
+	return &lessonReactionsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a lessonReactionsBelongsToUser) Unscoped() *lessonReactionsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type lessonReactionsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a lessonReactionsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a lessonReactionsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a lessonReactionsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a lessonReactionsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a lessonReactionsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a lessonReactionsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a lessonReactionsBelongsToUserTx) Unscoped() *lessonReactionsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type lessonReactionsDo struct{ gen.DO }

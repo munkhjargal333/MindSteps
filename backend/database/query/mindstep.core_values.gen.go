@@ -38,6 +38,17 @@ func newCoreValues(db *gorm.DB, opts ...gen.DOOption) coreValues {
 	_coreValues.IsActive = field.NewBool(tableName, "is_active")
 	_coreValues.CreatedAt = field.NewTime(tableName, "created_at")
 	_coreValues.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_coreValues.User = coreValuesBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_coreValues.MaslowLevel = coreValuesBelongsToMaslowLevel{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("MaslowLevel", "model.MaslowLevels"),
+	}
 
 	_coreValues.fillFieldMap()
 
@@ -59,6 +70,9 @@ type coreValues struct {
 	IsActive      field.Bool
 	CreatedAt     field.Time
 	UpdatedAt     field.Time
+	User          coreValuesBelongsToUser
+
+	MaslowLevel coreValuesBelongsToMaslowLevel
 
 	fieldMap map[string]field.Expr
 }
@@ -112,7 +126,7 @@ func (c *coreValues) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (c *coreValues) fillFieldMap() {
-	c.fieldMap = make(map[string]field.Expr, 11)
+	c.fieldMap = make(map[string]field.Expr, 13)
 	c.fieldMap["id"] = c.ID
 	c.fieldMap["user_id"] = c.UserID
 	c.fieldMap["maslow_level_id"] = c.MaslowLevelID
@@ -124,16 +138,185 @@ func (c *coreValues) fillFieldMap() {
 	c.fieldMap["is_active"] = c.IsActive
 	c.fieldMap["created_at"] = c.CreatedAt
 	c.fieldMap["updated_at"] = c.UpdatedAt
+
 }
 
 func (c coreValues) clone(db *gorm.DB) coreValues {
 	c.coreValuesDo.ReplaceConnPool(db.Statement.ConnPool)
+	c.User.db = db.Session(&gorm.Session{Initialized: true})
+	c.User.db.Statement.ConnPool = db.Statement.ConnPool
+	c.MaslowLevel.db = db.Session(&gorm.Session{Initialized: true})
+	c.MaslowLevel.db.Statement.ConnPool = db.Statement.ConnPool
 	return c
 }
 
 func (c coreValues) replaceDB(db *gorm.DB) coreValues {
 	c.coreValuesDo.ReplaceDB(db)
+	c.User.db = db.Session(&gorm.Session{})
+	c.MaslowLevel.db = db.Session(&gorm.Session{})
 	return c
+}
+
+type coreValuesBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a coreValuesBelongsToUser) Where(conds ...field.Expr) *coreValuesBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a coreValuesBelongsToUser) WithContext(ctx context.Context) *coreValuesBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a coreValuesBelongsToUser) Session(session *gorm.Session) *coreValuesBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a coreValuesBelongsToUser) Model(m *model.CoreValues) *coreValuesBelongsToUserTx {
+	return &coreValuesBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a coreValuesBelongsToUser) Unscoped() *coreValuesBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type coreValuesBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a coreValuesBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a coreValuesBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a coreValuesBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a coreValuesBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a coreValuesBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a coreValuesBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a coreValuesBelongsToUserTx) Unscoped() *coreValuesBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type coreValuesBelongsToMaslowLevel struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a coreValuesBelongsToMaslowLevel) Where(conds ...field.Expr) *coreValuesBelongsToMaslowLevel {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a coreValuesBelongsToMaslowLevel) WithContext(ctx context.Context) *coreValuesBelongsToMaslowLevel {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a coreValuesBelongsToMaslowLevel) Session(session *gorm.Session) *coreValuesBelongsToMaslowLevel {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a coreValuesBelongsToMaslowLevel) Model(m *model.CoreValues) *coreValuesBelongsToMaslowLevelTx {
+	return &coreValuesBelongsToMaslowLevelTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a coreValuesBelongsToMaslowLevel) Unscoped() *coreValuesBelongsToMaslowLevel {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type coreValuesBelongsToMaslowLevelTx struct{ tx *gorm.Association }
+
+func (a coreValuesBelongsToMaslowLevelTx) Find() (result *model.MaslowLevels, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a coreValuesBelongsToMaslowLevelTx) Append(values ...*model.MaslowLevels) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a coreValuesBelongsToMaslowLevelTx) Replace(values ...*model.MaslowLevels) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a coreValuesBelongsToMaslowLevelTx) Delete(values ...*model.MaslowLevels) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a coreValuesBelongsToMaslowLevelTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a coreValuesBelongsToMaslowLevelTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a coreValuesBelongsToMaslowLevelTx) Unscoped() *coreValuesBelongsToMaslowLevelTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type coreValuesDo struct{ gen.DO }

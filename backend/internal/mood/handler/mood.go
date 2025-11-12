@@ -108,9 +108,9 @@ func (h *MoodHandler) List(c *fiber.Ctx) error {
 
 // List moods by category ID
 func (h *MoodHandler) ListByCategoryID(c *fiber.Ctx) error {
-	categoryID, err := strconv.Atoi(c.Params("category_id"))
+	categoryID, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return shared.ResponseBadRequest(c, "Invalid Category ID")
+		return shared.ResponseBadRequest(c, err.Error())
 	}
 
 	moods, err := h.service.ListByCategoryID(categoryID)

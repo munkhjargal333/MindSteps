@@ -13,7 +13,7 @@ type MoodRepository interface {
 	Delete(id uint) error
 	List(limit int, offset int) ([]model.Moods, error)
 	Count() (int64, error)
-	ListByCategoryID(categoryID int) ([]model.Moods, error)
+	ListByCategoryID(categoryID int) ([]model.PlutchikEmotions, error)
 }
 
 type moodRepo struct {
@@ -64,8 +64,8 @@ func (r *moodRepo) Count() (int64, error) {
 	return count, nil
 }
 
-func (r *moodRepo) ListByCategoryID(categoryID int) ([]model.Moods, error) {
-	var moods []model.Moods
+func (r *moodRepo) ListByCategoryID(categoryID int) ([]model.PlutchikEmotions, error) {
+	var moods []model.PlutchikEmotions
 	if err := r.db.Where("category_id = ?", categoryID).
 		Order("intensity_level DESC").
 		Find(&moods).Error; err != nil {

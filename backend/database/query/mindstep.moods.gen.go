@@ -35,6 +35,11 @@ func newMoods(db *gorm.DB, opts ...gen.DOOption) moods {
 	_moods.IntensityLevel = field.NewInt(tableName, "intensity_level")
 	_moods.Emoji = field.NewString(tableName, "emoji")
 	_moods.CreatedAt = field.NewTime(tableName, "created_at")
+	_moods.Category = moodsBelongsToCategory{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Category", "model.MoodCategories"),
+	}
 
 	_moods.fillFieldMap()
 
@@ -53,6 +58,7 @@ type moods struct {
 	IntensityLevel field.Int
 	Emoji          field.String
 	CreatedAt      field.Time
+	Category       moodsBelongsToCategory
 
 	fieldMap map[string]field.Expr
 }
@@ -101,7 +107,7 @@ func (m *moods) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (m *moods) fillFieldMap() {
-	m.fieldMap = make(map[string]field.Expr, 8)
+	m.fieldMap = make(map[string]field.Expr, 9)
 	m.fieldMap["id"] = m.ID
 	m.fieldMap["category_id"] = m.CategoryID
 	m.fieldMap["name_en"] = m.NameEn
@@ -110,16 +116,101 @@ func (m *moods) fillFieldMap() {
 	m.fieldMap["intensity_level"] = m.IntensityLevel
 	m.fieldMap["emoji"] = m.Emoji
 	m.fieldMap["created_at"] = m.CreatedAt
+
 }
 
 func (m moods) clone(db *gorm.DB) moods {
 	m.moodsDo.ReplaceConnPool(db.Statement.ConnPool)
+	m.Category.db = db.Session(&gorm.Session{Initialized: true})
+	m.Category.db.Statement.ConnPool = db.Statement.ConnPool
 	return m
 }
 
 func (m moods) replaceDB(db *gorm.DB) moods {
 	m.moodsDo.ReplaceDB(db)
+	m.Category.db = db.Session(&gorm.Session{})
 	return m
+}
+
+type moodsBelongsToCategory struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a moodsBelongsToCategory) Where(conds ...field.Expr) *moodsBelongsToCategory {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a moodsBelongsToCategory) WithContext(ctx context.Context) *moodsBelongsToCategory {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a moodsBelongsToCategory) Session(session *gorm.Session) *moodsBelongsToCategory {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a moodsBelongsToCategory) Model(m *model.Moods) *moodsBelongsToCategoryTx {
+	return &moodsBelongsToCategoryTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a moodsBelongsToCategory) Unscoped() *moodsBelongsToCategory {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type moodsBelongsToCategoryTx struct{ tx *gorm.Association }
+
+func (a moodsBelongsToCategoryTx) Find() (result *model.MoodCategories, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a moodsBelongsToCategoryTx) Append(values ...*model.MoodCategories) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a moodsBelongsToCategoryTx) Replace(values ...*model.MoodCategories) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a moodsBelongsToCategoryTx) Delete(values ...*model.MoodCategories) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a moodsBelongsToCategoryTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a moodsBelongsToCategoryTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a moodsBelongsToCategoryTx) Unscoped() *moodsBelongsToCategoryTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type moodsDo struct{ gen.DO }

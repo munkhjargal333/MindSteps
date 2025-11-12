@@ -24,6 +24,7 @@ type UserSessions struct {
 	CreatedAt    time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
 	RevokedAt    time.Time `gorm:"column:revoked_at;type:timestamp without time zone" json:"revoked_at"`
 	RevokeReason string    `gorm:"column:revoke_reason;type:character varying(50)" json:"revoke_reason"`
+	User         *Users    `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName UserSessions's table name

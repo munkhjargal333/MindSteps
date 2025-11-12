@@ -33,7 +33,7 @@ func (r *moodEntryRepo) Create(entry *model.MoodEntries) error {
 func (r *moodEntryRepo) GetByID(id uint) (*model.MoodEntries, error) {
 	var entry model.MoodEntries
 	if err := r.db.Where("id = ?", id).
-		Preload("Mood").
+		Preload("PlutchikEmotions").
 		First(&entry).Error; err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (r *moodEntryRepo) Delete(id uint) error {
 func (r *moodEntryRepo) ListByUserID(userID uint, limit int, offset int) ([]model.MoodEntries, error) {
 	var entries []model.MoodEntries
 	if err := r.db.Where("user_id = ?", userID).
-		Preload("Mood").
+		Preload("PlutchikEmotions").
 		Order("entry_date DESC, created_at DESC").
 		Limit(limit).
 		Offset(offset).

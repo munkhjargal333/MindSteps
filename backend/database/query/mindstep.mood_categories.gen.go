@@ -31,7 +31,7 @@ func newMoodCategories(db *gorm.DB, opts ...gen.DOOption) moodCategories {
 	_moodCategories.NameEn = field.NewString(tableName, "name_en")
 	_moodCategories.NameMn = field.NewString(tableName, "name_mn")
 	_moodCategories.Color = field.NewString(tableName, "color")
-	_moodCategories.Icon = field.NewString(tableName, "icon")
+	_moodCategories.Emoji = field.NewString(tableName, "emoji")
 	_moodCategories.SortOrder = field.NewInt(tableName, "sort_order")
 	_moodCategories.CreatedAt = field.NewTime(tableName, "created_at")
 
@@ -48,7 +48,7 @@ type moodCategories struct {
 	NameEn    field.String
 	NameMn    field.String
 	Color     field.String
-	Icon      field.String
+	Emoji     field.String
 	SortOrder field.Int
 	CreatedAt field.Time
 
@@ -71,7 +71,7 @@ func (m *moodCategories) updateTableName(table string) *moodCategories {
 	m.NameEn = field.NewString(table, "name_en")
 	m.NameMn = field.NewString(table, "name_mn")
 	m.Color = field.NewString(table, "color")
-	m.Icon = field.NewString(table, "icon")
+	m.Emoji = field.NewString(table, "emoji")
 	m.SortOrder = field.NewInt(table, "sort_order")
 	m.CreatedAt = field.NewTime(table, "created_at")
 
@@ -107,7 +107,7 @@ func (m *moodCategories) fillFieldMap() {
 	m.fieldMap["name_en"] = m.NameEn
 	m.fieldMap["name_mn"] = m.NameMn
 	m.fieldMap["color"] = m.Color
-	m.fieldMap["icon"] = m.Icon
+	m.fieldMap["emoji"] = m.Emoji
 	m.fieldMap["sort_order"] = m.SortOrder
 	m.fieldMap["created_at"] = m.CreatedAt
 }

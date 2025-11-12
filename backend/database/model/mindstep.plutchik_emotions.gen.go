@@ -15,12 +15,13 @@ type PlutchikEmotions struct {
 	ID                int       `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
 	NameEn            string    `gorm:"column:name_en;type:character varying(50);not null" json:"name_en"`
 	NameMn            string    `gorm:"column:name_mn;type:character varying(50);not null" json:"name_mn"`
-	OppositeEmotionID int       `gorm:"column:opposite_emotion_id;type:integer" json:"opposite_emotion_id"`
+	OppositeEmotionID int32     `gorm:"column:opposite_emotion_id;type:integer" json:"opposite_emotion_id"`
 	IntensityLevel    int       `gorm:"column:intensity_level;type:integer;not null" json:"intensity_level"`
 	BaseEmotionID     int       `gorm:"column:base_emotion_id;type:integer" json:"base_emotion_id"`
 	Color             string    `gorm:"column:color;type:character varying(7)" json:"color"`
 	Emoji             string    `gorm:"column:emoji;type:character varying(10)" json:"emoji"`
 	CreatedAt         time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	CategoryID        int       `gorm:"column:category_id;type:integer" json:"category_id"`
 }
 
 // TableName PlutchikEmotions's table name

@@ -39,6 +39,11 @@ func newUserSessions(db *gorm.DB, opts ...gen.DOOption) userSessions {
 	_userSessions.CreatedAt = field.NewTime(tableName, "created_at")
 	_userSessions.RevokedAt = field.NewTime(tableName, "revoked_at")
 	_userSessions.RevokeReason = field.NewString(tableName, "revoke_reason")
+	_userSessions.User = userSessionsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_userSessions.fillFieldMap()
 
@@ -61,6 +66,7 @@ type userSessions struct {
 	CreatedAt    field.Time
 	RevokedAt    field.Time
 	RevokeReason field.String
+	User         userSessionsBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -117,7 +123,7 @@ func (u *userSessions) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 }
 
 func (u *userSessions) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 12)
+	u.fieldMap = make(map[string]field.Expr, 13)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["user_id"] = u.UserID
 	u.fieldMap["token_hash"] = u.TokenHash
@@ -130,16 +136,101 @@ func (u *userSessions) fillFieldMap() {
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["revoked_at"] = u.RevokedAt
 	u.fieldMap["revoke_reason"] = u.RevokeReason
+
 }
 
 func (u userSessions) clone(db *gorm.DB) userSessions {
 	u.userSessionsDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.User.db = db.Session(&gorm.Session{Initialized: true})
+	u.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u userSessions) replaceDB(db *gorm.DB) userSessions {
 	u.userSessionsDo.ReplaceDB(db)
+	u.User.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type userSessionsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userSessionsBelongsToUser) Where(conds ...field.Expr) *userSessionsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userSessionsBelongsToUser) WithContext(ctx context.Context) *userSessionsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userSessionsBelongsToUser) Session(session *gorm.Session) *userSessionsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userSessionsBelongsToUser) Model(m *model.UserSessions) *userSessionsBelongsToUserTx {
+	return &userSessionsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userSessionsBelongsToUser) Unscoped() *userSessionsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userSessionsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a userSessionsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userSessionsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userSessionsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userSessionsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userSessionsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userSessionsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userSessionsBelongsToUserTx) Unscoped() *userSessionsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type userSessionsDo struct{ gen.DO }

@@ -12,23 +12,25 @@ const TableNameMeditationSessions = "mindstep.meditation_sessions"
 
 // MeditationSessions mapped from table <mindstep.meditation_sessions>
 type MeditationSessions struct {
-	ID              uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID          uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
-	TechniqueID     int       `gorm:"column:technique_id;type:integer" json:"technique_id"`
-	SessionDate     time.Time `gorm:"column:session_date;type:date;not null;default:CURRENT_DATE" json:"session_date"`
-	StartTime       time.Time `gorm:"column:start_time;type:timestamp without time zone" json:"start_time"`
-	EndTime         time.Time `gorm:"column:end_time;type:timestamp without time zone" json:"end_time"`
-	DurationPlanned int       `gorm:"column:duration_planned;type:integer" json:"duration_planned"`
-	DurationActual  int       `gorm:"column:duration_actual;type:integer" json:"duration_actual"`
-	QualityRating   int       `gorm:"column:quality_rating;type:integer" json:"quality_rating"`
-	MoodBefore      string    `gorm:"column:mood_before;type:character varying(50)" json:"mood_before"`
-	MoodAfter       string    `gorm:"column:mood_after;type:character varying(50)" json:"mood_after"`
-	FocusLevel      int       `gorm:"column:focus_level;type:integer" json:"focus_level"`
-	Notes           string    `gorm:"column:notes;type:text" json:"notes"`
-	Interruptions   int       `gorm:"column:interruptions;type:integer" json:"interruptions"`
-	Environment     string    `gorm:"column:environment;type:character varying(100)" json:"environment"`
-	Tags            string    `gorm:"column:tags;type:text[]" json:"tags"`
-	CreatedAt       time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	ID              uint                  `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	UserID          uint                  `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	TechniqueID     int                   `gorm:"column:technique_id;type:integer" json:"technique_id"`
+	SessionDate     time.Time             `gorm:"column:session_date;type:date;not null;default:CURRENT_DATE" json:"session_date"`
+	StartTime       time.Time             `gorm:"column:start_time;type:timestamp without time zone" json:"start_time"`
+	EndTime         time.Time             `gorm:"column:end_time;type:timestamp without time zone" json:"end_time"`
+	DurationPlanned int                   `gorm:"column:duration_planned;type:integer" json:"duration_planned"`
+	DurationActual  int                   `gorm:"column:duration_actual;type:integer" json:"duration_actual"`
+	QualityRating   int                   `gorm:"column:quality_rating;type:integer" json:"quality_rating"`
+	MoodBefore      string                `gorm:"column:mood_before;type:character varying(50)" json:"mood_before"`
+	MoodAfter       string                `gorm:"column:mood_after;type:character varying(50)" json:"mood_after"`
+	FocusLevel      int                   `gorm:"column:focus_level;type:integer" json:"focus_level"`
+	Notes           string                `gorm:"column:notes;type:text" json:"notes"`
+	Interruptions   int                   `gorm:"column:interruptions;type:integer" json:"interruptions"`
+	Environment     string                `gorm:"column:environment;type:character varying(100)" json:"environment"`
+	Tags            string                `gorm:"column:tags;type:text[]" json:"tags"`
+	CreatedAt       time.Time             `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	User            *Users                `gorm:"foreignKey:user_id;references:id" json:"User"`
+	Technique       *MeditationTechniques `gorm:"foreignKey:technique_id;references:id" json:"Technique"`
 }
 
 // TableName MeditationSessions's table name

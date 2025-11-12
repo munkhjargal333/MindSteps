@@ -44,6 +44,17 @@ func newMeditationSessions(db *gorm.DB, opts ...gen.DOOption) meditationSessions
 	_meditationSessions.Environment = field.NewString(tableName, "environment")
 	_meditationSessions.Tags = field.NewString(tableName, "tags")
 	_meditationSessions.CreatedAt = field.NewTime(tableName, "created_at")
+	_meditationSessions.User = meditationSessionsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_meditationSessions.Technique = meditationSessionsBelongsToTechnique{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Technique", "model.MeditationTechniques"),
+	}
 
 	_meditationSessions.fillFieldMap()
 
@@ -71,6 +82,9 @@ type meditationSessions struct {
 	Environment     field.String
 	Tags            field.String
 	CreatedAt       field.Time
+	User            meditationSessionsBelongsToUser
+
+	Technique meditationSessionsBelongsToTechnique
 
 	fieldMap map[string]field.Expr
 }
@@ -132,7 +146,7 @@ func (m *meditationSessions) GetFieldByName(fieldName string) (field.OrderExpr, 
 }
 
 func (m *meditationSessions) fillFieldMap() {
-	m.fieldMap = make(map[string]field.Expr, 17)
+	m.fieldMap = make(map[string]field.Expr, 19)
 	m.fieldMap["id"] = m.ID
 	m.fieldMap["user_id"] = m.UserID
 	m.fieldMap["technique_id"] = m.TechniqueID
@@ -150,16 +164,185 @@ func (m *meditationSessions) fillFieldMap() {
 	m.fieldMap["environment"] = m.Environment
 	m.fieldMap["tags"] = m.Tags
 	m.fieldMap["created_at"] = m.CreatedAt
+
 }
 
 func (m meditationSessions) clone(db *gorm.DB) meditationSessions {
 	m.meditationSessionsDo.ReplaceConnPool(db.Statement.ConnPool)
+	m.User.db = db.Session(&gorm.Session{Initialized: true})
+	m.User.db.Statement.ConnPool = db.Statement.ConnPool
+	m.Technique.db = db.Session(&gorm.Session{Initialized: true})
+	m.Technique.db.Statement.ConnPool = db.Statement.ConnPool
 	return m
 }
 
 func (m meditationSessions) replaceDB(db *gorm.DB) meditationSessions {
 	m.meditationSessionsDo.ReplaceDB(db)
+	m.User.db = db.Session(&gorm.Session{})
+	m.Technique.db = db.Session(&gorm.Session{})
 	return m
+}
+
+type meditationSessionsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a meditationSessionsBelongsToUser) Where(conds ...field.Expr) *meditationSessionsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a meditationSessionsBelongsToUser) WithContext(ctx context.Context) *meditationSessionsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a meditationSessionsBelongsToUser) Session(session *gorm.Session) *meditationSessionsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a meditationSessionsBelongsToUser) Model(m *model.MeditationSessions) *meditationSessionsBelongsToUserTx {
+	return &meditationSessionsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a meditationSessionsBelongsToUser) Unscoped() *meditationSessionsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type meditationSessionsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a meditationSessionsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a meditationSessionsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a meditationSessionsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a meditationSessionsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a meditationSessionsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a meditationSessionsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a meditationSessionsBelongsToUserTx) Unscoped() *meditationSessionsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type meditationSessionsBelongsToTechnique struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a meditationSessionsBelongsToTechnique) Where(conds ...field.Expr) *meditationSessionsBelongsToTechnique {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a meditationSessionsBelongsToTechnique) WithContext(ctx context.Context) *meditationSessionsBelongsToTechnique {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a meditationSessionsBelongsToTechnique) Session(session *gorm.Session) *meditationSessionsBelongsToTechnique {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a meditationSessionsBelongsToTechnique) Model(m *model.MeditationSessions) *meditationSessionsBelongsToTechniqueTx {
+	return &meditationSessionsBelongsToTechniqueTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a meditationSessionsBelongsToTechnique) Unscoped() *meditationSessionsBelongsToTechnique {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type meditationSessionsBelongsToTechniqueTx struct{ tx *gorm.Association }
+
+func (a meditationSessionsBelongsToTechniqueTx) Find() (result *model.MeditationTechniques, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a meditationSessionsBelongsToTechniqueTx) Append(values ...*model.MeditationTechniques) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a meditationSessionsBelongsToTechniqueTx) Replace(values ...*model.MeditationTechniques) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a meditationSessionsBelongsToTechniqueTx) Delete(values ...*model.MeditationTechniques) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a meditationSessionsBelongsToTechniqueTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a meditationSessionsBelongsToTechniqueTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a meditationSessionsBelongsToTechniqueTx) Unscoped() *meditationSessionsBelongsToTechniqueTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type meditationSessionsDo struct{ gen.DO }

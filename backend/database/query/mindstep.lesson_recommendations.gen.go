@@ -38,6 +38,38 @@ func newLessonRecommendations(db *gorm.DB, opts ...gen.DOOption) lessonRecommend
 	_lessonRecommendations.DismissedAt = field.NewTime(tableName, "dismissed_at")
 	_lessonRecommendations.ViewedAt = field.NewTime(tableName, "viewed_at")
 	_lessonRecommendations.CreatedAt = field.NewTime(tableName, "created_at")
+	_lessonRecommendations.User = lessonRecommendationsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_lessonRecommendations.Lesson = lessonRecommendationsBelongsToLesson{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Lesson", "model.Lessons"),
+		Category: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Lesson.Category", "model.LessonCategories"),
+		},
+	}
+
+	_lessonRecommendations.RelatedValue = lessonRecommendationsBelongsToRelatedValue{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("RelatedValue", "model.CoreValues"),
+		User: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("RelatedValue.User", "model.Users"),
+		},
+		MaslowLevel: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("RelatedValue.MaslowLevel", "model.MaslowLevels"),
+		},
+	}
 
 	_lessonRecommendations.fillFieldMap()
 
@@ -59,6 +91,11 @@ type lessonRecommendations struct {
 	DismissedAt          field.Time
 	ViewedAt             field.Time
 	CreatedAt            field.Time
+	User                 lessonRecommendationsBelongsToUser
+
+	Lesson lessonRecommendationsBelongsToLesson
+
+	RelatedValue lessonRecommendationsBelongsToRelatedValue
 
 	fieldMap map[string]field.Expr
 }
@@ -114,7 +151,7 @@ func (l *lessonRecommendations) GetFieldByName(fieldName string) (field.OrderExp
 }
 
 func (l *lessonRecommendations) fillFieldMap() {
-	l.fieldMap = make(map[string]field.Expr, 11)
+	l.fieldMap = make(map[string]field.Expr, 14)
 	l.fieldMap["id"] = l.ID
 	l.fieldMap["user_id"] = l.UserID
 	l.fieldMap["lesson_id"] = l.LessonID
@@ -126,16 +163,280 @@ func (l *lessonRecommendations) fillFieldMap() {
 	l.fieldMap["dismissed_at"] = l.DismissedAt
 	l.fieldMap["viewed_at"] = l.ViewedAt
 	l.fieldMap["created_at"] = l.CreatedAt
+
 }
 
 func (l lessonRecommendations) clone(db *gorm.DB) lessonRecommendations {
 	l.lessonRecommendationsDo.ReplaceConnPool(db.Statement.ConnPool)
+	l.User.db = db.Session(&gorm.Session{Initialized: true})
+	l.User.db.Statement.ConnPool = db.Statement.ConnPool
+	l.Lesson.db = db.Session(&gorm.Session{Initialized: true})
+	l.Lesson.db.Statement.ConnPool = db.Statement.ConnPool
+	l.RelatedValue.db = db.Session(&gorm.Session{Initialized: true})
+	l.RelatedValue.db.Statement.ConnPool = db.Statement.ConnPool
 	return l
 }
 
 func (l lessonRecommendations) replaceDB(db *gorm.DB) lessonRecommendations {
 	l.lessonRecommendationsDo.ReplaceDB(db)
+	l.User.db = db.Session(&gorm.Session{})
+	l.Lesson.db = db.Session(&gorm.Session{})
+	l.RelatedValue.db = db.Session(&gorm.Session{})
 	return l
+}
+
+type lessonRecommendationsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a lessonRecommendationsBelongsToUser) Where(conds ...field.Expr) *lessonRecommendationsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a lessonRecommendationsBelongsToUser) WithContext(ctx context.Context) *lessonRecommendationsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a lessonRecommendationsBelongsToUser) Session(session *gorm.Session) *lessonRecommendationsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a lessonRecommendationsBelongsToUser) Model(m *model.LessonRecommendations) *lessonRecommendationsBelongsToUserTx {
+	return &lessonRecommendationsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a lessonRecommendationsBelongsToUser) Unscoped() *lessonRecommendationsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type lessonRecommendationsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a lessonRecommendationsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a lessonRecommendationsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a lessonRecommendationsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a lessonRecommendationsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a lessonRecommendationsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a lessonRecommendationsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a lessonRecommendationsBelongsToUserTx) Unscoped() *lessonRecommendationsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type lessonRecommendationsBelongsToLesson struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	Category struct {
+		field.RelationField
+	}
+}
+
+func (a lessonRecommendationsBelongsToLesson) Where(conds ...field.Expr) *lessonRecommendationsBelongsToLesson {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a lessonRecommendationsBelongsToLesson) WithContext(ctx context.Context) *lessonRecommendationsBelongsToLesson {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a lessonRecommendationsBelongsToLesson) Session(session *gorm.Session) *lessonRecommendationsBelongsToLesson {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a lessonRecommendationsBelongsToLesson) Model(m *model.LessonRecommendations) *lessonRecommendationsBelongsToLessonTx {
+	return &lessonRecommendationsBelongsToLessonTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a lessonRecommendationsBelongsToLesson) Unscoped() *lessonRecommendationsBelongsToLesson {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type lessonRecommendationsBelongsToLessonTx struct{ tx *gorm.Association }
+
+func (a lessonRecommendationsBelongsToLessonTx) Find() (result *model.Lessons, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a lessonRecommendationsBelongsToLessonTx) Append(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a lessonRecommendationsBelongsToLessonTx) Replace(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a lessonRecommendationsBelongsToLessonTx) Delete(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a lessonRecommendationsBelongsToLessonTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a lessonRecommendationsBelongsToLessonTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a lessonRecommendationsBelongsToLessonTx) Unscoped() *lessonRecommendationsBelongsToLessonTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type lessonRecommendationsBelongsToRelatedValue struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	User struct {
+		field.RelationField
+	}
+	MaslowLevel struct {
+		field.RelationField
+	}
+}
+
+func (a lessonRecommendationsBelongsToRelatedValue) Where(conds ...field.Expr) *lessonRecommendationsBelongsToRelatedValue {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a lessonRecommendationsBelongsToRelatedValue) WithContext(ctx context.Context) *lessonRecommendationsBelongsToRelatedValue {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a lessonRecommendationsBelongsToRelatedValue) Session(session *gorm.Session) *lessonRecommendationsBelongsToRelatedValue {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a lessonRecommendationsBelongsToRelatedValue) Model(m *model.LessonRecommendations) *lessonRecommendationsBelongsToRelatedValueTx {
+	return &lessonRecommendationsBelongsToRelatedValueTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a lessonRecommendationsBelongsToRelatedValue) Unscoped() *lessonRecommendationsBelongsToRelatedValue {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type lessonRecommendationsBelongsToRelatedValueTx struct{ tx *gorm.Association }
+
+func (a lessonRecommendationsBelongsToRelatedValueTx) Find() (result *model.CoreValues, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a lessonRecommendationsBelongsToRelatedValueTx) Append(values ...*model.CoreValues) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a lessonRecommendationsBelongsToRelatedValueTx) Replace(values ...*model.CoreValues) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a lessonRecommendationsBelongsToRelatedValueTx) Delete(values ...*model.CoreValues) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a lessonRecommendationsBelongsToRelatedValueTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a lessonRecommendationsBelongsToRelatedValueTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a lessonRecommendationsBelongsToRelatedValueTx) Unscoped() *lessonRecommendationsBelongsToRelatedValueTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type lessonRecommendationsDo struct{ gen.DO }

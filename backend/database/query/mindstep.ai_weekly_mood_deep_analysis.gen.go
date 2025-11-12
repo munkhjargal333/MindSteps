@@ -41,6 +41,11 @@ func newAIWeeklyMoodDeepAnalysis(db *gorm.DB, opts ...gen.DOOption) aIWeeklyMood
 	_aIWeeklyMoodDeepAnalysis.SuggestedLessonIds = field.NewString(tableName, "suggested_lesson_ids")
 	_aIWeeklyMoodDeepAnalysis.ConsciousnessShiftOpportunities = field.NewString(tableName, "consciousness_shift_opportunities")
 	_aIWeeklyMoodDeepAnalysis.CreatedAt = field.NewTime(tableName, "created_at")
+	_aIWeeklyMoodDeepAnalysis.User = aIWeeklyMoodDeepAnalysisBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_aIWeeklyMoodDeepAnalysis.fillFieldMap()
 
@@ -65,6 +70,7 @@ type aIWeeklyMoodDeepAnalysis struct {
 	SuggestedLessonIds              field.String
 	ConsciousnessShiftOpportunities field.String
 	CreatedAt                       field.Time
+	User                            aIWeeklyMoodDeepAnalysisBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -123,7 +129,7 @@ func (a *aIWeeklyMoodDeepAnalysis) GetFieldByName(fieldName string) (field.Order
 }
 
 func (a *aIWeeklyMoodDeepAnalysis) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 14)
+	a.fieldMap = make(map[string]field.Expr, 15)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["user_id"] = a.UserID
 	a.fieldMap["analysis_week"] = a.AnalysisWeek
@@ -138,16 +144,101 @@ func (a *aIWeeklyMoodDeepAnalysis) fillFieldMap() {
 	a.fieldMap["suggested_lesson_ids"] = a.SuggestedLessonIds
 	a.fieldMap["consciousness_shift_opportunities"] = a.ConsciousnessShiftOpportunities
 	a.fieldMap["created_at"] = a.CreatedAt
+
 }
 
 func (a aIWeeklyMoodDeepAnalysis) clone(db *gorm.DB) aIWeeklyMoodDeepAnalysis {
 	a.aIWeeklyMoodDeepAnalysisDo.ReplaceConnPool(db.Statement.ConnPool)
+	a.User.db = db.Session(&gorm.Session{Initialized: true})
+	a.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return a
 }
 
 func (a aIWeeklyMoodDeepAnalysis) replaceDB(db *gorm.DB) aIWeeklyMoodDeepAnalysis {
 	a.aIWeeklyMoodDeepAnalysisDo.ReplaceDB(db)
+	a.User.db = db.Session(&gorm.Session{})
 	return a
+}
+
+type aIWeeklyMoodDeepAnalysisBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUser) Where(conds ...field.Expr) *aIWeeklyMoodDeepAnalysisBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUser) WithContext(ctx context.Context) *aIWeeklyMoodDeepAnalysisBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUser) Session(session *gorm.Session) *aIWeeklyMoodDeepAnalysisBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUser) Model(m *model.AIWeeklyMoodDeepAnalysis) *aIWeeklyMoodDeepAnalysisBelongsToUserTx {
+	return &aIWeeklyMoodDeepAnalysisBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUser) Unscoped() *aIWeeklyMoodDeepAnalysisBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type aIWeeklyMoodDeepAnalysisBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a aIWeeklyMoodDeepAnalysisBelongsToUserTx) Unscoped() *aIWeeklyMoodDeepAnalysisBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type aIWeeklyMoodDeepAnalysisDo struct{ gen.DO }

@@ -43,6 +43,11 @@ func newUserInsights(db *gorm.DB, opts ...gen.DOOption) userInsights {
 	_userInsights.Priority = field.NewString(tableName, "priority")
 	_userInsights.ExpiresAt = field.NewTime(tableName, "expires_at")
 	_userInsights.CreatedAt = field.NewTime(tableName, "created_at")
+	_userInsights.User = userInsightsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_userInsights.fillFieldMap()
 
@@ -69,6 +74,7 @@ type userInsights struct {
 	Priority        field.String
 	ExpiresAt       field.Time
 	CreatedAt       field.Time
+	User            userInsightsBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -129,7 +135,7 @@ func (u *userInsights) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 }
 
 func (u *userInsights) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 16)
+	u.fieldMap = make(map[string]field.Expr, 17)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["user_id"] = u.UserID
 	u.fieldMap["insight_type"] = u.InsightType
@@ -146,16 +152,101 @@ func (u *userInsights) fillFieldMap() {
 	u.fieldMap["priority"] = u.Priority
 	u.fieldMap["expires_at"] = u.ExpiresAt
 	u.fieldMap["created_at"] = u.CreatedAt
+
 }
 
 func (u userInsights) clone(db *gorm.DB) userInsights {
 	u.userInsightsDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.User.db = db.Session(&gorm.Session{Initialized: true})
+	u.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u userInsights) replaceDB(db *gorm.DB) userInsights {
 	u.userInsightsDo.ReplaceDB(db)
+	u.User.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type userInsightsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userInsightsBelongsToUser) Where(conds ...field.Expr) *userInsightsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userInsightsBelongsToUser) WithContext(ctx context.Context) *userInsightsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userInsightsBelongsToUser) Session(session *gorm.Session) *userInsightsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userInsightsBelongsToUser) Model(m *model.UserInsights) *userInsightsBelongsToUserTx {
+	return &userInsightsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userInsightsBelongsToUser) Unscoped() *userInsightsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userInsightsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a userInsightsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userInsightsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userInsightsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userInsightsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userInsightsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userInsightsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userInsightsBelongsToUserTx) Unscoped() *userInsightsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type userInsightsDo struct{ gen.DO }

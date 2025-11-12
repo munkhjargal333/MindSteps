@@ -6,12 +6,13 @@ import (
 	"mindsteps/database"
 
 	"gorm.io/gen"
+	"gorm.io/gen/field"
 	"gorm.io/gorm/logger"
 )
 
-// func tag(columnName string) string {
-// 	return columnName
-// }
+func tag(columnName string) string {
+	return columnName
+}
 
 func model(name string) string {
 	db := config.Get().DB
@@ -50,8 +51,15 @@ func main() {
 		gen.FieldType("is_email_verified", "bool"),
 		gen.FieldType("login_count", "int"),
 		gen.FieldType("password", "string"),
-		//gen.FieldIgnore("password"),
 		gen.FieldIgnore("deleted_at"),
+		gen.FieldJSONTagWithNS(func(columnName string) string {
+			switch columnName {
+			case "password":
+				return `-`
+			default:
+				return columnName
+			}
+		}),
 	)
 
 	// Roles table
@@ -62,8 +70,23 @@ func main() {
 		gen.FieldType("level", "int16"),
 		gen.FieldType("created_by_id", "uint"),
 		gen.FieldType("updated_by_id", "uint"),
-		//gen.FieldJSONType("permissions"),
 		gen.FieldType("permissions", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "CreatedBy", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"created_by_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("CreatedBy"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "UpdatedBy", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"updated_by_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("UpdatedBy"),
+		}),
 	)
 
 	// Role owners
@@ -74,6 +97,30 @@ func main() {
 		gen.FieldType("role_id", "uint"),
 		gen.FieldType("owner_id", "uint"),
 		gen.FieldType("assigned_by_id", "uint"),
+		gen.FieldRelate(field.BelongsTo, "Role", roles, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"role_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Role"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "Owner", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"owner_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Owner"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "AssignedBy", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"assigned_by_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("AssignedBy"),
+		}),
 	)
 
 	// ============================================================================
@@ -88,6 +135,14 @@ func main() {
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("is_used", "bool"),
 		gen.FieldIgnore("deleted_at"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// User sessions
@@ -97,6 +152,14 @@ func main() {
 		gen.FieldType("id", "uint"),
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("is_active", "bool"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// Revoked tokens
@@ -105,6 +168,14 @@ func main() {
 		"RevokedTokens",
 		gen.FieldType("id", "uint"),
 		gen.FieldType("user_id", "uint"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// Encryption keys
@@ -114,7 +185,7 @@ func main() {
 		gen.FieldType("id", "uint"),
 		gen.FieldType("key_version", "int"),
 		gen.FieldType("is_active", "bool"),
-		gen.FieldIgnore("encrypted_key"), // Sensitive data
+		gen.FieldIgnore("encrypted_key"),
 	)
 
 	// ============================================================================
@@ -129,7 +200,6 @@ func main() {
 		gen.FieldType("level_number", "int"),
 		gen.FieldType("min_score", "int"),
 		gen.FieldType("max_score", "int"),
-		//gen.FieldJSONType("perks"),
 		gen.FieldType("perks", "datatypes.JSON"),
 	)
 
@@ -141,6 +211,14 @@ func main() {
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("points_earned", "int"),
 		gen.FieldType("is_featured", "bool"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// User streaks
@@ -152,6 +230,14 @@ func main() {
 		gen.FieldType("current_streak", "int"),
 		gen.FieldType("longest_streak", "int"),
 		gen.FieldType("total_activities", "int"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// Scoring history
@@ -162,8 +248,15 @@ func main() {
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("source_id", "uint"),
 		gen.FieldType("points_earned", "int"),
-		//gen.FieldJSONType("metadata"),
 		gen.FieldType("metadata", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// ============================================================================
@@ -188,6 +281,22 @@ func main() {
 		gen.FieldType("maslow_level_id", "int"),
 		gen.FieldType("priority_order", "int"),
 		gen.FieldType("is_active", "bool"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "MaslowLevel", maslowLevels, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"maslow_level_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("MaslowLevel"),
+		}),
 	)
 
 	// Value reflections
@@ -199,6 +308,22 @@ func main() {
 		gen.FieldType("value_id", "uint"),
 		gen.FieldType("source_id", "uint"),
 		gen.FieldType("alignment_score", "int"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "Value", coreValues, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"value_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Value"),
+		}),
 	)
 
 	// ============================================================================
@@ -223,6 +348,22 @@ func main() {
 		gen.FieldType("consciousness_score", "int"),
 		gen.FieldType("primary_level_id", "int"),
 		gen.FieldType("source_id", "uint"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "PrimaryLevel", consciousnessLevels, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"primary_level_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("PrimaryLevel"),
+		}),
 	)
 
 	// ============================================================================
@@ -234,9 +375,13 @@ func main() {
 		model("plutchik_emotions"),
 		"PlutchikEmotions",
 		gen.FieldType("id", "int"),
-		gen.FieldType("opposite_emotion_id", "int"),
+		gen.FieldType("category_id", "int"),
 		gen.FieldType("intensity_level", "int"),
 		gen.FieldType("base_emotion_id", "int"),
+		gen.FieldType("name_mn", "string"),
+		gen.FieldType("name_en", "string"),
+		gen.FieldType("emoji", "string"),
+		gen.FieldType("color", "string"),
 	)
 
 	// Plutchik combinations
@@ -246,20 +391,22 @@ func main() {
 		gen.FieldType("id", "int"),
 		gen.FieldType("emotion1_id", "int"),
 		gen.FieldType("emotion2_id", "int"),
-	)
-
-	// User emotion wheel
-	userEmotionWheel := g.GenerateModelAs(
-		model("user_emotion_wheel"),
-		"UserEmotionWheel",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("mood_entry_id", "uint"),
-		gen.FieldType("journal_id", "uint"),
-		gen.FieldType("plutchik_emotion_id", "int"),
-		gen.FieldType("intensity", "int"),
-		gen.FieldType("detected_combination_id", "int"),
-		gen.FieldType("is_ai_detected", "bool"),
+		gen.FieldRelate(field.BelongsTo, "Emotion1", plutchikEmotions, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"emotion1_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Emotion1"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "Emotion2", plutchikEmotions, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"emotion2_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Emotion2"),
+		}),
 	)
 
 	// ============================================================================
@@ -272,15 +419,26 @@ func main() {
 		gen.FieldType("id", "uint"),
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("word_count", "int"),
-		//gen.FieldType("encryption_key_id", "uint"),
 		gen.FieldType("is_private", "bool"),
-		//gen.FieldIgnore("content_encrypted"), // Encrypted field
-		gen.FieldIgnore("deleted_at"),
 
+		gen.FieldType("related_value_ids", "*uint"),
+		gen.FieldType("ai_detected_values", "*string"),
+		gen.FieldType("encryption_key_id", "*uint"),
+
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 		// gen.FieldJSONTagWithNS(func(columnName string) string {
 		// 	switch columnName {
+		// 	case "content_encrypted", "encryption_key_id":
+		// 		return `-`
 		// 	default:
-		// 		return "-"
+		// 		return columnName
 		// 	}
 		// }),
 	)
@@ -289,7 +447,6 @@ func main() {
 	// MOOD TRACKING
 	// ============================================================================
 
-	// Mood categories
 	moodCategories := g.GenerateModelAs(
 		model("mood_categories"),
 		"MoodCategories",
@@ -304,10 +461,14 @@ func main() {
 		gen.FieldType("id", "int"),
 		gen.FieldType("category_id", "int"),
 		gen.FieldType("intensity_level", "int"),
-
-		// gen.FieldJSONTagWithNS(func(columnName string) string {
-		// 	return fmt.Sprintf(`-`, columnName)
-		// }),
+		gen.FieldRelate(field.BelongsTo, "Category", moodCategories, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"category_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Category"),
+		}),
 	)
 
 	// Mood entries
@@ -317,13 +478,92 @@ func main() {
 		gen.FieldType("id", "uint"),
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("mood_id", "int"),
+		gen.FieldType("plutchik_id", "int"),
 		gen.FieldType("intensity", "int"),
 		gen.FieldType("trigger_event", "string"),
-		gen.FieldType("related_value_ids", "uint"),
+		gen.FieldType("related_value_ids", "*[]uint"),
+		gen.FieldType("ai_detected_values", "*[]uint"),
 
-		// gen.FieldJSONTagWithNS(func(columnName string) string {
-		// 	return fmt.Sprintf(`-`, columnName)
-		// }),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+
+		gen.FieldRelate(field.BelongsTo, "MoodCategories", moodCategories, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"mood_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("MoodCategories"),
+		}),
+
+		gen.FieldRelate(field.BelongsTo, "PlutchikEmotions", plutchikEmotions, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"plutchik_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("PlutchikEmotions"),
+		}),
+	)
+
+	// User emotion wheel
+	userEmotionWheel := g.GenerateModelAs(
+		model("user_emotion_wheel"),
+		"UserEmotionWheel",
+		gen.FieldType("id", "uint"),
+		gen.FieldType("user_id", "uint"),
+		gen.FieldType("mood_entry_id", "uint"),
+		gen.FieldType("journal_id", "uint"),
+		gen.FieldType("plutchik_emotion_id", "int"),
+		gen.FieldType("intensity", "int"),
+		gen.FieldType("detected_combination_id", "int"),
+		gen.FieldType("is_ai_detected", "bool"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "MoodEntry", moodEntries, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"mood_entry_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("MoodEntry"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "Journal", journals, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"journal_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Journal"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "PlutchikEmotion", plutchikEmotions, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"plutchik_emotion_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("PlutchikEmotion"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "DetectedCombination", plutchikCombinations, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"detected_combination_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("DetectedCombination"),
+		}),
 	)
 
 	// ============================================================================
@@ -340,6 +580,22 @@ func main() {
 		gen.FieldType("progress_percentage", "int"),
 		gen.FieldType("is_public", "bool"),
 		gen.FieldIgnore("deleted_at"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "Value", coreValues, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"value_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Value"),
+		}),
 	)
 
 	// Goal milestones
@@ -350,6 +606,14 @@ func main() {
 		gen.FieldType("goal_id", "uint"),
 		gen.FieldType("is_completed", "bool"),
 		gen.FieldType("sort_order", "int"),
+		gen.FieldRelate(field.BelongsTo, "Goal", goals, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"goal_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Goal"),
+		}),
 	)
 
 	// ============================================================================
@@ -382,6 +646,14 @@ func main() {
 		gen.FieldType("like_count", "int"),
 		gen.FieldType("sort_order", "int"),
 		gen.FieldIgnore("deleted_at"),
+		gen.FieldRelate(field.BelongsTo, "Category", lessonCategories, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"category_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Category"),
+		}),
 	)
 
 	// User lesson progress
@@ -395,6 +667,22 @@ func main() {
 		gen.FieldType("time_spent", "int"),
 		gen.FieldType("rating", "int"),
 		gen.FieldType("is_bookmarked", "bool"),
+		gen.FieldRelate(field.BelongsTo, "Lesson", lessons, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"lesson_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Lesson"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// Lesson recommendations
@@ -408,6 +696,30 @@ func main() {
 		gen.FieldType("related_pattern_id", "uint"),
 		gen.FieldType("priority_score", "int"),
 		gen.FieldType("is_dismissed", "bool"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "Lesson", lessons, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"lesson_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Lesson"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "RelatedValue", coreValues, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"related_value_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("RelatedValue"),
+		}),
 	)
 
 	// Lesson comments
@@ -420,6 +732,22 @@ func main() {
 		gen.FieldType("parent_id", "uint"),
 		gen.FieldType("is_edited", "bool"),
 		gen.FieldType("is_deleted", "bool"),
+		gen.FieldRelate(field.BelongsTo, "Lesson", lessons, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"lesson_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Lesson"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// Lesson reactions
@@ -429,6 +757,22 @@ func main() {
 		gen.FieldType("id", "uint"),
 		gen.FieldType("lesson_id", "uint"),
 		gen.FieldType("user_id", "uint"),
+		gen.FieldRelate(field.BelongsTo, "Lesson", lessons, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"lesson_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Lesson"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// ============================================================================
@@ -457,6 +801,22 @@ func main() {
 		gen.FieldType("quality_rating", "int"),
 		gen.FieldType("focus_level", "int"),
 		gen.FieldType("interruptions", "int"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "Technique", meditationTechniques, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"technique_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Technique"),
+		}),
 	)
 
 	// ============================================================================
@@ -488,8 +848,23 @@ func main() {
 		gen.FieldType("bonus_points", "int"),
 		gen.FieldType("final_points", "int"),
 		gen.FieldType("processing_duration", "int"),
-
 		gen.FieldType("primary_emotions", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "Journal", journals, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"journal_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Journal"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// AI mood analysis
@@ -505,6 +880,22 @@ func main() {
 		gen.FieldType("emotional_intelligence_score", "int"),
 		gen.FieldType("points_earned", "int"),
 		gen.FieldType("detected_patterns", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "MoodEntry", moodEntries, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"mood_entry_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("MoodEntry"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// AI weekly mood deep analysis
@@ -517,6 +908,14 @@ func main() {
 		gen.FieldType("unconscious_triggers", "datatypes.JSON"),
 		gen.FieldType("values_in_conflict", "datatypes.JSON"),
 		gen.FieldType("values_being_honored", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// AI progress tracking
@@ -534,6 +933,14 @@ func main() {
 		gen.FieldType("key_improvements", "datatypes.JSON"),
 		gen.FieldType("areas_needing_attention", "datatypes.JSON"),
 		gen.FieldType("behavioral_changes_detected", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// Detected patterns
@@ -546,6 +953,14 @@ func main() {
 		gen.FieldType("emotional_impact_score", "int"),
 		gen.FieldType("is_resolved", "bool"),
 		gen.FieldType("user_acknowledged", "bool"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// ============================================================================
@@ -560,8 +975,15 @@ func main() {
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("is_read", "bool"),
 		gen.FieldType("is_dismissed", "bool"),
-		//		gen.FieldJSONType("data_points"),
 		gen.FieldType("data_points", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// Progress reports
@@ -578,6 +1000,14 @@ func main() {
 		gen.FieldType("meditation_summary", "datatypes.JSON"),
 		gen.FieldType("consciousness_progression", "datatypes.JSON"),
 		gen.FieldType("chart_data", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// ============================================================================
@@ -599,6 +1029,14 @@ func main() {
 		gen.FieldType("notification_insights", "bool"),
 		gen.FieldType("notification_achievements", "bool"),
 		gen.FieldType("data_sharing", "bool"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// Notifications
@@ -608,8 +1046,15 @@ func main() {
 		gen.FieldType("id", "uint"),
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("is_read", "bool"),
-		//gen.FieldJSONType("metadata"),
 		gen.FieldType("metadata", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// ============================================================================
@@ -635,6 +1080,22 @@ func main() {
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("processed_by_id", "uint"),
 		gen.FieldType("backup_created", "bool"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "ProcessedBy", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"processed_by_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("ProcessedBy"),
+		}),
 	)
 
 	// User data access log
@@ -646,6 +1107,30 @@ func main() {
 		gen.FieldType("accessed_by_id", "uint"),
 		gen.FieldType("record_id", "uint"),
 		gen.FieldType("session_id", "uint"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "AccessedBy", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"accessed_by_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("AccessedBy"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "Session", userSessions, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"session_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("Session"),
+		}),
 	)
 
 	// Deleted data log
@@ -657,8 +1142,23 @@ func main() {
 		gen.FieldType("record_id", "uint"),
 		gen.FieldType("deleted_by_id", "uint"),
 		gen.FieldType("can_recover", "bool"),
-		//gen.FieldJSONType("record_data"),
 		gen.FieldType("record_data", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "DeletedBy", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"deleted_by_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("DeletedBy"),
+		}),
 	)
 
 	// ============================================================================
@@ -673,6 +1173,14 @@ func main() {
 		gen.FieldType("updated_by_id", "uint"),
 		gen.FieldType("is_public", "bool"),
 		gen.FieldType("is_editable", "bool"),
+		gen.FieldRelate(field.BelongsTo, "UpdatedBy", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"updated_by_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("UpdatedBy"),
+		}),
 	)
 
 	// System audit log
@@ -684,6 +1192,14 @@ func main() {
 		gen.FieldType("entity_id", "uint"),
 		gen.FieldType("old_value", "datatypes.JSON"),
 		gen.FieldType("new_value", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
 	)
 
 	// Error logs
@@ -694,6 +1210,22 @@ func main() {
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("resolved_by_id", "uint"),
 		gen.FieldType("is_resolved", "bool"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+		gen.FieldRelate(field.BelongsTo, "ResolvedBy", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"resolved_by_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("ResolvedBy"),
+		}),
 	)
 
 	// ============================================================================

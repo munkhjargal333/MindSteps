@@ -12,31 +12,32 @@ const TableNameLessons = "mindstep.lessons"
 
 // Lessons mapped from table <mindstep.lessons>
 type Lessons struct {
-	ID                     uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	CategoryID             int       `gorm:"column:category_id;type:integer;not null" json:"category_id"`
-	ParentID               uint      `gorm:"column:parent_id;type:bigint" json:"parent_id"`
-	Title                  string    `gorm:"column:title;type:character varying(255);not null" json:"title"`
-	Slug                   string    `gorm:"column:slug;type:character varying(255)" json:"slug"`
-	Description            string    `gorm:"column:description;type:text" json:"description"`
-	Content                string    `gorm:"column:content;type:text" json:"content"`
-	LessonType             string    `gorm:"column:lesson_type;type:character varying(20)" json:"lesson_type"`
-	DifficultyLevel        string    `gorm:"column:difficulty_level;type:character varying(20)" json:"difficulty_level"`
-	RequiredLevel          int       `gorm:"column:required_level;type:integer;default:1" json:"required_level"`
-	EstimatedDuration      int       `gorm:"column:estimated_duration;type:integer" json:"estimated_duration"`
-	PointsReward           int       `gorm:"column:points_reward;type:integer" json:"points_reward"`
-	MediaURL               string    `gorm:"column:media_url;type:character varying(500)" json:"media_url"`
-	ThumbnailURL           string    `gorm:"column:thumbnail_url;type:character varying(500)" json:"thumbnail_url"`
-	Tags                   string    `gorm:"column:tags;type:text[]" json:"tags"`
-	RelatedValueKeywords   string    `gorm:"column:related_value_keywords;type:text[]" json:"related_value_keywords"`
-	RelatedEmotionKeywords string    `gorm:"column:related_emotion_keywords;type:text[]" json:"related_emotion_keywords"`
-	IsPremium              bool      `gorm:"column:is_premium;type:boolean" json:"is_premium"`
-	IsPublished            bool      `gorm:"column:is_published;type:boolean" json:"is_published"`
-	ViewCount              int       `gorm:"column:view_count;type:integer" json:"view_count"`
-	LikeCount              int       `gorm:"column:like_count;type:integer" json:"like_count"`
-	SortOrder              int       `gorm:"column:sort_order;type:integer" json:"sort_order"`
-	CreatedAt              time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
-	UpdatedAt              time.Time `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
-	PublishedAt            time.Time `gorm:"column:published_at;type:timestamp without time zone" json:"published_at"`
+	ID                     uint              `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	CategoryID             int               `gorm:"column:category_id;type:integer;not null" json:"category_id"`
+	ParentID               uint              `gorm:"column:parent_id;type:bigint" json:"parent_id"`
+	Title                  string            `gorm:"column:title;type:character varying(255);not null" json:"title"`
+	Slug                   string            `gorm:"column:slug;type:character varying(255)" json:"slug"`
+	Description            string            `gorm:"column:description;type:text" json:"description"`
+	Content                string            `gorm:"column:content;type:text" json:"content"`
+	LessonType             string            `gorm:"column:lesson_type;type:character varying(20)" json:"lesson_type"`
+	DifficultyLevel        string            `gorm:"column:difficulty_level;type:character varying(20)" json:"difficulty_level"`
+	RequiredLevel          int               `gorm:"column:required_level;type:integer;default:1" json:"required_level"`
+	EstimatedDuration      int               `gorm:"column:estimated_duration;type:integer" json:"estimated_duration"`
+	PointsReward           int               `gorm:"column:points_reward;type:integer" json:"points_reward"`
+	MediaURL               string            `gorm:"column:media_url;type:character varying(500)" json:"media_url"`
+	ThumbnailURL           string            `gorm:"column:thumbnail_url;type:character varying(500)" json:"thumbnail_url"`
+	Tags                   string            `gorm:"column:tags;type:text[]" json:"tags"`
+	RelatedValueKeywords   string            `gorm:"column:related_value_keywords;type:text[]" json:"related_value_keywords"`
+	RelatedEmotionKeywords string            `gorm:"column:related_emotion_keywords;type:text[]" json:"related_emotion_keywords"`
+	IsPremium              bool              `gorm:"column:is_premium;type:boolean" json:"is_premium"`
+	IsPublished            bool              `gorm:"column:is_published;type:boolean" json:"is_published"`
+	ViewCount              int               `gorm:"column:view_count;type:integer" json:"view_count"`
+	LikeCount              int               `gorm:"column:like_count;type:integer" json:"like_count"`
+	SortOrder              int               `gorm:"column:sort_order;type:integer" json:"sort_order"`
+	CreatedAt              time.Time         `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	UpdatedAt              time.Time         `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	PublishedAt            time.Time         `gorm:"column:published_at;type:timestamp without time zone" json:"published_at"`
+	Category               *LessonCategories `gorm:"foreignKey:category_id;references:id" json:"Category"`
 }
 
 // TableName Lessons's table name

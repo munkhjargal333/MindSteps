@@ -30,12 +30,13 @@ func newPlutchikEmotions(db *gorm.DB, opts ...gen.DOOption) plutchikEmotions {
 	_plutchikEmotions.ID = field.NewInt(tableName, "id")
 	_plutchikEmotions.NameEn = field.NewString(tableName, "name_en")
 	_plutchikEmotions.NameMn = field.NewString(tableName, "name_mn")
-	_plutchikEmotions.OppositeEmotionID = field.NewInt(tableName, "opposite_emotion_id")
+	_plutchikEmotions.OppositeEmotionID = field.NewInt32(tableName, "opposite_emotion_id")
 	_plutchikEmotions.IntensityLevel = field.NewInt(tableName, "intensity_level")
 	_plutchikEmotions.BaseEmotionID = field.NewInt(tableName, "base_emotion_id")
 	_plutchikEmotions.Color = field.NewString(tableName, "color")
 	_plutchikEmotions.Emoji = field.NewString(tableName, "emoji")
 	_plutchikEmotions.CreatedAt = field.NewTime(tableName, "created_at")
+	_plutchikEmotions.CategoryID = field.NewInt(tableName, "category_id")
 
 	_plutchikEmotions.fillFieldMap()
 
@@ -49,12 +50,13 @@ type plutchikEmotions struct {
 	ID                field.Int
 	NameEn            field.String
 	NameMn            field.String
-	OppositeEmotionID field.Int
+	OppositeEmotionID field.Int32
 	IntensityLevel    field.Int
 	BaseEmotionID     field.Int
 	Color             field.String
 	Emoji             field.String
 	CreatedAt         field.Time
+	CategoryID        field.Int
 
 	fieldMap map[string]field.Expr
 }
@@ -74,12 +76,13 @@ func (p *plutchikEmotions) updateTableName(table string) *plutchikEmotions {
 	p.ID = field.NewInt(table, "id")
 	p.NameEn = field.NewString(table, "name_en")
 	p.NameMn = field.NewString(table, "name_mn")
-	p.OppositeEmotionID = field.NewInt(table, "opposite_emotion_id")
+	p.OppositeEmotionID = field.NewInt32(table, "opposite_emotion_id")
 	p.IntensityLevel = field.NewInt(table, "intensity_level")
 	p.BaseEmotionID = field.NewInt(table, "base_emotion_id")
 	p.Color = field.NewString(table, "color")
 	p.Emoji = field.NewString(table, "emoji")
 	p.CreatedAt = field.NewTime(table, "created_at")
+	p.CategoryID = field.NewInt(table, "category_id")
 
 	p.fillFieldMap()
 
@@ -108,7 +111,7 @@ func (p *plutchikEmotions) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (p *plutchikEmotions) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 9)
+	p.fieldMap = make(map[string]field.Expr, 10)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["name_en"] = p.NameEn
 	p.fieldMap["name_mn"] = p.NameMn
@@ -118,6 +121,7 @@ func (p *plutchikEmotions) fillFieldMap() {
 	p.fieldMap["color"] = p.Color
 	p.fieldMap["emoji"] = p.Emoji
 	p.fieldMap["created_at"] = p.CreatedAt
+	p.fieldMap["category_id"] = p.CategoryID
 }
 
 func (p plutchikEmotions) clone(db *gorm.DB) plutchikEmotions {

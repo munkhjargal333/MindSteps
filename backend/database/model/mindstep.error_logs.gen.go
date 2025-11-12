@@ -27,6 +27,8 @@ type ErrorLogs struct {
 	ResolvedByID    uint      `gorm:"column:resolved_by_id;type:bigint" json:"resolved_by_id"`
 	ResolutionNotes string    `gorm:"column:resolution_notes;type:text" json:"resolution_notes"`
 	CreatedAt       time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	User            *Users    `gorm:"foreignKey:user_id;references:id" json:"User"`
+	ResolvedBy      *Users    `gorm:"foreignKey:resolved_by_id;references:id" json:"ResolvedBy"`
 }
 
 // TableName ErrorLogs's table name

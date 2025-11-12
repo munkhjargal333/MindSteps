@@ -38,10 +38,28 @@ func newMoodEntries(db *gorm.DB, opts ...gen.DOOption) moodEntries {
 	_moodEntries.Notes = field.NewString(tableName, "notes")
 	_moodEntries.Location = field.NewString(tableName, "location")
 	_moodEntries.Weather = field.NewString(tableName, "weather")
-	_moodEntries.RelatedValueIds = field.NewUint(tableName, "related_value_ids")
-	_moodEntries.AiDetectedValues = field.NewString(tableName, "ai_detected_values")
+	_moodEntries.RelatedValueIds = field.NewField(tableName, "related_value_ids")
+	_moodEntries.AiDetectedValues = field.NewField(tableName, "ai_detected_values")
 	_moodEntries.CreatedAt = field.NewTime(tableName, "created_at")
 	_moodEntries.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_moodEntries.PlutchikID = field.NewInt(tableName, "plutchik_id")
+	_moodEntries.User = moodEntriesBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
+
+	_moodEntries.MoodCategories = moodEntriesBelongsToMoodCategories{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("MoodCategories", "model.MoodCategories"),
+	}
+
+	_moodEntries.PlutchikEmotions = moodEntriesBelongsToPlutchikEmotions{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("PlutchikEmotions", "model.PlutchikEmotions"),
+	}
 
 	_moodEntries.fillFieldMap()
 
@@ -63,10 +81,16 @@ type moodEntries struct {
 	Notes            field.String
 	Location         field.String
 	Weather          field.String
-	RelatedValueIds  field.Uint
-	AiDetectedValues field.String
+	RelatedValueIds  field.Field
+	AiDetectedValues field.Field
 	CreatedAt        field.Time
 	UpdatedAt        field.Time
+	PlutchikID       field.Int
+	User             moodEntriesBelongsToUser
+
+	MoodCategories moodEntriesBelongsToMoodCategories
+
+	PlutchikEmotions moodEntriesBelongsToPlutchikEmotions
 
 	fieldMap map[string]field.Expr
 }
@@ -94,10 +118,11 @@ func (m *moodEntries) updateTableName(table string) *moodEntries {
 	m.Notes = field.NewString(table, "notes")
 	m.Location = field.NewString(table, "location")
 	m.Weather = field.NewString(table, "weather")
-	m.RelatedValueIds = field.NewUint(table, "related_value_ids")
-	m.AiDetectedValues = field.NewString(table, "ai_detected_values")
+	m.RelatedValueIds = field.NewField(table, "related_value_ids")
+	m.AiDetectedValues = field.NewField(table, "ai_detected_values")
 	m.CreatedAt = field.NewTime(table, "created_at")
 	m.UpdatedAt = field.NewTime(table, "updated_at")
+	m.PlutchikID = field.NewInt(table, "plutchik_id")
 
 	m.fillFieldMap()
 
@@ -124,7 +149,7 @@ func (m *moodEntries) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (m *moodEntries) fillFieldMap() {
-	m.fieldMap = make(map[string]field.Expr, 15)
+	m.fieldMap = make(map[string]field.Expr, 19)
 	m.fieldMap["id"] = m.ID
 	m.fieldMap["user_id"] = m.UserID
 	m.fieldMap["mood_id"] = m.MoodID
@@ -140,16 +165,270 @@ func (m *moodEntries) fillFieldMap() {
 	m.fieldMap["ai_detected_values"] = m.AiDetectedValues
 	m.fieldMap["created_at"] = m.CreatedAt
 	m.fieldMap["updated_at"] = m.UpdatedAt
+	m.fieldMap["plutchik_id"] = m.PlutchikID
+
 }
 
 func (m moodEntries) clone(db *gorm.DB) moodEntries {
 	m.moodEntriesDo.ReplaceConnPool(db.Statement.ConnPool)
+	m.User.db = db.Session(&gorm.Session{Initialized: true})
+	m.User.db.Statement.ConnPool = db.Statement.ConnPool
+	m.MoodCategories.db = db.Session(&gorm.Session{Initialized: true})
+	m.MoodCategories.db.Statement.ConnPool = db.Statement.ConnPool
+	m.PlutchikEmotions.db = db.Session(&gorm.Session{Initialized: true})
+	m.PlutchikEmotions.db.Statement.ConnPool = db.Statement.ConnPool
 	return m
 }
 
 func (m moodEntries) replaceDB(db *gorm.DB) moodEntries {
 	m.moodEntriesDo.ReplaceDB(db)
+	m.User.db = db.Session(&gorm.Session{})
+	m.MoodCategories.db = db.Session(&gorm.Session{})
+	m.PlutchikEmotions.db = db.Session(&gorm.Session{})
 	return m
+}
+
+type moodEntriesBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a moodEntriesBelongsToUser) Where(conds ...field.Expr) *moodEntriesBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a moodEntriesBelongsToUser) WithContext(ctx context.Context) *moodEntriesBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a moodEntriesBelongsToUser) Session(session *gorm.Session) *moodEntriesBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a moodEntriesBelongsToUser) Model(m *model.MoodEntries) *moodEntriesBelongsToUserTx {
+	return &moodEntriesBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a moodEntriesBelongsToUser) Unscoped() *moodEntriesBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type moodEntriesBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a moodEntriesBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a moodEntriesBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a moodEntriesBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a moodEntriesBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a moodEntriesBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a moodEntriesBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a moodEntriesBelongsToUserTx) Unscoped() *moodEntriesBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type moodEntriesBelongsToMoodCategories struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a moodEntriesBelongsToMoodCategories) Where(conds ...field.Expr) *moodEntriesBelongsToMoodCategories {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a moodEntriesBelongsToMoodCategories) WithContext(ctx context.Context) *moodEntriesBelongsToMoodCategories {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a moodEntriesBelongsToMoodCategories) Session(session *gorm.Session) *moodEntriesBelongsToMoodCategories {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a moodEntriesBelongsToMoodCategories) Model(m *model.MoodEntries) *moodEntriesBelongsToMoodCategoriesTx {
+	return &moodEntriesBelongsToMoodCategoriesTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a moodEntriesBelongsToMoodCategories) Unscoped() *moodEntriesBelongsToMoodCategories {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type moodEntriesBelongsToMoodCategoriesTx struct{ tx *gorm.Association }
+
+func (a moodEntriesBelongsToMoodCategoriesTx) Find() (result *model.MoodCategories, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a moodEntriesBelongsToMoodCategoriesTx) Append(values ...*model.MoodCategories) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a moodEntriesBelongsToMoodCategoriesTx) Replace(values ...*model.MoodCategories) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a moodEntriesBelongsToMoodCategoriesTx) Delete(values ...*model.MoodCategories) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a moodEntriesBelongsToMoodCategoriesTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a moodEntriesBelongsToMoodCategoriesTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a moodEntriesBelongsToMoodCategoriesTx) Unscoped() *moodEntriesBelongsToMoodCategoriesTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type moodEntriesBelongsToPlutchikEmotions struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a moodEntriesBelongsToPlutchikEmotions) Where(conds ...field.Expr) *moodEntriesBelongsToPlutchikEmotions {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a moodEntriesBelongsToPlutchikEmotions) WithContext(ctx context.Context) *moodEntriesBelongsToPlutchikEmotions {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a moodEntriesBelongsToPlutchikEmotions) Session(session *gorm.Session) *moodEntriesBelongsToPlutchikEmotions {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a moodEntriesBelongsToPlutchikEmotions) Model(m *model.MoodEntries) *moodEntriesBelongsToPlutchikEmotionsTx {
+	return &moodEntriesBelongsToPlutchikEmotionsTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a moodEntriesBelongsToPlutchikEmotions) Unscoped() *moodEntriesBelongsToPlutchikEmotions {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type moodEntriesBelongsToPlutchikEmotionsTx struct{ tx *gorm.Association }
+
+func (a moodEntriesBelongsToPlutchikEmotionsTx) Find() (result *model.PlutchikEmotions, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a moodEntriesBelongsToPlutchikEmotionsTx) Append(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a moodEntriesBelongsToPlutchikEmotionsTx) Replace(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a moodEntriesBelongsToPlutchikEmotionsTx) Delete(values ...*model.PlutchikEmotions) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a moodEntriesBelongsToPlutchikEmotionsTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a moodEntriesBelongsToPlutchikEmotionsTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a moodEntriesBelongsToPlutchikEmotionsTx) Unscoped() *moodEntriesBelongsToPlutchikEmotionsTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type moodEntriesDo struct{ gen.DO }

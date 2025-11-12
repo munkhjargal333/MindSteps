@@ -20,6 +20,7 @@ type AuthOTP struct {
 	ExpiredAt time.Time `gorm:"column:expired_at;type:timestamp without time zone;not null" json:"expired_at"`
 	UsedAt    time.Time `gorm:"column:used_at;type:timestamp without time zone" json:"used_at"`
 	CreatedAt time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	User      *Users    `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName AuthOTP's table name

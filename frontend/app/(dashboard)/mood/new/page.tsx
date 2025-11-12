@@ -3,19 +3,19 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import { MoodEntry, MoodCategory, Mood } from '@/lib/types';
+import { MoodCategory, Mood , PlutchikMood } from '@/lib/types';
 import Link from 'next/link';
 
-
 // ==================== NEW MOOD ENTRY PAGE ====================
-export function NewMoodPage() {
+export default function NewMoodPage() {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<MoodCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [moods, setMoods] = useState<Mood[]>([]);
+  const [moods, setMoods] = useState<PlutchikMood[]>([]);
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const [selectedPlutchikMood, setSelectedPlutchikMood] = useState<number | null>(null);
   const [intensity, setIntensity] = useState(5);
   const [whenFelt, setWhenFelt] = useState('');
   const [triggerEvent, setTriggerEvent] = useState('');
@@ -64,6 +64,7 @@ export function NewMoodPage() {
     try {
       await apiClient.createMoodEntry({
         mood_id: selectedMood,
+        plutchik_id: selectedPlutchikMood || undefined,
         intensity,
         when_felt: whenFelt || undefined,
         trigger_event: triggerEvent || undefined,
@@ -115,7 +116,7 @@ export function NewMoodPage() {
                 type="button"
                 onClick={() => {
                   setSelectedCategory(cat.id);
-                  setSelectedMood(null);
+                  setSelectedMood(cat.id);
                 }}
                 className={`p-4 rounded-lg border-2 transition ${
                   selectedCategory === cat.id
@@ -123,7 +124,7 @@ export function NewMoodPage() {
                     : 'border-gray-200 hover:border-purple-300'
                 }`}
               >
-                {/* <div className="text-2xl mb-1">{cat.emoji || '💭'}</div> */}
+                <div className="text-2xl mb-1">{cat.emoji || '💭'}</div>
                 <div className="text-sm font-semibold">{cat.name}</div>
               </button>
             ))}
@@ -141,15 +142,15 @@ export function NewMoodPage() {
                 <button
                   key={mood.id}
                   type="button"
-                  onClick={() => setSelectedMood(mood.id)}
+                  onClick={() => setSelectedPlutchikMood(mood.id)}
                   className={`p-4 rounded-lg border-2 transition ${
-                    selectedMood === mood.id
+                    selectedPlutchikMood == mood.id
                       ? 'border-purple-600 bg-purple-50'
                       : 'border-gray-200 hover:border-purple-300'
                   }`}
                 >
                   <div className="text-2xl mb-1">{mood.emoji || '😊'}</div>
-                  <div className="text-sm font-semibold">{mood.name}</div>
+                  <div className="text-sm font-semibold">{mood.name_mn}</div>
                 </button>
               ))}
             </div>
@@ -184,10 +185,11 @@ export function NewMoodPage() {
                 4. Хэзээ мэдэрсэн бэ?
               </label>
               <input
-                type="datetime-local"
+                type="text"
+                placeholder="Жишээ нь: Өчигдөр орой 8 цагт, Ажлын дараа гэх мэт"
                 value={whenFelt}
                 onChange={(e) => setWhenFelt(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none placeholder-gray-400"
               />
             </div>
 
@@ -276,4 +278,3 @@ export function NewMoodPage() {
     </div>
   );
 }
-

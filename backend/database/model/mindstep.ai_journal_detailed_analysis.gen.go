@@ -41,6 +41,8 @@ type AIJournalDetailedAnalysis struct {
 	ProcessingDuration   int            `gorm:"column:processing_duration;type:integer" json:"processing_duration"`
 	ModelName            string         `gorm:"column:model_name;type:character varying(50)" json:"model_name"`
 	CreatedAt            time.Time      `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	Journal              *Journals      `gorm:"foreignKey:journal_id;references:id" json:"Journal"`
+	User                 *Users         `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName AIJournalDetailedAnalysis's table name

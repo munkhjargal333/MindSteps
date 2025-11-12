@@ -23,6 +23,8 @@ type Roles struct {
 	CreatedAt   time.Time      `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
 	UpdatedByID uint           `gorm:"column:updated_by_id;type:bigint" json:"updated_by_id"`
 	UpdatedAt   time.Time      `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	CreatedBy   *Users         `gorm:"foreignKey:created_by_id;references:id" json:"CreatedBy"`
+	UpdatedBy   *Users         `gorm:"foreignKey:updated_by_id;references:id" json:"UpdatedBy"`
 }
 
 // TableName Roles's table name

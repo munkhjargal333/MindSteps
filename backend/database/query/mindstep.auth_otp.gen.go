@@ -35,6 +35,11 @@ func newAuthOTP(db *gorm.DB, opts ...gen.DOOption) authOTP {
 	_authOTP.ExpiredAt = field.NewTime(tableName, "expired_at")
 	_authOTP.UsedAt = field.NewTime(tableName, "used_at")
 	_authOTP.CreatedAt = field.NewTime(tableName, "created_at")
+	_authOTP.User = authOTPBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_authOTP.fillFieldMap()
 
@@ -53,6 +58,7 @@ type authOTP struct {
 	ExpiredAt field.Time
 	UsedAt    field.Time
 	CreatedAt field.Time
+	User      authOTPBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -101,7 +107,7 @@ func (a *authOTP) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (a *authOTP) fillFieldMap() {
-	a.fieldMap = make(map[string]field.Expr, 8)
+	a.fieldMap = make(map[string]field.Expr, 9)
 	a.fieldMap["id"] = a.ID
 	a.fieldMap["user_id"] = a.UserID
 	a.fieldMap["otp_code"] = a.OtpCode
@@ -110,16 +116,101 @@ func (a *authOTP) fillFieldMap() {
 	a.fieldMap["expired_at"] = a.ExpiredAt
 	a.fieldMap["used_at"] = a.UsedAt
 	a.fieldMap["created_at"] = a.CreatedAt
+
 }
 
 func (a authOTP) clone(db *gorm.DB) authOTP {
 	a.authOTPDo.ReplaceConnPool(db.Statement.ConnPool)
+	a.User.db = db.Session(&gorm.Session{Initialized: true})
+	a.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return a
 }
 
 func (a authOTP) replaceDB(db *gorm.DB) authOTP {
 	a.authOTPDo.ReplaceDB(db)
+	a.User.db = db.Session(&gorm.Session{})
 	return a
+}
+
+type authOTPBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a authOTPBelongsToUser) Where(conds ...field.Expr) *authOTPBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a authOTPBelongsToUser) WithContext(ctx context.Context) *authOTPBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a authOTPBelongsToUser) Session(session *gorm.Session) *authOTPBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a authOTPBelongsToUser) Model(m *model.AuthOTP) *authOTPBelongsToUserTx {
+	return &authOTPBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a authOTPBelongsToUser) Unscoped() *authOTPBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type authOTPBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a authOTPBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a authOTPBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a authOTPBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a authOTPBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a authOTPBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a authOTPBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a authOTPBelongsToUserTx) Unscoped() *authOTPBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type authOTPDo struct{ gen.DO }

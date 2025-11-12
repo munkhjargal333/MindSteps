@@ -17,6 +17,8 @@ type LessonReactions struct {
 	UserID       uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
 	ReactionType string    `gorm:"column:reaction_type;type:character varying(20)" json:"reaction_type"`
 	CreatedAt    time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	Lesson       *Lessons  `gorm:"foreignKey:lesson_id;references:id" json:"Lesson"`
+	User         *Users    `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName LessonReactions's table name

@@ -36,6 +36,22 @@ func newLessonComments(db *gorm.DB, opts ...gen.DOOption) lessonComments {
 	_lessonComments.IsDeleted = field.NewBool(tableName, "is_deleted")
 	_lessonComments.CreatedAt = field.NewTime(tableName, "created_at")
 	_lessonComments.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_lessonComments.Lesson = lessonCommentsBelongsToLesson{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Lesson", "model.Lessons"),
+		Category: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Lesson.Category", "model.LessonCategories"),
+		},
+	}
+
+	_lessonComments.User = lessonCommentsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_lessonComments.fillFieldMap()
 
@@ -55,6 +71,9 @@ type lessonComments struct {
 	IsDeleted field.Bool
 	CreatedAt field.Time
 	UpdatedAt field.Time
+	Lesson    lessonCommentsBelongsToLesson
+
+	User lessonCommentsBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -108,7 +127,7 @@ func (l *lessonComments) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (l *lessonComments) fillFieldMap() {
-	l.fieldMap = make(map[string]field.Expr, 9)
+	l.fieldMap = make(map[string]field.Expr, 11)
 	l.fieldMap["id"] = l.ID
 	l.fieldMap["lesson_id"] = l.LessonID
 	l.fieldMap["user_id"] = l.UserID
@@ -118,16 +137,189 @@ func (l *lessonComments) fillFieldMap() {
 	l.fieldMap["is_deleted"] = l.IsDeleted
 	l.fieldMap["created_at"] = l.CreatedAt
 	l.fieldMap["updated_at"] = l.UpdatedAt
+
 }
 
 func (l lessonComments) clone(db *gorm.DB) lessonComments {
 	l.lessonCommentsDo.ReplaceConnPool(db.Statement.ConnPool)
+	l.Lesson.db = db.Session(&gorm.Session{Initialized: true})
+	l.Lesson.db.Statement.ConnPool = db.Statement.ConnPool
+	l.User.db = db.Session(&gorm.Session{Initialized: true})
+	l.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return l
 }
 
 func (l lessonComments) replaceDB(db *gorm.DB) lessonComments {
 	l.lessonCommentsDo.ReplaceDB(db)
+	l.Lesson.db = db.Session(&gorm.Session{})
+	l.User.db = db.Session(&gorm.Session{})
 	return l
+}
+
+type lessonCommentsBelongsToLesson struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	Category struct {
+		field.RelationField
+	}
+}
+
+func (a lessonCommentsBelongsToLesson) Where(conds ...field.Expr) *lessonCommentsBelongsToLesson {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a lessonCommentsBelongsToLesson) WithContext(ctx context.Context) *lessonCommentsBelongsToLesson {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a lessonCommentsBelongsToLesson) Session(session *gorm.Session) *lessonCommentsBelongsToLesson {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a lessonCommentsBelongsToLesson) Model(m *model.LessonComments) *lessonCommentsBelongsToLessonTx {
+	return &lessonCommentsBelongsToLessonTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a lessonCommentsBelongsToLesson) Unscoped() *lessonCommentsBelongsToLesson {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type lessonCommentsBelongsToLessonTx struct{ tx *gorm.Association }
+
+func (a lessonCommentsBelongsToLessonTx) Find() (result *model.Lessons, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a lessonCommentsBelongsToLessonTx) Append(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a lessonCommentsBelongsToLessonTx) Replace(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a lessonCommentsBelongsToLessonTx) Delete(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a lessonCommentsBelongsToLessonTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a lessonCommentsBelongsToLessonTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a lessonCommentsBelongsToLessonTx) Unscoped() *lessonCommentsBelongsToLessonTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type lessonCommentsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a lessonCommentsBelongsToUser) Where(conds ...field.Expr) *lessonCommentsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a lessonCommentsBelongsToUser) WithContext(ctx context.Context) *lessonCommentsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a lessonCommentsBelongsToUser) Session(session *gorm.Session) *lessonCommentsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a lessonCommentsBelongsToUser) Model(m *model.LessonComments) *lessonCommentsBelongsToUserTx {
+	return &lessonCommentsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a lessonCommentsBelongsToUser) Unscoped() *lessonCommentsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type lessonCommentsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a lessonCommentsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a lessonCommentsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a lessonCommentsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a lessonCommentsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a lessonCommentsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a lessonCommentsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a lessonCommentsBelongsToUserTx) Unscoped() *lessonCommentsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type lessonCommentsDo struct{ gen.DO }

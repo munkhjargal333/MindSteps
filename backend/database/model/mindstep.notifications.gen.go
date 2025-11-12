@@ -28,6 +28,7 @@ type Notifications struct {
 	Metadata         datatypes.JSON `gorm:"column:metadata;type:jsonb" json:"metadata"`
 	Priority         string         `gorm:"column:priority;type:character varying(20);default:normal" json:"priority"`
 	CreatedAt        time.Time      `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	User             *Users         `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName Notifications's table name

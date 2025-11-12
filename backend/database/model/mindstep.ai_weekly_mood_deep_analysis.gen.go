@@ -28,6 +28,7 @@ type AIWeeklyMoodDeepAnalysis struct {
 	SuggestedLessonIds              string         `gorm:"column:suggested_lesson_ids;type:bigint[]" json:"suggested_lesson_ids"`
 	ConsciousnessShiftOpportunities string         `gorm:"column:consciousness_shift_opportunities;type:text[]" json:"consciousness_shift_opportunities"`
 	CreatedAt                       time.Time      `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	User                            *Users         `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName AIWeeklyMoodDeepAnalysis's table name

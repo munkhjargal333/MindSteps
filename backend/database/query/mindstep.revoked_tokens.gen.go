@@ -33,6 +33,11 @@ func newRevokedTokens(db *gorm.DB, opts ...gen.DOOption) revokedTokens {
 	_revokedTokens.RevokedAt = field.NewTime(tableName, "revoked_at")
 	_revokedTokens.ExpiresAt = field.NewTime(tableName, "expires_at")
 	_revokedTokens.Reason = field.NewString(tableName, "reason")
+	_revokedTokens.User = revokedTokensBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_revokedTokens.fillFieldMap()
 
@@ -49,6 +54,7 @@ type revokedTokens struct {
 	RevokedAt field.Time
 	ExpiresAt field.Time
 	Reason    field.String
+	User      revokedTokensBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -99,23 +105,108 @@ func (r *revokedTokens) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (r *revokedTokens) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 6)
+	r.fieldMap = make(map[string]field.Expr, 7)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["token_hash"] = r.TokenHash
 	r.fieldMap["user_id"] = r.UserID
 	r.fieldMap["revoked_at"] = r.RevokedAt
 	r.fieldMap["expires_at"] = r.ExpiresAt
 	r.fieldMap["reason"] = r.Reason
+
 }
 
 func (r revokedTokens) clone(db *gorm.DB) revokedTokens {
 	r.revokedTokensDo.ReplaceConnPool(db.Statement.ConnPool)
+	r.User.db = db.Session(&gorm.Session{Initialized: true})
+	r.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return r
 }
 
 func (r revokedTokens) replaceDB(db *gorm.DB) revokedTokens {
 	r.revokedTokensDo.ReplaceDB(db)
+	r.User.db = db.Session(&gorm.Session{})
 	return r
+}
+
+type revokedTokensBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a revokedTokensBelongsToUser) Where(conds ...field.Expr) *revokedTokensBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a revokedTokensBelongsToUser) WithContext(ctx context.Context) *revokedTokensBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a revokedTokensBelongsToUser) Session(session *gorm.Session) *revokedTokensBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a revokedTokensBelongsToUser) Model(m *model.RevokedTokens) *revokedTokensBelongsToUserTx {
+	return &revokedTokensBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a revokedTokensBelongsToUser) Unscoped() *revokedTokensBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type revokedTokensBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a revokedTokensBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a revokedTokensBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a revokedTokensBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a revokedTokensBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a revokedTokensBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a revokedTokensBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a revokedTokensBelongsToUserTx) Unscoped() *revokedTokensBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type revokedTokensDo struct{ gen.DO }

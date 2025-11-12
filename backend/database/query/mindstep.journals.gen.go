@@ -32,15 +32,21 @@ func newJournals(db *gorm.DB, opts ...gen.DOOption) journals {
 	_journals.Title = field.NewString(tableName, "title")
 	_journals.Content = field.NewString(tableName, "content")
 	_journals.ContentEncrypted = field.NewString(tableName, "content_encrypted")
-	_journals.EncryptionKeyID = field.NewInt64(tableName, "encryption_key_id")
+	_journals.EncryptionKeyID = field.NewUint(tableName, "encryption_key_id")
 	_journals.WordCount = field.NewInt(tableName, "word_count")
 	_journals.SentimentScore = field.NewFloat64(tableName, "sentiment_score")
 	_journals.IsPrivate = field.NewBool(tableName, "is_private")
 	_journals.Tags = field.NewString(tableName, "tags")
-	_journals.RelatedValueIds = field.NewInt64(tableName, "related_value_ids")
+	_journals.RelatedValueIds = field.NewUint(tableName, "related_value_ids")
 	_journals.AiDetectedValues = field.NewString(tableName, "ai_detected_values")
 	_journals.CreatedAt = field.NewTime(tableName, "created_at")
 	_journals.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_journals.DeletedAt = field.NewField(tableName, "deleted_at")
+	_journals.User = journalsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_journals.fillFieldMap()
 
@@ -56,15 +62,17 @@ type journals struct {
 	Title            field.String
 	Content          field.String
 	ContentEncrypted field.String
-	EncryptionKeyID  field.Int64
+	EncryptionKeyID  field.Uint
 	WordCount        field.Int
 	SentimentScore   field.Float64
 	IsPrivate        field.Bool
 	Tags             field.String
-	RelatedValueIds  field.Int64
+	RelatedValueIds  field.Uint
 	AiDetectedValues field.String
 	CreatedAt        field.Time
 	UpdatedAt        field.Time
+	DeletedAt        field.Field
+	User             journalsBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -86,15 +94,16 @@ func (j *journals) updateTableName(table string) *journals {
 	j.Title = field.NewString(table, "title")
 	j.Content = field.NewString(table, "content")
 	j.ContentEncrypted = field.NewString(table, "content_encrypted")
-	j.EncryptionKeyID = field.NewInt64(table, "encryption_key_id")
+	j.EncryptionKeyID = field.NewUint(table, "encryption_key_id")
 	j.WordCount = field.NewInt(table, "word_count")
 	j.SentimentScore = field.NewFloat64(table, "sentiment_score")
 	j.IsPrivate = field.NewBool(table, "is_private")
 	j.Tags = field.NewString(table, "tags")
-	j.RelatedValueIds = field.NewInt64(table, "related_value_ids")
+	j.RelatedValueIds = field.NewUint(table, "related_value_ids")
 	j.AiDetectedValues = field.NewString(table, "ai_detected_values")
 	j.CreatedAt = field.NewTime(table, "created_at")
 	j.UpdatedAt = field.NewTime(table, "updated_at")
+	j.DeletedAt = field.NewField(table, "deleted_at")
 
 	j.fillFieldMap()
 
@@ -119,7 +128,7 @@ func (j *journals) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (j *journals) fillFieldMap() {
-	j.fieldMap = make(map[string]field.Expr, 14)
+	j.fieldMap = make(map[string]field.Expr, 16)
 	j.fieldMap["id"] = j.ID
 	j.fieldMap["user_id"] = j.UserID
 	j.fieldMap["title"] = j.Title
@@ -134,16 +143,102 @@ func (j *journals) fillFieldMap() {
 	j.fieldMap["ai_detected_values"] = j.AiDetectedValues
 	j.fieldMap["created_at"] = j.CreatedAt
 	j.fieldMap["updated_at"] = j.UpdatedAt
+	j.fieldMap["deleted_at"] = j.DeletedAt
+
 }
 
 func (j journals) clone(db *gorm.DB) journals {
 	j.journalsDo.ReplaceConnPool(db.Statement.ConnPool)
+	j.User.db = db.Session(&gorm.Session{Initialized: true})
+	j.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return j
 }
 
 func (j journals) replaceDB(db *gorm.DB) journals {
 	j.journalsDo.ReplaceDB(db)
+	j.User.db = db.Session(&gorm.Session{})
 	return j
+}
+
+type journalsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a journalsBelongsToUser) Where(conds ...field.Expr) *journalsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a journalsBelongsToUser) WithContext(ctx context.Context) *journalsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a journalsBelongsToUser) Session(session *gorm.Session) *journalsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a journalsBelongsToUser) Model(m *model.Journals) *journalsBelongsToUserTx {
+	return &journalsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a journalsBelongsToUser) Unscoped() *journalsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type journalsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a journalsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a journalsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a journalsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a journalsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a journalsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a journalsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a journalsBelongsToUserTx) Unscoped() *journalsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type journalsDo struct{ gen.DO }

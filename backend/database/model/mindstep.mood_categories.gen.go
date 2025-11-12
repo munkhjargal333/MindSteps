@@ -16,7 +16,7 @@ type MoodCategories struct {
 	NameEn    string    `gorm:"column:name_en;type:character varying(50);not null" json:"name_en"`
 	NameMn    string    `gorm:"column:name_mn;type:character varying(50);not null" json:"name_mn"`
 	Color     string    `gorm:"column:color;type:character varying(7)" json:"color"`
-	Icon      string    `gorm:"column:icon;type:character varying(50)" json:"icon"`
+	Emoji     string    `gorm:"column:emoji;type:character varying(50)" json:"emoji"`
 	SortOrder int       `gorm:"column:sort_order;type:integer" json:"sort_order"`
 	CreatedAt time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
 }

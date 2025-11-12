@@ -24,6 +24,7 @@ type UserAchievements struct {
 	UnlockedAt          time.Time `gorm:"column:unlocked_at;type:timestamp without time zone;default:now()" json:"unlocked_at"`
 	IsFeatured          bool      `gorm:"column:is_featured;type:boolean" json:"is_featured"`
 	Rarity              string    `gorm:"column:rarity;type:character varying(20);default:common" json:"rarity"`
+	User                *Users    `gorm:"foreignKey:user_id;references:id" json:"User"`
 }
 
 // TableName UserAchievements's table name

@@ -37,6 +37,11 @@ func newSystemAuditLog(db *gorm.DB, opts ...gen.DOOption) systemAuditLog {
 	_systemAuditLog.IPAddress = field.NewString(tableName, "ip_address")
 	_systemAuditLog.UserAgent = field.NewString(tableName, "user_agent")
 	_systemAuditLog.CreatedAt = field.NewTime(tableName, "created_at")
+	_systemAuditLog.User = systemAuditLogBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_systemAuditLog.fillFieldMap()
 
@@ -57,6 +62,7 @@ type systemAuditLog struct {
 	IPAddress  field.String
 	UserAgent  field.String
 	CreatedAt  field.Time
+	User       systemAuditLogBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -111,7 +117,7 @@ func (s *systemAuditLog) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (s *systemAuditLog) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 10)
+	s.fieldMap = make(map[string]field.Expr, 11)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["user_id"] = s.UserID
 	s.fieldMap["action_type"] = s.ActionType
@@ -122,16 +128,101 @@ func (s *systemAuditLog) fillFieldMap() {
 	s.fieldMap["ip_address"] = s.IPAddress
 	s.fieldMap["user_agent"] = s.UserAgent
 	s.fieldMap["created_at"] = s.CreatedAt
+
 }
 
 func (s systemAuditLog) clone(db *gorm.DB) systemAuditLog {
 	s.systemAuditLogDo.ReplaceConnPool(db.Statement.ConnPool)
+	s.User.db = db.Session(&gorm.Session{Initialized: true})
+	s.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return s
 }
 
 func (s systemAuditLog) replaceDB(db *gorm.DB) systemAuditLog {
 	s.systemAuditLogDo.ReplaceDB(db)
+	s.User.db = db.Session(&gorm.Session{})
 	return s
+}
+
+type systemAuditLogBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a systemAuditLogBelongsToUser) Where(conds ...field.Expr) *systemAuditLogBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a systemAuditLogBelongsToUser) WithContext(ctx context.Context) *systemAuditLogBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a systemAuditLogBelongsToUser) Session(session *gorm.Session) *systemAuditLogBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a systemAuditLogBelongsToUser) Model(m *model.SystemAuditLog) *systemAuditLogBelongsToUserTx {
+	return &systemAuditLogBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a systemAuditLogBelongsToUser) Unscoped() *systemAuditLogBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type systemAuditLogBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a systemAuditLogBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a systemAuditLogBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a systemAuditLogBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a systemAuditLogBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a systemAuditLogBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a systemAuditLogBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a systemAuditLogBelongsToUserTx) Unscoped() *systemAuditLogBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type systemAuditLogDo struct{ gen.DO }

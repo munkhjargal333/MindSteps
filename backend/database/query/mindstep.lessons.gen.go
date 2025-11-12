@@ -52,6 +52,11 @@ func newLessons(db *gorm.DB, opts ...gen.DOOption) lessons {
 	_lessons.CreatedAt = field.NewTime(tableName, "created_at")
 	_lessons.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_lessons.PublishedAt = field.NewTime(tableName, "published_at")
+	_lessons.Category = lessonsBelongsToCategory{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Category", "model.LessonCategories"),
+	}
 
 	_lessons.fillFieldMap()
 
@@ -87,6 +92,7 @@ type lessons struct {
 	CreatedAt              field.Time
 	UpdatedAt              field.Time
 	PublishedAt            field.Time
+	Category               lessonsBelongsToCategory
 
 	fieldMap map[string]field.Expr
 }
@@ -152,7 +158,7 @@ func (l *lessons) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (l *lessons) fillFieldMap() {
-	l.fieldMap = make(map[string]field.Expr, 25)
+	l.fieldMap = make(map[string]field.Expr, 26)
 	l.fieldMap["id"] = l.ID
 	l.fieldMap["category_id"] = l.CategoryID
 	l.fieldMap["parent_id"] = l.ParentID
@@ -178,16 +184,101 @@ func (l *lessons) fillFieldMap() {
 	l.fieldMap["created_at"] = l.CreatedAt
 	l.fieldMap["updated_at"] = l.UpdatedAt
 	l.fieldMap["published_at"] = l.PublishedAt
+
 }
 
 func (l lessons) clone(db *gorm.DB) lessons {
 	l.lessonsDo.ReplaceConnPool(db.Statement.ConnPool)
+	l.Category.db = db.Session(&gorm.Session{Initialized: true})
+	l.Category.db.Statement.ConnPool = db.Statement.ConnPool
 	return l
 }
 
 func (l lessons) replaceDB(db *gorm.DB) lessons {
 	l.lessonsDo.ReplaceDB(db)
+	l.Category.db = db.Session(&gorm.Session{})
 	return l
+}
+
+type lessonsBelongsToCategory struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a lessonsBelongsToCategory) Where(conds ...field.Expr) *lessonsBelongsToCategory {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a lessonsBelongsToCategory) WithContext(ctx context.Context) *lessonsBelongsToCategory {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a lessonsBelongsToCategory) Session(session *gorm.Session) *lessonsBelongsToCategory {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a lessonsBelongsToCategory) Model(m *model.Lessons) *lessonsBelongsToCategoryTx {
+	return &lessonsBelongsToCategoryTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a lessonsBelongsToCategory) Unscoped() *lessonsBelongsToCategory {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type lessonsBelongsToCategoryTx struct{ tx *gorm.Association }
+
+func (a lessonsBelongsToCategoryTx) Find() (result *model.LessonCategories, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a lessonsBelongsToCategoryTx) Append(values ...*model.LessonCategories) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a lessonsBelongsToCategoryTx) Replace(values ...*model.LessonCategories) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a lessonsBelongsToCategoryTx) Delete(values ...*model.LessonCategories) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a lessonsBelongsToCategoryTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a lessonsBelongsToCategoryTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a lessonsBelongsToCategoryTx) Unscoped() *lessonsBelongsToCategoryTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type lessonsDo struct{ gen.DO }

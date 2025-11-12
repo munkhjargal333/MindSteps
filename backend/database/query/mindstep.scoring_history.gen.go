@@ -37,6 +37,11 @@ func newScoringHistory(db *gorm.DB, opts ...gen.DOOption) scoringHistory {
 	_scoringHistory.Description = field.NewString(tableName, "description")
 	_scoringHistory.Metadata = field.NewField(tableName, "metadata")
 	_scoringHistory.CreatedAt = field.NewTime(tableName, "created_at")
+	_scoringHistory.User = scoringHistoryBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_scoringHistory.fillFieldMap()
 
@@ -57,6 +62,7 @@ type scoringHistory struct {
 	Description  field.String
 	Metadata     field.Field
 	CreatedAt    field.Time
+	User         scoringHistoryBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -111,7 +117,7 @@ func (s *scoringHistory) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (s *scoringHistory) fillFieldMap() {
-	s.fieldMap = make(map[string]field.Expr, 10)
+	s.fieldMap = make(map[string]field.Expr, 11)
 	s.fieldMap["id"] = s.ID
 	s.fieldMap["user_id"] = s.UserID
 	s.fieldMap["source_type"] = s.SourceType
@@ -122,16 +128,101 @@ func (s *scoringHistory) fillFieldMap() {
 	s.fieldMap["description"] = s.Description
 	s.fieldMap["metadata"] = s.Metadata
 	s.fieldMap["created_at"] = s.CreatedAt
+
 }
 
 func (s scoringHistory) clone(db *gorm.DB) scoringHistory {
 	s.scoringHistoryDo.ReplaceConnPool(db.Statement.ConnPool)
+	s.User.db = db.Session(&gorm.Session{Initialized: true})
+	s.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return s
 }
 
 func (s scoringHistory) replaceDB(db *gorm.DB) scoringHistory {
 	s.scoringHistoryDo.ReplaceDB(db)
+	s.User.db = db.Session(&gorm.Session{})
 	return s
+}
+
+type scoringHistoryBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a scoringHistoryBelongsToUser) Where(conds ...field.Expr) *scoringHistoryBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a scoringHistoryBelongsToUser) WithContext(ctx context.Context) *scoringHistoryBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a scoringHistoryBelongsToUser) Session(session *gorm.Session) *scoringHistoryBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a scoringHistoryBelongsToUser) Model(m *model.ScoringHistory) *scoringHistoryBelongsToUserTx {
+	return &scoringHistoryBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a scoringHistoryBelongsToUser) Unscoped() *scoringHistoryBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type scoringHistoryBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a scoringHistoryBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a scoringHistoryBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a scoringHistoryBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a scoringHistoryBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a scoringHistoryBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a scoringHistoryBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a scoringHistoryBelongsToUserTx) Unscoped() *scoringHistoryBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type scoringHistoryDo struct{ gen.DO }

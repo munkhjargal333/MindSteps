@@ -12,21 +12,25 @@ const TableNameMoodEntries = "mindstep.mood_entries"
 
 // MoodEntries mapped from table <mindstep.mood_entries>
 type MoodEntries struct {
-	ID               uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID           uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
-	MoodID           int       `gorm:"column:mood_id;type:integer;not null" json:"mood_id"`
-	EntryDate        time.Time `gorm:"column:entry_date;type:date;not null;default:CURRENT_DATE" json:"entry_date"`
-	Intensity        int       `gorm:"column:intensity;type:integer" json:"intensity"`
-	WhenFelt         string    `gorm:"column:when_felt;type:character varying(20)" json:"when_felt"`
-	TriggerEvent     string    `gorm:"column:trigger_event;type:text" json:"trigger_event"`
-	CopingStrategy   string    `gorm:"column:coping_strategy;type:text" json:"coping_strategy"`
-	Notes            string    `gorm:"column:notes;type:text" json:"notes"`
-	Location         string    `gorm:"column:location;type:character varying(100)" json:"location"`
-	Weather          string    `gorm:"column:weather;type:character varying(50)" json:"weather"`
-	RelatedValueIds  uint      `gorm:"column:related_value_ids;type:bigint[]" json:"related_value_ids"`
-	AiDetectedValues string    `gorm:"column:ai_detected_values;type:bigint[]" json:"ai_detected_values"`
-	CreatedAt        time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
-	UpdatedAt        time.Time `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	ID               uint              `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	UserID           uint              `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	MoodID           int               `gorm:"column:mood_id;type:integer;not null" json:"mood_id"`
+	EntryDate        time.Time         `gorm:"column:entry_date;type:date;not null;default:CURRENT_DATE" json:"entry_date"`
+	Intensity        int               `gorm:"column:intensity;type:integer" json:"intensity"`
+	WhenFelt         string            `gorm:"column:when_felt;type:character varying(20)" json:"when_felt"`
+	TriggerEvent     string            `gorm:"column:trigger_event;type:text" json:"trigger_event"`
+	CopingStrategy   string            `gorm:"column:coping_strategy;type:text" json:"coping_strategy"`
+	Notes            string            `gorm:"column:notes;type:text" json:"notes"`
+	Location         string            `gorm:"column:location;type:character varying(100)" json:"location"`
+	Weather          string            `gorm:"column:weather;type:character varying(50)" json:"weather"`
+	RelatedValueIds  *[]uint           `gorm:"column:related_value_ids;type:bigint[]" json:"related_value_ids"`
+	AiDetectedValues *[]uint           `gorm:"column:ai_detected_values;type:bigint[]" json:"ai_detected_values"`
+	CreatedAt        time.Time         `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	UpdatedAt        time.Time         `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	PlutchikID       int               `gorm:"column:plutchik_id;type:integer" json:"plutchik_id"`
+	User             *Users            `gorm:"foreignKey:user_id;references:id" json:"User"`
+	MoodCategories   *MoodCategories   `gorm:"foreignKey:mood_id;references:id" json:"MoodCategories"`
+	PlutchikEmotions *PlutchikEmotions `gorm:"foreignKey:plutchik_id;references:id" json:"PlutchikEmotions"`
 }
 
 // TableName MoodEntries's table name

@@ -32,6 +32,8 @@ type UserDataRequests struct {
 	Notes               string    `gorm:"column:notes;type:text" json:"notes"`
 	ErrorMessage        string    `gorm:"column:error_message;type:text" json:"error_message"`
 	CreatedAt           time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	User                *Users    `gorm:"foreignKey:user_id;references:id" json:"User"`
+	ProcessedBy         *Users    `gorm:"foreignKey:processed_by_id;references:id" json:"ProcessedBy"`
 }
 
 // TableName UserDataRequests's table name

@@ -46,6 +46,11 @@ func newProgressReports(db *gorm.DB, opts ...gen.DOOption) progressReports {
 	_progressReports.IsExported = field.NewBool(tableName, "is_exported")
 	_progressReports.ExportedAt = field.NewTime(tableName, "exported_at")
 	_progressReports.GeneratedAt = field.NewTime(tableName, "generated_at")
+	_progressReports.User = progressReportsBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_progressReports.fillFieldMap()
 
@@ -75,6 +80,7 @@ type progressReports struct {
 	IsExported                  field.Bool
 	ExportedAt                  field.Time
 	GeneratedAt                 field.Time
+	User                        progressReportsBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -138,7 +144,7 @@ func (p *progressReports) GetFieldByName(fieldName string) (field.OrderExpr, boo
 }
 
 func (p *progressReports) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 19)
+	p.fieldMap = make(map[string]field.Expr, 20)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["user_id"] = p.UserID
 	p.fieldMap["report_type"] = p.ReportType
@@ -158,16 +164,101 @@ func (p *progressReports) fillFieldMap() {
 	p.fieldMap["is_exported"] = p.IsExported
 	p.fieldMap["exported_at"] = p.ExportedAt
 	p.fieldMap["generated_at"] = p.GeneratedAt
+
 }
 
 func (p progressReports) clone(db *gorm.DB) progressReports {
 	p.progressReportsDo.ReplaceConnPool(db.Statement.ConnPool)
+	p.User.db = db.Session(&gorm.Session{Initialized: true})
+	p.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return p
 }
 
 func (p progressReports) replaceDB(db *gorm.DB) progressReports {
 	p.progressReportsDo.ReplaceDB(db)
+	p.User.db = db.Session(&gorm.Session{})
 	return p
+}
+
+type progressReportsBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a progressReportsBelongsToUser) Where(conds ...field.Expr) *progressReportsBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a progressReportsBelongsToUser) WithContext(ctx context.Context) *progressReportsBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a progressReportsBelongsToUser) Session(session *gorm.Session) *progressReportsBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a progressReportsBelongsToUser) Model(m *model.ProgressReports) *progressReportsBelongsToUserTx {
+	return &progressReportsBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a progressReportsBelongsToUser) Unscoped() *progressReportsBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type progressReportsBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a progressReportsBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a progressReportsBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a progressReportsBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a progressReportsBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a progressReportsBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a progressReportsBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a progressReportsBelongsToUserTx) Unscoped() *progressReportsBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type progressReportsDo struct{ gen.DO }

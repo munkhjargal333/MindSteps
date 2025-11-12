@@ -37,6 +37,11 @@ func newUserStreaks(db *gorm.DB, opts ...gen.DOOption) userStreaks {
 	_userStreaks.TotalActivities = field.NewInt(tableName, "total_activities")
 	_userStreaks.CreatedAt = field.NewTime(tableName, "created_at")
 	_userStreaks.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_userStreaks.User = userStreaksBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_userStreaks.fillFieldMap()
 
@@ -57,6 +62,7 @@ type userStreaks struct {
 	TotalActivities  field.Int
 	CreatedAt        field.Time
 	UpdatedAt        field.Time
+	User             userStreaksBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -109,7 +115,7 @@ func (u *userStreaks) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (u *userStreaks) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 10)
+	u.fieldMap = make(map[string]field.Expr, 11)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["user_id"] = u.UserID
 	u.fieldMap["streak_type"] = u.StreakType
@@ -120,16 +126,101 @@ func (u *userStreaks) fillFieldMap() {
 	u.fieldMap["total_activities"] = u.TotalActivities
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["updated_at"] = u.UpdatedAt
+
 }
 
 func (u userStreaks) clone(db *gorm.DB) userStreaks {
 	u.userStreaksDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.User.db = db.Session(&gorm.Session{Initialized: true})
+	u.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u userStreaks) replaceDB(db *gorm.DB) userStreaks {
 	u.userStreaksDo.ReplaceDB(db)
+	u.User.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type userStreaksBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userStreaksBelongsToUser) Where(conds ...field.Expr) *userStreaksBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userStreaksBelongsToUser) WithContext(ctx context.Context) *userStreaksBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userStreaksBelongsToUser) Session(session *gorm.Session) *userStreaksBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userStreaksBelongsToUser) Model(m *model.UserStreaks) *userStreaksBelongsToUserTx {
+	return &userStreaksBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userStreaksBelongsToUser) Unscoped() *userStreaksBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userStreaksBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a userStreaksBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userStreaksBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userStreaksBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userStreaksBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userStreaksBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userStreaksBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userStreaksBelongsToUserTx) Unscoped() *userStreaksBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type userStreaksDo struct{ gen.DO }

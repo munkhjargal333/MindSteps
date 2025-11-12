@@ -40,6 +40,22 @@ func newUserLessonProgress(db *gorm.DB, opts ...gen.DOOption) userLessonProgress
 	_userLessonProgress.IsBookmarked = field.NewBool(tableName, "is_bookmarked")
 	_userLessonProgress.CreatedAt = field.NewTime(tableName, "created_at")
 	_userLessonProgress.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_userLessonProgress.Lesson = userLessonProgressBelongsToLesson{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Lesson", "model.Lessons"),
+		Category: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Lesson.Category", "model.LessonCategories"),
+		},
+	}
+
+	_userLessonProgress.User = userLessonProgressBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_userLessonProgress.fillFieldMap()
 
@@ -63,6 +79,9 @@ type userLessonProgress struct {
 	IsBookmarked       field.Bool
 	CreatedAt          field.Time
 	UpdatedAt          field.Time
+	Lesson             userLessonProgressBelongsToLesson
+
+	User userLessonProgressBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -120,7 +139,7 @@ func (u *userLessonProgress) GetFieldByName(fieldName string) (field.OrderExpr, 
 }
 
 func (u *userLessonProgress) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 13)
+	u.fieldMap = make(map[string]field.Expr, 15)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["lesson_id"] = u.LessonID
 	u.fieldMap["user_id"] = u.UserID
@@ -134,16 +153,189 @@ func (u *userLessonProgress) fillFieldMap() {
 	u.fieldMap["is_bookmarked"] = u.IsBookmarked
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["updated_at"] = u.UpdatedAt
+
 }
 
 func (u userLessonProgress) clone(db *gorm.DB) userLessonProgress {
 	u.userLessonProgressDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.Lesson.db = db.Session(&gorm.Session{Initialized: true})
+	u.Lesson.db.Statement.ConnPool = db.Statement.ConnPool
+	u.User.db = db.Session(&gorm.Session{Initialized: true})
+	u.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u userLessonProgress) replaceDB(db *gorm.DB) userLessonProgress {
 	u.userLessonProgressDo.ReplaceDB(db)
+	u.Lesson.db = db.Session(&gorm.Session{})
+	u.User.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type userLessonProgressBelongsToLesson struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	Category struct {
+		field.RelationField
+	}
+}
+
+func (a userLessonProgressBelongsToLesson) Where(conds ...field.Expr) *userLessonProgressBelongsToLesson {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userLessonProgressBelongsToLesson) WithContext(ctx context.Context) *userLessonProgressBelongsToLesson {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userLessonProgressBelongsToLesson) Session(session *gorm.Session) *userLessonProgressBelongsToLesson {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userLessonProgressBelongsToLesson) Model(m *model.UserLessonProgress) *userLessonProgressBelongsToLessonTx {
+	return &userLessonProgressBelongsToLessonTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userLessonProgressBelongsToLesson) Unscoped() *userLessonProgressBelongsToLesson {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userLessonProgressBelongsToLessonTx struct{ tx *gorm.Association }
+
+func (a userLessonProgressBelongsToLessonTx) Find() (result *model.Lessons, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userLessonProgressBelongsToLessonTx) Append(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userLessonProgressBelongsToLessonTx) Replace(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userLessonProgressBelongsToLessonTx) Delete(values ...*model.Lessons) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userLessonProgressBelongsToLessonTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userLessonProgressBelongsToLessonTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userLessonProgressBelongsToLessonTx) Unscoped() *userLessonProgressBelongsToLessonTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type userLessonProgressBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userLessonProgressBelongsToUser) Where(conds ...field.Expr) *userLessonProgressBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userLessonProgressBelongsToUser) WithContext(ctx context.Context) *userLessonProgressBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userLessonProgressBelongsToUser) Session(session *gorm.Session) *userLessonProgressBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userLessonProgressBelongsToUser) Model(m *model.UserLessonProgress) *userLessonProgressBelongsToUserTx {
+	return &userLessonProgressBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userLessonProgressBelongsToUser) Unscoped() *userLessonProgressBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userLessonProgressBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a userLessonProgressBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userLessonProgressBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userLessonProgressBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userLessonProgressBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userLessonProgressBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userLessonProgressBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userLessonProgressBelongsToUserTx) Unscoped() *userLessonProgressBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type userLessonProgressDo struct{ gen.DO }

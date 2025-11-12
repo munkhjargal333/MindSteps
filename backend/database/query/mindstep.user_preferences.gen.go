@@ -47,6 +47,11 @@ func newUserPreferences(db *gorm.DB, opts ...gen.DOOption) userPreferences {
 	_userPreferences.AiSuggestionLevel = field.NewString(tableName, "ai_suggestion_level")
 	_userPreferences.CreatedAt = field.NewTime(tableName, "created_at")
 	_userPreferences.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_userPreferences.User = userPreferencesBelongsToUser{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("User", "model.Users"),
+	}
 
 	_userPreferences.fillFieldMap()
 
@@ -77,6 +82,7 @@ type userPreferences struct {
 	AiSuggestionLevel        field.String
 	CreatedAt                field.Time
 	UpdatedAt                field.Time
+	User                     userPreferencesBelongsToUser
 
 	fieldMap map[string]field.Expr
 }
@@ -141,7 +147,7 @@ func (u *userPreferences) GetFieldByName(fieldName string) (field.OrderExpr, boo
 }
 
 func (u *userPreferences) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 20)
+	u.fieldMap = make(map[string]field.Expr, 21)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["user_id"] = u.UserID
 	u.fieldMap["reminder_journal"] = u.ReminderJournal
@@ -162,16 +168,101 @@ func (u *userPreferences) fillFieldMap() {
 	u.fieldMap["ai_suggestion_level"] = u.AiSuggestionLevel
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["updated_at"] = u.UpdatedAt
+
 }
 
 func (u userPreferences) clone(db *gorm.DB) userPreferences {
 	u.userPreferencesDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.User.db = db.Session(&gorm.Session{Initialized: true})
+	u.User.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u userPreferences) replaceDB(db *gorm.DB) userPreferences {
 	u.userPreferencesDo.ReplaceDB(db)
+	u.User.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type userPreferencesBelongsToUser struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a userPreferencesBelongsToUser) Where(conds ...field.Expr) *userPreferencesBelongsToUser {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a userPreferencesBelongsToUser) WithContext(ctx context.Context) *userPreferencesBelongsToUser {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a userPreferencesBelongsToUser) Session(session *gorm.Session) *userPreferencesBelongsToUser {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a userPreferencesBelongsToUser) Model(m *model.UserPreferences) *userPreferencesBelongsToUserTx {
+	return &userPreferencesBelongsToUserTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a userPreferencesBelongsToUser) Unscoped() *userPreferencesBelongsToUser {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type userPreferencesBelongsToUserTx struct{ tx *gorm.Association }
+
+func (a userPreferencesBelongsToUserTx) Find() (result *model.Users, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a userPreferencesBelongsToUserTx) Append(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a userPreferencesBelongsToUserTx) Replace(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a userPreferencesBelongsToUserTx) Delete(values ...*model.Users) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a userPreferencesBelongsToUserTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a userPreferencesBelongsToUserTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a userPreferencesBelongsToUserTx) Unscoped() *userPreferencesBelongsToUserTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type userPreferencesDo struct{ gen.DO }
