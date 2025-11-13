@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import JournalForm from '@/components/journal/JournalForm';
+import { useToast } from '@/components/ui/toast';
 
 export default function NewJournalPage() {
   const { token } = useAuth();
+    const { showToast, ToastContainer } = useToast();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
 
@@ -27,9 +29,10 @@ export default function NewJournalPage() {
         token
       );
       router.push('/journal');
+      showToast("Тэмдэглэл амжилттай хадгалагдлаа", 'success');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'тэмдэглэл хадгалахад алдаа гарлаа';
-      alert(msg);
+      showToast(msg, 'error');
     } finally {
       setSaving(false);
     }
@@ -37,6 +40,7 @@ export default function NewJournalPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <ToastContainer />
       <div className="bg-white rounded-2xl shadow-lg p-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-6">Шинэ тэмдэглэл</h1>
 

@@ -7,10 +7,13 @@ import { apiClient } from '@/lib/api/client';
 import { Goal, CoreValue, Milestone } from '@/lib/types';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useToast } from '@/components/ui/toast';
+ 
 
 // ==================== GOAL DETAIL PAGE ====================
 export default function GoalDetailPage() {
   const { token } = useAuth();
+   const { showToast, ToastContainer } = useToast();
   const [goal, setGoal] = useState<Goal | null>(null);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +32,8 @@ export default function GoalDetailPage() {
     try {
       const data = await apiClient.getGoal(id, token);
       setGoal(data);
+      setMilestones(data.GoalMilestones || []);
+      console.log('Milestones:', data);
       // Note: If milestones are included in goal data, extract them
       // Otherwise, you'd need a separate API call
     } catch (error) {
@@ -44,14 +49,16 @@ export default function GoalDetailPage() {
       await apiClient.createMilestone(id, {
         title: newMilestone.title,
         description: newMilestone.description || undefined,
-        target_date: newMilestone.target_date || undefined,
+        target_date: newMilestone.target_date
+            ? new Date(newMilestone.target_date).toISOString()
+            : undefined,
         sort_order: milestones.length + 1
       }, token);
       setNewMilestone({ title: '', description: '', target_date: '' });
       setShowMilestoneForm(false);
       loadGoalDetail();
     } catch (error) {
-      alert('Алдаа гарлаа');
+      showToast('Алдаа гарлаа', 'error');
     }
   };
 
@@ -61,7 +68,7 @@ export default function GoalDetailPage() {
       await apiClient.completeMilestone(milestoneId, token);
       loadGoalDetail();
     } catch (error) {
-      alert('Алдаа гарлаа');
+      showToast('Алдаа гарлаа', 'error');
     }
   };
 
@@ -84,6 +91,7 @@ export default function GoalDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <ToastContainer/>
       <div className="mb-6 flex justify-between items-center">
         <Link href="/goals" className="text-blue-600 hover:text-blue-700 font-medium">
           ← Буцах

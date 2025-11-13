@@ -5,9 +5,11 @@ import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { CoreValue, Milestone } from '@/lib/types';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/toast';
 
 export default function NewGoalPage() {
   const { token } = useAuth();
+  const { showToast, ToastContainer } = useToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [coreValues, setCoreValues] = useState<CoreValue[]>([]);
@@ -42,20 +44,23 @@ export default function NewGoalPage() {
 
     setSubmitting(true);
     try {
+      console.log(formData)
       await apiClient.createGoal({
         value_id: formData.value_id ? Number(formData.value_id) : undefined,
         title: formData.title,
         description: formData.description || undefined,
         goal_type: formData.goal_type,
-        target_date: formData.target_date || undefined,
+        target_date: formData.target_date
+            ? new Date(formData.target_date).toISOString()
+            : undefined,
         priority: formData.priority,
         is_public: formData.is_public
       }, token);
       
-      alert('✅ Зорилго амжилттай үүслээ!');
+      showToast('✅ Зорилго амжилттай үүслээ!', 'success');
       window.location.href = '/goals';
     } catch (error) {
-      alert('❌ Алдаа гарлаа');
+      showToast('❌ Алдаа гарлаа', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -71,6 +76,7 @@ export default function NewGoalPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+      <ToastContainer/>
       <div className="mb-6">
         <Link href="/goals" className="text-blue-600 hover:text-blue-700 font-medium">
           ← Буцах

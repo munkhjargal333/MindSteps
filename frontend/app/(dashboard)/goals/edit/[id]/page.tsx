@@ -6,10 +6,13 @@ import { apiClient } from '@/lib/api/client';
 import { Goal, CoreValue, Milestone } from '@/lib/types';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useToast } from '@/components/ui/toast';
+  
 
 // ==================== EDIT GOAL PAGE ====================
 export default function EditGoalPage() {
   const { token } = useAuth();
+  const { showToast, ToastContainer } = useToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [coreValues, setCoreValues] = useState<CoreValue[]>([]);
@@ -68,10 +71,10 @@ export default function EditGoalPage() {
         is_public: formData.is_public
       }, token);
       
-      alert('✅ Амжилттай шинэчлэгдлээ!');
+      showToast('✅ Амжилттай шинэчлэгдлээ!', 'success');
       window.location.href = `/goals/${id}`;
     } catch (error) {
-      alert('❌ Алдаа гарлаа');
+      showToast('❌ Алдаа гарлаа', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -87,6 +90,7 @@ export default function EditGoalPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+      <ToastContainer/>
       <div className="mb-6">
         <Link href={`/goals/${id}`} className="text-blue-600 hover:text-blue-700 font-medium">
           ← Буцах

@@ -14,7 +14,8 @@ import {
   MeditationSession,
   UserLevel,
   CoreValue,
-  Milestone
+  Milestone,
+  Maslow
 } from './../types/index';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
@@ -92,6 +93,10 @@ interface MoodStatistics {
 interface CoreValueListResponse {
   core_values: CoreValue[];
   total: number;
+}
+
+interface MaslowListResponse {
+  maslow_levels: Maslow[];
 }
 
 class APIClient {
@@ -381,6 +386,13 @@ class APIClient {
       this.getConfig(token)
     );
     return data.core_values;
+  }
+  async getMaslow(token?: string) {
+    const { data } = await this.axiosInstance.get<Maslow[]>(
+      '/core-values/maslow',
+      this.getConfig(token)
+    );
+    return data;
   }
 
   async getCoreValue(id: number, token?: string) {

@@ -6,11 +6,14 @@ import { apiClient } from '@/lib/api/client';
 import { MoodEntry } from '@/lib/types';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useToast } from '@/components/ui/toast';
+  
 
 
 // ==================== EDIT MOOD PAGE ====================
 export default function EditMoodPage() {
   const { token } = useAuth();
+  const { showToast, ToastContainer } = useToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [entry, setEntry] = useState<MoodEntry | null>(null);
@@ -63,11 +66,11 @@ export default function EditMoodPage() {
         weather: weather || undefined,
       }, token);
       
-      alert('✅ Амжилттай шинэчлэгдлээ!');
+      showToast('✅ Амжилттай шинэчлэгдлээ!', 'success');
       window.location.href = `/mood/${id}`;
     } catch (error) {
       console.error('Error updating mood entry:', error);
-      alert('❌ Алдаа гарлаа. Дахин оролдоно уу.');
+      showToast('❌ Алдаа гарлаа. Дахин оролдоно уу.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -94,6 +97,7 @@ export default function EditMoodPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+      <ToastContainer/>
       <div className="mb-6">
         <Link href={`/mood/${id}`} className="text-purple-600 hover:text-purple-700 font-medium">
           ← Буцах

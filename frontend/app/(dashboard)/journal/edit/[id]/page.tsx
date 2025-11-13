@@ -5,9 +5,12 @@ import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import JournalForm from '@/components/journal/JournalForm';
 import { useRouter, useParams } from 'next/navigation';
+import { useToast } from '@/components/ui/toast';
+
 
 export default function JournalEditPage() {
   const { token } = useAuth();
+  const { showToast, ToastContainer } = useToast();
   const router = useRouter();
   const params = useParams();
   const journalId = Number(params?.id);
@@ -31,9 +34,10 @@ export default function JournalEditPage() {
         tags: journal.tags || '',
         is_private: journal.is_private ?? true,
       });
+      
     } catch (err) {
       console.error(err);
-      alert('тэмдэглэл ачаалахад алдаа гарлаа');
+      showToast('тэмдэглэл ачаалахад алдаа гарлаа', 'error');
       router.push('/journal');
     } finally {
       setLoading(false);
@@ -49,11 +53,11 @@ export default function JournalEditPage() {
     setSaving(true);
     try {
       await apiClient.updateJournal(journalId, data, token);
-      alert('тэмдэглэл амжилттай шинэчлэгдлээ!');
+      showToast('тэмдэглэл амжилттай шинэчлэгдлээ!', 'success');
       router.push(`/journal/${journalId}`);
     } catch (err) {
       console.error(err);
-      alert('тэмдэглэл шинэчлэхэд алдаа гарлаа');
+      showToast('тэмдэглэл шинэчлэхэд алдаа гарлаа', 'error');
     } finally {
       setSaving(false);
     }
@@ -70,6 +74,7 @@ export default function JournalEditPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <ToastContainer/>
       <h1 className="text-3xl font-bold mb-6">✏️ тэмдэглэл засах</h1>
       <JournalForm
         initialTitle={journalData.title}

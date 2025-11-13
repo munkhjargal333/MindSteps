@@ -7,10 +7,13 @@ import { Goal } from '@/lib/types';
 import Link from 'next/link';
 import StatCard from '@/components/goals/StatCard';
 import GoalCard from '@/components/goals/GaolCard';
+import { useToast } from '@/components/ui/toast';
+  
 
 // ==================== GOALS LIST PAGE ====================
 export default function GoalsPage() {
   const { token } = useAuth();
+  const { showToast, ToastContainer } = useToast();
   const [goals, setGoals] = useState<{ active: Goal[]; completed: Goal[]; paused: Goal[] }>({
     active: [],
     completed: [],
@@ -24,12 +27,12 @@ export default function GoalsPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const [goalsData, statsData] = await Promise.all([
+      const [goalsData] = await Promise.all([
         apiClient.getGoals(token),
-        apiClient.getGoalStatistics(token)
+       // apiClient.getGoalStatistics(token)
       ]);
       setGoals(goalsData.goals);
-      setStatistics(statsData);
+     // setStatistics(statsData);
     } catch (error) {
       console.error('Error loading goals:', error);
     } finally {
@@ -47,7 +50,7 @@ export default function GoalsPage() {
       await apiClient.deleteGoal(id, token);
       loadGoals();
     } catch (error) {
-      alert('Алдаа гарлаа');
+      showToast('Алдаа гарлаа', 'error');
     }
   };
 
@@ -57,7 +60,7 @@ export default function GoalsPage() {
       await apiClient.pauseGoal(id, token);
       loadGoals();
     } catch (error) {
-      alert('Алдаа гарлаа');
+      showToast('Алдаа гарлаа', 'error');
     }
   };
 
@@ -67,7 +70,7 @@ export default function GoalsPage() {
       await apiClient.resumeGoal(id, token);
       loadGoals();
     } catch (error) {
-      alert('Алдаа гарлаа');
+      showToast('Алдаа гарлаа', 'error');
     }
   };
 
@@ -84,7 +87,7 @@ export default function GoalsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      
+      <ToastContainer/>
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <h1 className="text-3xl font-bold text-gray-900">🎯 Миний зорилгууд</h1>

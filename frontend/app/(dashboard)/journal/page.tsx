@@ -5,6 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { Journal } from '@/lib/types';
 import JournalCard from '@/components/journal/JournalCard';
+import { useToast } from '@/components/ui/toast';
+
 import Link from 'next/link';
 
 import LoadingSpinner from '@/components/journal/LoadingSpinner';
@@ -13,6 +15,7 @@ import Pagination from '@/components/journal/Pagination';
 
 export default function JournalListPage() {
   const { token } = useAuth();
+  const { showToast, ToastContainer } = useToast();
   const [journals, setJournals] = useState<Journal[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -43,16 +46,19 @@ export default function JournalListPage() {
       await apiClient.deleteJournal(id, token);
       setJournals(prev => prev.filter(j => j.id !== id));
       setTotal(prev => prev - 1);
+      showToast('Тэмдэглэл амжилттай устаглаа.');
     } catch (error) {
       console.error('Error deleting journal:', error);
-      alert('Тэмдэглэл устгахад алдаа гарлаа. Дахин оролдоно уу.');
+      showToast('Тэмдэглэл устгахад алдаа гарлаа. Дахин оролдоно уу.');
     } finally { setDeletingId(null); }
   };
 
   if (loading) return <LoadingSpinner />;
 
   return (
+    
     <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+       < ToastContainer />
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">📔 Миний тэмдэглэлүүд</h1>
         <Link

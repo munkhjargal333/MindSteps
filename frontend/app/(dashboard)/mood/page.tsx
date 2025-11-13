@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { MoodEntry, MoodCategory, Mood } from '@/lib/types';
+import { useToast } from '@/components/ui/toast';
+
 
 import MoodCard from '@/components/mood/MoodCard';
 import Link from 'next/link';
@@ -11,6 +13,7 @@ import Link from 'next/link';
 // ==================== MOOD LIST PAGE ====================
 export default function MoodListPage() {
   const { token } = useAuth();
+  const { showToast, ToastContainer } = useToast();
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -55,9 +58,10 @@ export default function MoodListPage() {
       await apiClient.deleteMoodEntry(id, token);
       setMoodEntries(prev => prev.filter(e => e.id !== id));
       setTotal(prev => prev - 1);
+      showToast('Бичлэг устгагдлаа 💜', 'success');
     } catch (error) {
       console.error('Error deleting mood entry:', error);
-      alert('Бичлэг устгахад алдаа гарлаа. Дахин оролдоно уу.');
+      showToast('Устгахад алдаа гарлаа 😞', 'error');
     } finally {
       setDeletingId(null);
     }
@@ -73,8 +77,9 @@ export default function MoodListPage() {
   }
 
   return (
+   
     <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-      
+      < ToastContainer />
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
@@ -90,7 +95,7 @@ export default function MoodListPage() {
       </div>
 
       {/* STATISTICS CARDS */}
-      {statistics && (
+      {/* {statistics && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
             <div className="text-2xl sm:text-3xl font-bold text-purple-700 mb-1">
@@ -122,7 +127,7 @@ export default function MoodListPage() {
             <div className="text-xs sm:text-sm text-pink-600 font-medium">Төрөл</div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* EMPTY STATE */}
       {moodEntries.length === 0 ? (

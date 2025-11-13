@@ -5,10 +5,14 @@ import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { MoodCategory, Mood , PlutchikMood } from '@/lib/types';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/toast';
+ 
 
 // ==================== NEW MOOD ENTRY PAGE ====================
 export default function NewMoodPage() {
-  const { token } = useAuth();
+  const { token } = useAuth(); 
+  const { showToast, ToastContainer } = useToast();
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<MoodCategory[]>([]);
@@ -74,11 +78,11 @@ export default function NewMoodPage() {
         weather: weather || undefined,
       }, token);
       
-      alert('✅ Сэтгэл санаа амжилттай хадгалагдлаа!');
+      showToast('✅ Сэтгэл санаа амжилттай хадгалагдлаа!', 'success');
       window.location.href = '/mood';
     } catch (error) {
       console.error('Error creating mood entry:', error);
-      alert('❌ Алдаа гарлаа. Дахин оролдоно уу.');
+      showToast('❌ Алдаа гарлаа. Дахин оролдоно уу.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -94,6 +98,8 @@ export default function NewMoodPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+
+      <ToastContainer />
       <div className="mb-6">
         <Link href="/mood" className="text-purple-600 hover:text-purple-700 font-medium">
           ← Буцах
@@ -101,7 +107,7 @@ export default function NewMoodPage() {
       </div>
 
       <h1 className="text-3xl font-bold text-gray-900 mb-8">💜 Сэтгэл санаагаа бичих</h1>
-
+    
       <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-xl shadow-lg p-6">
         
         {/* CATEGORY */}

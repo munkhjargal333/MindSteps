@@ -6,16 +6,19 @@ import { apiClient } from '@/lib/api/client';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Journal } from '@/lib/types';
+import { useToast } from '@/components/ui/toast';
 
 export default function JournalDetailPage() {
   const { token } = useAuth();
   const router = useRouter();
   const params = useParams();
+  const { showToast, ToastContainer } = useToast();
   const journalId = params?.id as number | undefined;
 
   const [journal, setJournal] = useState<Journal | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  
 
   const loadJournal = useCallback(async () => {
     if (!token || !journalId) return;
@@ -25,7 +28,7 @@ export default function JournalDetailPage() {
       setJournal(data);
     } catch (error) {
       console.error('Error loading journal:', error);
-      alert('Тэмдэглэл ачаалахад алдаа гарлаа');
+      showToast('Тэмдэглэл ачаалахад алдаа гарлаа', 'error');
       router.push('/journal');
     } finally {
       setLoading(false);
@@ -48,11 +51,11 @@ export default function JournalDetailPage() {
     
     try {
       await apiClient.deleteJournal(journalId, token);
-      alert('Тэмдэглэл амжилттай устгагдлаа');
+      showToast('Тэмдэглэл амжилттай устгагдлаа', 'success');
       router.push('/journal');
     } catch (error) {
       console.error('Error deleting journal:', error);
-      alert('Тэмдэглэл устгахад алдаа гарлаа');
+      showToast('Тэмдэглэл устгахад алдаа гарлаа', "error");
       setDeleting(false);
     }
   };
@@ -105,7 +108,7 @@ export default function JournalDetailPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-      
+      <ToastContainer/>
       {/* BACK BUTTON */}
       <Link
         href="/journal"
