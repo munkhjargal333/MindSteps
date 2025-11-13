@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"mindsteps/database/model"
 	"mindsteps/internal/goal/form"
 	"mindsteps/internal/goal/repository"
@@ -17,6 +18,7 @@ type GoalService interface {
 	UpdateMilestone(id uint, form *form.MilestoneForm) (*model.GoalMilestones, error)
 	CompleteMilestone(id uint) (*model.GoalMilestones, error)
 	UpdateGoalProgress(goalID uint) error
+	GetMilestoneByID(id uint) (*model.GoalMilestones, error)
 }
 
 type goalService struct {
@@ -27,15 +29,23 @@ func NewGoalService(repo repository.GoalRepository) GoalService {
 	return &goalService{repo: repo}
 }
 
+// Add this method to service interface
+func (s *goalService) GetMilestoneByID(id uint) (*model.GoalMilestones, error) {
+	return s.repo.GetMilestoneByID(id)
+}
+
 func (s *goalService) Create(f *form.GoalForm) (*model.Goals, error) {
 	if err := f.Validate(); err != nil {
 		return nil, err
 	}
 
+	fmt.Println("test2")
+	fmt.Println(f)
 	goal := form.NewGoalFromForm(*f)
 	goal.CreatedAt = time.Now()
 	goal.UpdatedAt = time.Now()
 
+	fmt.Println("test3")
 	if err := s.repo.Create(goal); err != nil {
 		return nil, err
 	}

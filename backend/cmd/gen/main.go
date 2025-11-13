@@ -570,7 +570,25 @@ func main() {
 	// GOALS & MILESTONES
 	// ============================================================================
 
-	// Goals
+	// GoalMilestones model
+	goalMilestones := g.GenerateModelAs(
+		model("goal_milestones"),
+		"GoalMilestones",
+		gen.FieldType("id", "uint"),
+		gen.FieldType("goal_id", "uint"),
+		gen.FieldType("is_completed", "bool"),
+		gen.FieldType("sort_order", "int"),
+		// gen.FieldRelate(field.BelongsTo, "Goal", model("goals"), &field.RelateConfig{
+		// 	RelatePointer: true,
+		// 	GORMTag: field.GormTag{
+		// 		"foreignKey": []string{"goal_id"},
+		// 		"references": []string{"id"},
+		// 	},
+		// 	JSONTag: tag("Goal"),
+		// }),
+	)
+
+	// Goals model
 	goals := g.GenerateModelAs(
 		model("goals"),
 		"Goals",
@@ -579,7 +597,7 @@ func main() {
 		gen.FieldType("value_id", "uint"),
 		gen.FieldType("progress_percentage", "int"),
 		gen.FieldType("is_public", "bool"),
-		gen.FieldIgnore("deleted_at"),
+
 		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
 			RelatePointer: true,
 			GORMTag: field.GormTag{
@@ -588,6 +606,7 @@ func main() {
 			},
 			JSONTag: tag("User"),
 		}),
+
 		gen.FieldRelate(field.BelongsTo, "Value", coreValues, &field.RelateConfig{
 			RelatePointer: true,
 			GORMTag: field.GormTag{
@@ -596,23 +615,15 @@ func main() {
 			},
 			JSONTag: tag("Value"),
 		}),
-	)
 
-	// Goal milestones
-	goalMilestones := g.GenerateModelAs(
-		model("goal_milestones"),
-		"GoalMilestones",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("goal_id", "uint"),
-		gen.FieldType("is_completed", "bool"),
-		gen.FieldType("sort_order", "int"),
-		gen.FieldRelate(field.BelongsTo, "Goal", goals, &field.RelateConfig{
-			RelatePointer: true,
+		// HasMany relation for milestones
+		gen.FieldRelate(field.HasMany, "GoalMilestones", goalMilestones, &field.RelateConfig{
+			RelateSlice: true,
 			GORMTag: field.GormTag{
 				"foreignKey": []string{"goal_id"},
 				"references": []string{"id"},
 			},
-			JSONTag: tag("Goal"),
+			JSONTag: tag("GoalMilestones"),
 		}),
 	)
 

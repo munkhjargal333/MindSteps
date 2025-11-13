@@ -41,6 +41,7 @@ func newGoals(db *gorm.DB, opts ...gen.DOOption) goals {
 	_goals.CreatedAt = field.NewTime(tableName, "created_at")
 	_goals.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_goals.CompletedAt = field.NewTime(tableName, "completed_at")
+	_goals.DeletedAt = field.NewField(tableName, "deleted_at")
 	_goals.User = goalsBelongsToUser{
 		db: db.Session(&gorm.Session{}),
 
@@ -61,6 +62,12 @@ func newGoals(db *gorm.DB, opts ...gen.DOOption) goals {
 		}{
 			RelationField: field.NewRelation("Value.MaslowLevel", "model.MaslowLevels"),
 		},
+	}
+
+	_goals.GoalMilestones = goalsHasManyGoalMilestones{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("GoalMilestones", "model.GoalMilestones"),
 	}
 
 	_goals.fillFieldMap()
@@ -86,9 +93,12 @@ type goals struct {
 	CreatedAt          field.Time
 	UpdatedAt          field.Time
 	CompletedAt        field.Time
+	DeletedAt          field.Field
 	User               goalsBelongsToUser
 
 	Value goalsBelongsToValue
+
+	GoalMilestones goalsHasManyGoalMilestones
 
 	fieldMap map[string]field.Expr
 }
@@ -119,6 +129,7 @@ func (g *goals) updateTableName(table string) *goals {
 	g.CreatedAt = field.NewTime(table, "created_at")
 	g.UpdatedAt = field.NewTime(table, "updated_at")
 	g.CompletedAt = field.NewTime(table, "completed_at")
+	g.DeletedAt = field.NewField(table, "deleted_at")
 
 	g.fillFieldMap()
 
@@ -143,7 +154,7 @@ func (g *goals) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (g *goals) fillFieldMap() {
-	g.fieldMap = make(map[string]field.Expr, 16)
+	g.fieldMap = make(map[string]field.Expr, 18)
 	g.fieldMap["id"] = g.ID
 	g.fieldMap["user_id"] = g.UserID
 	g.fieldMap["value_id"] = g.ValueID
@@ -158,6 +169,7 @@ func (g *goals) fillFieldMap() {
 	g.fieldMap["created_at"] = g.CreatedAt
 	g.fieldMap["updated_at"] = g.UpdatedAt
 	g.fieldMap["completed_at"] = g.CompletedAt
+	g.fieldMap["deleted_at"] = g.DeletedAt
 
 }
 
@@ -167,6 +179,8 @@ func (g goals) clone(db *gorm.DB) goals {
 	g.User.db.Statement.ConnPool = db.Statement.ConnPool
 	g.Value.db = db.Session(&gorm.Session{Initialized: true})
 	g.Value.db.Statement.ConnPool = db.Statement.ConnPool
+	g.GoalMilestones.db = db.Session(&gorm.Session{Initialized: true})
+	g.GoalMilestones.db.Statement.ConnPool = db.Statement.ConnPool
 	return g
 }
 
@@ -174,6 +188,7 @@ func (g goals) replaceDB(db *gorm.DB) goals {
 	g.goalsDo.ReplaceDB(db)
 	g.User.db = db.Session(&gorm.Session{})
 	g.Value.db = db.Session(&gorm.Session{})
+	g.GoalMilestones.db = db.Session(&gorm.Session{})
 	return g
 }
 
@@ -342,6 +357,87 @@ func (a goalsBelongsToValueTx) Count() int64 {
 }
 
 func (a goalsBelongsToValueTx) Unscoped() *goalsBelongsToValueTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type goalsHasManyGoalMilestones struct {
+	db *gorm.DB
+
+	field.RelationField
+}
+
+func (a goalsHasManyGoalMilestones) Where(conds ...field.Expr) *goalsHasManyGoalMilestones {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a goalsHasManyGoalMilestones) WithContext(ctx context.Context) *goalsHasManyGoalMilestones {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a goalsHasManyGoalMilestones) Session(session *gorm.Session) *goalsHasManyGoalMilestones {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a goalsHasManyGoalMilestones) Model(m *model.Goals) *goalsHasManyGoalMilestonesTx {
+	return &goalsHasManyGoalMilestonesTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a goalsHasManyGoalMilestones) Unscoped() *goalsHasManyGoalMilestones {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type goalsHasManyGoalMilestonesTx struct{ tx *gorm.Association }
+
+func (a goalsHasManyGoalMilestonesTx) Find() (result []*model.GoalMilestones, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a goalsHasManyGoalMilestonesTx) Append(values ...*model.GoalMilestones) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a goalsHasManyGoalMilestonesTx) Replace(values ...*model.GoalMilestones) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a goalsHasManyGoalMilestonesTx) Delete(values ...*model.GoalMilestones) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a goalsHasManyGoalMilestonesTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a goalsHasManyGoalMilestonesTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a goalsHasManyGoalMilestonesTx) Unscoped() *goalsHasManyGoalMilestonesTx {
 	a.tx = a.tx.Unscoped()
 	return &a
 }

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"mindsteps/database/model"
 	"time"
 
@@ -28,15 +29,15 @@ func NewGoalRepository(db *gorm.DB) GoalRepository {
 }
 
 func (r *goalRepo) Create(goal *model.Goals) error {
+
+	fmt.Println("test4")
 	return r.db.Create(goal).Error
 }
 
 func (r *goalRepo) GetByID(id uint) (*model.Goals, error) {
 	var goal model.Goals
 	if err := r.db.Where("id = ? AND deleted_at IS NULL", id).
-		Preload("Milestones", func(db *gorm.DB) *gorm.DB {
-			return db.Order("sort_order ASC")
-		}).
+		Preload("GoalMilestones").
 		First(&goal).Error; err != nil {
 		return nil, err
 	}
@@ -55,10 +56,8 @@ func (r *goalRepo) Delete(id uint) error {
 func (r *goalRepo) ListByUserID(userID uint) ([]model.Goals, error) {
 	var goals []model.Goals
 	if err := r.db.Where("user_id = ? AND deleted_at IS NULL", userID).
-		Preload("Milestones", func(db *gorm.DB) *gorm.DB {
-			return db.Order("sort_order ASC")
-		}).
-		Order("created_at DESC").
+		Preload("Value").
+		Order("priority DESC").
 		Find(&goals).Error; err != nil {
 		return nil, err
 	}

@@ -6,28 +6,32 @@ package model
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 const TableNameGoals = "mindstep.goals"
 
 // Goals mapped from table <mindstep.goals>
 type Goals struct {
-	ID                 uint        `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID             uint        `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
-	ValueID            uint        `gorm:"column:value_id;type:bigint" json:"value_id"`
-	Title              string      `gorm:"column:title;type:character varying(255);not null" json:"title"`
-	Description        string      `gorm:"column:description;type:text" json:"description"`
-	GoalType           string      `gorm:"column:goal_type;type:character varying(20)" json:"goal_type"`
-	TargetDate         time.Time   `gorm:"column:target_date;type:date" json:"target_date"`
-	Status             string      `gorm:"column:status;type:character varying(20);default:active" json:"status"`
-	ProgressPercentage int         `gorm:"column:progress_percentage;type:integer" json:"progress_percentage"`
-	IsPublic           bool        `gorm:"column:is_public;type:boolean" json:"is_public"`
-	Priority           string      `gorm:"column:priority;type:character varying(20);default:medium" json:"priority"`
-	CreatedAt          time.Time   `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
-	UpdatedAt          time.Time   `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
-	CompletedAt        time.Time   `gorm:"column:completed_at;type:timestamp without time zone" json:"completed_at"`
-	User               *Users      `gorm:"foreignKey:user_id;references:id" json:"User"`
-	Value              *CoreValues `gorm:"foreignKey:value_id;references:id" json:"Value"`
+	ID                 uint             `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	UserID             uint             `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	ValueID            uint             `gorm:"column:value_id;type:bigint" json:"value_id"`
+	Title              string           `gorm:"column:title;type:character varying(255);not null" json:"title"`
+	Description        string           `gorm:"column:description;type:text" json:"description"`
+	GoalType           string           `gorm:"column:goal_type;type:character varying(20)" json:"goal_type"`
+	TargetDate         time.Time        `gorm:"column:target_date;type:date" json:"target_date"`
+	Status             string           `gorm:"column:status;type:character varying(20);default:active" json:"status"`
+	ProgressPercentage int              `gorm:"column:progress_percentage;type:integer" json:"progress_percentage"`
+	IsPublic           bool             `gorm:"column:is_public;type:boolean" json:"is_public"`
+	Priority           string           `gorm:"column:priority;type:character varying(20);default:medium" json:"priority"`
+	CreatedAt          time.Time        `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	UpdatedAt          time.Time        `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	CompletedAt        time.Time        `gorm:"column:completed_at;type:timestamp without time zone" json:"completed_at"`
+	DeletedAt          gorm.DeletedAt   `gorm:"column:deleted_at;type:timestamp without time zone" json:"deleted_at"`
+	User               *Users           `gorm:"foreignKey:user_id;references:id" json:"User"`
+	Value              *CoreValues      `gorm:"foreignKey:value_id;references:id" json:"Value"`
+	GoalMilestones     []GoalMilestones `gorm:"foreignKey:goal_id;references:id" json:"GoalMilestones"`
 }
 
 // TableName Goals's table name

@@ -2,7 +2,6 @@ package repository
 
 import (
 	"mindsteps/database/model"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -14,6 +13,7 @@ type CoreValueRepository interface {
 	Delete(id uint) error
 	ListByUserID(userID uint) ([]model.CoreValues, error)
 	CountByUserID(userID uint) (uint, error)
+	MaslowLevelList() ([]model.MaslowLevels, error)
 }
 
 type coreValueRepo struct {
@@ -30,7 +30,7 @@ func (r *coreValueRepo) Create(value *model.CoreValues) error {
 
 func (r *coreValueRepo) GetByID(id uint) (*model.CoreValues, error) {
 	var value model.CoreValues
-	if err := r.db.Where("id = ? AND deleted_at IS NULL", id).First(&value).Error; err != nil {
+	if err := r.db.Where("id = ? AND is_active = true ", id).First(&value).Error; err != nil {
 		return nil, err
 	}
 	return &value, nil
@@ -41,14 +41,15 @@ func (r *coreValueRepo) Update(value *model.CoreValues) error {
 }
 
 func (r *coreValueRepo) Delete(id uint) error {
-	now := time.Now()
-	return r.db.Model(&model.CoreValues{}).Where("id = ?", id).Update("deleted_at", now).Error
+	// now := time.Now()
+	return r.db.Model(&model.CoreValues{}).Where("id = ?", id).Update("is_active", false).Error
 }
 
 func (r *coreValueRepo) ListByUserID(userID uint) ([]model.CoreValues, error) {
 	var values []model.CoreValues
-	if err := r.db.Where("user_id = ? AND deleted_at IS NULL", userID).
-		Order("priority ASC").
+	if err := r.db.Where("user_id = ? AND is_active IS true", userID).
+		Order("maslow_level_id ASC").
+		Preload("MaslowLevel").
 		Find(&values).Error; err != nil {
 		return nil, err
 	}
@@ -58,9 +59,19 @@ func (r *coreValueRepo) ListByUserID(userID uint) ([]model.CoreValues, error) {
 func (r *coreValueRepo) CountByUserID(userID uint) (uint, error) {
 	var count int64
 	if err := r.db.Model(&model.CoreValues{}).
-		Where("user_id = ? AND deleted_at IS NULL", userID).
+		Where("user_id = ?", userID).
 		Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return uint(count), nil
+}
+
+func (r *coreValueRepo) MaslowLevelList() ([]model.MaslowLevels, error) {
+	var res []model.MaslowLevels
+
+	err := r.db.Find(&res).Error
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

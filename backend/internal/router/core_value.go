@@ -19,6 +19,7 @@ func RegisterCoreRoutes(api fiber.Router) {
 	coreValue := api.Group("/core-values", auth.TokenMiddleware)
 
 	coreValue.Get("/me", h.ListByUserID)
+	coreValue.Get("/maslow", h.MaslowLevelList)
 	coreValue.Post("/", h.Create)
 	coreValue.Get("/:id", h.GetByID)
 	coreValue.Put("/:id", h.Update)

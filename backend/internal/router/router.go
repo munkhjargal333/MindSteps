@@ -14,5 +14,7 @@ func RegisterRoutes(app *fiber.App) {
 	RegisterCoreRoutes(api)
 	RegisterLessonRoutes(api)
 	RegisterMoodRoutes(api)
+	RegisterCoreRoutes(api)
+	RegisterGoalRoutes(api)
 
 }

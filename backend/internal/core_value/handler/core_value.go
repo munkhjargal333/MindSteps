@@ -71,9 +71,9 @@ func (h *CoreValueHandler) Update(c *fiber.Ctx) error {
 	if err := c.BodyParser(&f); err != nil {
 		return shared.ResponseBadRequest(c, err.Error())
 	}
-	if err := f.Validate(); err != nil {
-		return shared.ResponseBadRequest(c, err.Error())
-	}
+	// if err := f.Validate(); err != nil {
+	// 	return shared.ResponseBadRequest(c, err.Error())
+	// }
 
 	tokenInfo := auth.GetTokenInfo(c)
 	value, err := h.service.GetByID(uint(id))
@@ -129,4 +129,12 @@ func (h *CoreValueHandler) ListByUserID(c *fiber.Ctx) error {
 		"core_values": values,
 		"total":       len(values),
 	})
+}
+
+func (r *CoreValueHandler) MaslowLevelList(c *fiber.Ctx) error {
+	levels, err := r.service.MaslowLevelList()
+	if err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+	return c.JSON(levels)
 }

@@ -21,7 +21,6 @@ type GoalMilestones struct {
 	CompletedAt time.Time `gorm:"column:completed_at;type:timestamp without time zone" json:"completed_at"`
 	SortOrder   int       `gorm:"column:sort_order;type:integer" json:"sort_order"`
 	CreatedAt   time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
-	Goal        *Goals    `gorm:"foreignKey:goal_id;references:id" json:"Goal"`
 }
 
 // TableName GoalMilestones's table name
