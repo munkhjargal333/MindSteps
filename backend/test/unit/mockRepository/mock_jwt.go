@@ -1,4 +1,4 @@
-package mock_repository
+package mockRepository
 
 import (
 	"mindsteps/internal/auth"
