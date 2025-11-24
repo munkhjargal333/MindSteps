@@ -27,26 +27,28 @@ describe('LoginPage Integration Test', () => {
     render(<LoginPage />);
 
     expect(screen.getByText('Тавтай морил')).toBeInTheDocument();
-    expect(screen.getByLabelText('И-мэйл хаяг')).toBeInTheDocument();
-    expect(screen.getByLabelText('Нууц үг')).toBeInTheDocument();
+    // placeholder ашиглаж шалгана
+    expect(screen.getByPlaceholderText('example@email.com')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('••••••••')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Нэвтрэх' })).toBeInTheDocument();
   });
 
   test('calls login when form submitted', async () => {
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByLabelText('И-мэйл хаяг'), {
-      target: { value: 'user@example.com' },
+    fireEvent.change(screen.getByPlaceholderText('example@email.com'), {
+      target: { value: 'bat@example.com' },
     });
 
-    fireEvent.change(screen.getByLabelText('Нууц үг'), {
+    fireEvent.change(screen.getByPlaceholderText('••••••••'), {
       target: { value: 'password123' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'Нэвтрэх' }));
 
     await waitFor(() => {
-      expect(mockLogin).toHaveBeenCalledWith('user@example.com', 'password123');
+      // энд "bat@example.com" гэж тааруулна
+      expect(mockLogin).toHaveBeenCalledWith('bat@example.com', 'password123');
     });
   });
 
@@ -55,11 +57,11 @@ describe('LoginPage Integration Test', () => {
 
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByLabelText('И-мэйл хаяг'), {
+    fireEvent.change(screen.getByPlaceholderText('example@email.com'), {
       target: { value: 'user@example.com' },
     });
 
-    fireEvent.change(screen.getByLabelText('Нууц үг'), {
+    fireEvent.change(screen.getByPlaceholderText('••••••••'), {
       target: { value: 'wrongpass' },
     });
 
@@ -77,17 +79,17 @@ describe('LoginPage Integration Test', () => {
 
     render(<LoginPage />);
 
-    fireEvent.change(screen.getByLabelText('И-мэйл хаяг'), {
+    fireEvent.change(screen.getByPlaceholderText('example@email.com'), {
       target: { value: 'test@example.com' },
     });
 
-    fireEvent.change(screen.getByLabelText('Нууц үг'), {
+    fireEvent.change(screen.getByPlaceholderText('••••••••'), {
       target: { value: '123456' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'Нэвтрэх' }));
 
-    // Loading text харагддаг эсэх
+    // Loading text харагдаж байгаа эсэх
     expect(screen.getByText('Нэвтэрч байна...')).toBeInTheDocument();
   });
 });
