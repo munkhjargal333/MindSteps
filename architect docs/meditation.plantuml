@@ -1,0 +1,92 @@
+@startuml
+
+start
+
+:Meditation хэсэгт орох;
+:Жагсаалт харуулах;
+
+if (Шинэ meditation үүсгэх?) then (тийм)
+  :Тохиргоо сонгох;
+  note right
+    Төрөл, Хугацаа
+    Хөгжим, Заавар
+  end note
+else (үгүй)
+  :Жагсаалтаас сонгох;
+endif
+
+:Эхлэх товч дарах;
+
+partition "Backend Processing" {
+  :Session үүсгэх;
+  :Эхлэх цаг бүртгэх;
+}
+
+partition "Meditation Session" {
+  :Таймер эхлүүлэх;
+  :Хөгжим тоглуулах;
+  
+  repeat
+    :1 секунд хүлээх;
+    :UI шинэчлэх;
+    
+    if (Пауз дарсан?) then (тийм)
+      :Зогсоох;
+      
+      if (Үргэлжлүүлэх?) then (тийм)
+        :Үргэлжлүүлэх;
+      else (үгүй)
+        :Цуцлах;
+        stop
+      endif
+    endif
+    
+  repeat while (Хугацаа дуусаагүй?) is (тийм)
+  -> үгүй;
+}
+
+:Дууссан дохио;
+:Сэтгэл хөдлөл бүртгэх;
+
+if (Тэмдэглэл нэмэх?) then (тийм)
+  :Тэмдэглэл бичих;
+endif
+
+:Хадгалах;
+
+partition "Post-Session Processing" {
+  fork
+    :Gamification оноо тооцох;
+    
+    if (Streak шалгах) then (шинэчлэх)
+      :Streak +1;
+    else (тасралт)
+      :Streak = 1;
+    endif
+    
+  fork again
+    :Badge шалгах;
+    
+    if (Шинэ badge?) then (тийм)
+      :Badge олгох;
+      :Мэдэгдэл илгээх;
+    endif
+    
+  fork again
+    :AI анализ хийх;
+    :Сэтгэл санааны өөрчлөлт үнэлэх;
+    
+    if (Эерэг өөрчлөлт?) then (тийм)
+      :Санал үүсгэх;
+    else (үгүй)
+      :Өөр төрөл санал болгох;
+    endif
+  end fork
+}
+
+:Үр дүн харуулах;
+:Оноо мэдээлэх;
+
+stop
+
+@enduml
