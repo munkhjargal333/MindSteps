@@ -39,10 +39,11 @@ jobs:
           go tool cover -func=coverage/user.out > coverage/user.txt
 
       - name: Upload coverage artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: user-service-coverage
           path: backend/coverage/user.txt
+
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v3
