@@ -19,19 +19,24 @@ jobs:
         working-directory: ./backend
 
     steps:
+      # 1. Checkout code
       - uses: actions/checkout@v4
 
+      # 2. Install Go
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'   # 1.25 албан ёсоор байхгүй тул тогтвортой хувилбар тавьсан
+          go-version: '1.22'  # 1.25 release албан ёсоор байхгүй тул stable хувилбар тавьсан
 
+      # 3. Download dependencies
       - name: Download dependencies
         run: go mod download
 
+      # 4. Run unit tests
       - name: Run unit tests (backend/test/unit)
         run: go test ./test/unit/... -v
 
+      # 5. Run coverage for internal/user
       - name: Run coverage for internal/user
         run: |
           mkdir -p coverage
@@ -40,20 +45,23 @@ jobs:
             -covermode=atomic
           go tool cover -func=coverage/user.out > coverage/user.txt
 
+      # 6. Upload coverage
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: user-service-coverage
           path: backend/coverage/user.txt
 
+      # 7. golangci-lint
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v5
         with:
           version: latest
           working-directory: backend
 
+      # 8. gosec security scan
       - name: Run gosec security scan
-        uses: securego/gosec@v2
+        uses: securego/gosec@master
         with:
           args: ./...
 
