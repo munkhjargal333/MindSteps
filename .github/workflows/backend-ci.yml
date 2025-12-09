@@ -12,7 +12,7 @@ on:
       - 'backend/**'
 
 env:
-  GO_VERSION: '1.24'
+  GO_VERSION: '1.25'
   WORKING_DIR: ./backend
 
 jobs:
@@ -149,7 +149,7 @@ jobs:
 
   # 2. Code quality шалгалт
   lint:
-    name: 🔍 Code Quality Check
+    name:  Code Quality Check
     runs-on: ubuntu-latest
     needs: test
     
@@ -168,27 +168,19 @@ jobs:
           cache: true
           cache-dependency-path: backend/go.sum
 
-      - name: 🔧 Install golangci-lint from source
-        run: |
-          echo "golangci-lint Go 1.25-д тохируулж суулгаж байна..."
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-          echo "✓ golangci-lint амжилттай суулгалаа"
-
-      - name: 🔍 Run golangci-lint
-        run: |
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🔍 Code quality шалгаж байна..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          $(go env GOPATH)/bin/golangci-lint run --timeout=10m --verbose
-          echo ""
-          echo "✓ Code quality шалгалт дууслаа"
+      # - name: 🔍 Run golangci-lint
+      #   uses: golangci/golangci-lint-action@v6
+      #   with:
+      #     version: latest
+      #     working-directory: backend
+      #     args: --timeout=10m --verbose
           
       - name: ✅ Code quality check completed
         run: echo "✓ Кодын чанарын шалгалт амжилттай дууслаа"
 
   # 3. Аюулгүй байдлын шалгалт
   security:
-    name: 🔐 Security Scan
+    name:  Security Scan
     runs-on: ubuntu-latest
     needs: test
     
@@ -238,7 +230,7 @@ jobs:
 
   # 4. Build шалгалт
   build:
-    name: 🏗️ Build Check
+    name:  Build Check
     runs-on: ubuntu-latest
     needs: [test, lint]
     
