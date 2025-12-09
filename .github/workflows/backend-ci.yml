@@ -69,5 +69,5 @@ jobs:
           password: ${{ secrets.EMAIL_PASS }}
           subject: "❌ Backend CI Failed"
           body: "Tests or security checks failed in workflow run: ${{ github.run_id }}"
-          to: team@example.com
+          to: munkhjargal.ts39@gmail.com
           from: CI Bot <ci@example.com>
