@@ -12,7 +12,7 @@ on:
       - 'backend/**'
 
 env:
-  GO_VERSION: '1.25'
+  GO_VERSION: '1.24'
   WORKING_DIR: ./backend
 
 jobs:
@@ -168,12 +168,20 @@ jobs:
           cache: true
           cache-dependency-path: backend/go.sum
 
+      - name: 🔧 Install golangci-lint from source
+        run: |
+          echo "golangci-lint Go 1.25-д тохируулж суулгаж байна..."
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+          echo "✓ golangci-lint амжилттай суулгалаа"
+
       - name: 🔍 Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          working-directory: backend
-          args: --timeout=10m --verbose
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔍 Code quality шалгаж байна..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          $(go env GOPATH)/bin/golangci-lint run --timeout=10m --verbose
+          echo ""
+          echo "✓ Code quality шалгалт дууслаа"
           
       - name: ✅ Code quality check completed
         run: echo "✓ Кодын чанарын шалгалт амжилттай дууслаа"
