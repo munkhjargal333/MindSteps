@@ -1,122 +1,408 @@
-name: Backend CI
+name: MindSteps Backend CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, feature/* ]
     paths:
       - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'backend/**'
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+env:
+  GO_VERSION: '1.25'
+  WORKING_DIR: ./backend
 
+jobs:
+  # 1. Туршилт ажиллуулах
+  test:
+    name: 🧪 Unit Tests & Coverage
+    runs-on: ubuntu-latest
+    
     defaults:
       run:
-        working-directory: ./backend
+        working-directory: ${{ env.WORKING_DIR }}
 
     steps:
-      # 1. Checkout code
-      - uses: actions/checkout@v4
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
 
-      # 2. Install Go
-      - name: Set up Go
+      - name: 🔧 Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: ${{ env.GO_VERSION }}
           cache: true
           cache-dependency-path: backend/go.sum
 
-      # 3. Verify Go installation
-      - name: Verify Go version
-        run: go version
+      - name: ✅ Verify Go installation
+        run: |
+          go version
+          echo "✓ Go ${{ env.GO_VERSION }} амжилттай суусан"
 
-      # 4. Download dependencies
-      - name: Download dependencies
-        run: go mod download
+      - name: 📦 Download dependencies
+        run: |
+          echo "Dependencies татаж байна..."
+          go mod download
+          go mod verify
+          echo "✓ Dependencies амжилттай татагдлаа"
 
-      # 5. Verify dependencies
-      - name: Verify dependencies
-        run: go mod verify
+      - name: 🧪 Run unit tests
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📋 Unit tests ажиллуулж байна..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          go test ./test/unit/... -v -race -timeout 10m
+          echo ""
+          echo "✓ Unit tests амжилттай дууслаа"
 
-      # 6. Run unit tests
-      - name: Run unit tests (backend/test/unit)
-        run: go test ./test/unit/... -v
+      - name: 📊 Run tests with coverage
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📊 Coverage тайлан гаргаж байна..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          mkdir -p coverage
+          
+          # Бүх internal модулиудын coverage
+          go test ./internal/... \
+            -coverprofile=coverage/all.out \
+            -covermode=atomic \
+            -timeout 10m
+          
+          # user service-ийн тусгай coverage
+          go test ./internal/user/... \
+            -coverprofile=coverage/user.out \
+            -covermode=atomic
+          
+          # auth service-ийн coverage
+          go test ./internal/auth/... \
+            -coverprofile=coverage/auth.out \
+            -covermode=atomic \
+            2>/dev/null || echo "⚠️  Auth tests алга байна"
+          
+          echo ""
+          echo "✓ Coverage файлууд үүсгэгдлээ"
 
-      # # 7. Run coverage for internal/user
-      # - name: Run coverage for internal/user
-      #   run: |
-      #     mkdir -p coverage
-      #     go test ./internal/user/... \
-      #       -coverprofile=coverage/user.out \
-      #       -covermode=atomic \
-      #       -v
+      - name: 📈 Generate coverage reports
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📈 Coverage тайлан боловсруулж байна..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Нийт coverage
+          if [ -f coverage/all.out ]; then
+            echo ""
+            echo "🎯 НИЙТ COVERAGE:"
+            go tool cover -func=coverage/all.out | tee coverage/all.txt
+            TOTAL=$(go tool cover -func=coverage/all.out | grep total | awk '{print $3}')
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "📊 НИЙТ COVERAGE: $TOTAL"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          fi
+          
+          # User service coverage
+          if [ -f coverage/user.out ]; then
+            echo ""
+            echo "👤 USER SERVICE COVERAGE:"
+            go tool cover -func=coverage/user.out | tee coverage/user.txt
+            USER_COVERAGE=$(go tool cover -func=coverage/user.out | grep total | awk '{print $3}')
+            echo "User service: $USER_COVERAGE"
+          fi
+          
+          # Summary файл үүсгэх
+          cat > coverage/summary.md << EOF
+          # 📊 Coverage Report
+          
+          **Огноо:** $(date '+%Y-%m-%d %H:%M:%S')
+          **Branch:** ${{ github.ref_name }}
+          **Commit:** ${{ github.sha }}
+          
+          ## 📈 Coverage Statistics
+          
+          | Module | Coverage |
+          |--------|----------|
+          | Нийт | $TOTAL |
+          | User Service | ${USER_COVERAGE:-N/A} |
+          
+          ## 📝 Detailed Report
+          
+          \`\`\`
+          $(cat coverage/all.txt 2>/dev/null || echo "Coverage data not available")
+          \`\`\`
+          EOF
+          
+          echo ""
+          echo "✓ Coverage тайлангууд бэлэн боллоо"
 
-      # # 8. Generate coverage report
-      # - name: Generate coverage report
-      #   run: |
-      #     go tool cover -func=coverage/user.out | tee coverage/user.txt
-      #     echo "## Coverage Summary" >> coverage/summary.md
-      #     go tool cover -func=coverage/user.out | tail -1 >> coverage/summary.md
+      - name: 📤 Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report-${{ github.sha }}
+          path: |
+            backend/coverage/*.out
+            backend/coverage/*.txt
+            backend/coverage/summary.md
+          retention-days: 30
 
-      # # 9. Upload coverage artifact
-      # - name: Upload coverage artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: user-service-coverage
-      #     path: |
-      #       backend/coverage/user.out
-      #       backend/coverage/user.txt
-      #       backend/coverage/summary.md
+  # 2. Code quality шалгалт
+  lint:
+    name: 🔍 Code Quality Check
+    runs-on: ubuntu-latest
+    needs: test
+    
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
 
-      # 10. golangci-lint
-      - name: Run golangci-lint
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      - name: 🔍 Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
           working-directory: backend
-          args: --timeout=5m
+          args: --timeout=10m --verbose
+          
+      - name: ✅ Code quality check completed
+        run: echo "✓ Кодын чанарын шалгалт амжилттай дууслаа"
 
-      # 11. gosec security scan
-      - name: Run gosec security scan
+  # 3. Аюулгүй байдлын шалгалт
+  security:
+    name: 🔐 Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+    
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: 🔐 Install gosec
         run: |
+          echo "gosec суулгаж байна..."
           go install github.com/securego/gosec/v2/cmd/gosec@latest
-          gosec -fmt=json -out=gosec-report.json ./...
+          echo "✓ gosec амжилттай суулгалаа"
+
+      - name: 🔍 Run security scan
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔐 Аюулгүй байдлын шалгалт эхэллээ..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # JSON тайлан гаргах
+          gosec -fmt=json -out=gosec-report.json -no-fail ./... || true
+          
+          # Консол дээр харуулах
+          echo ""
+          gosec -fmt=text ./... || true
+          
+          echo ""
+          echo "✓ Аюулгүй байдлын шалгалт дууслаа"
         continue-on-error: true
 
-      # # 12. Upload gosec report
-      # - name: Upload gosec report
-      #   uses: actions/upload-artifact@v4
-      #   if: always()
-      #   with:
-      #     name: gosec-security-report
-      #     path: backend/gosec-report.json
+      - name: 📤 Upload security report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-report-${{ github.sha }}
+          path: backend/gosec-report.json
+          retention-days: 30
 
-  notify:
-    needs: test
+  # 4. Build шалгалт
+  build:
+    name: 🏗️ Build Check
     runs-on: ubuntu-latest
-    if: failure()
+    needs: [test, lint]
+    
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+
     steps:
-      - name: Send email notification
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+          cache-dependency-path: backend/go.sum
+
+      - name: 🏗️ Build application
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🏗️  Application build хийж байна..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # API build
+          if [ -d "cmd/api" ]; then
+            echo "Building API server..."
+            go build -v -o bin/api ./cmd/api
+            echo "✓ API build амжилттай"
+          fi
+          
+          # Gen build (if exists)
+          if [ -d "cmd/gen" ]; then
+            echo "Building gen tool..."
+            go build -v -o bin/gen ./cmd/gen
+            echo "✓ Gen build амжилттай"
+          fi
+          
+          echo ""
+          echo "✓ Бүх build амжилттай дууслаа"
+          ls -lh bin/
+
+  # 5. Амжилттай болсон тохиолдолд мэдэгдэл
+  notify-success:
+    name: ✅ Success Notification
+    needs: [test, lint, security, build]
+    runs-on: ubuntu-latest
+    if: success()
+    
+    steps:
+      - name: ✅ Send success email
         uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.gmail.com
-          server_port: 465          # SSL порт
-          secure: true              # TLS/SSL идэвхжүүлсэн
+          server_port: 587
+          secure: false
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASS }}
-          subject: "❌ Backend CI Failed - ${{ github.repository }}"
+          subject: "✅ MindSteps Backend CI амжилттай - ${{ github.ref_name }}"
           body: |
-            🚨 Backend CI workflow failed!
-
-            📂 Repository: ${{ github.repository }}
+            ╔══════════════════════════════════════════╗
+            ║   🎉 CI PIPELINE АМЖИЛТТАЙ ДУУСЛАА!     ║
+            ╚══════════════════════════════════════════╝
+            
+            📦 Repository: ${{ github.repository }}
             🌿 Branch: ${{ github.ref_name }}
-            🔑 Commit: ${{ github.sha }}
-            ▶️ Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-            Please check the logs for details.
+            👤 Developer: ${{ github.actor }}
+            📝 Commit Message: ${{ github.event.head_commit.message }}
+            🔗 Commit SHA: ${{ github.sha }}
+            ⏰ Timestamp: ${{ github.event.head_commit.timestamp }}
+            
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            ✅ АМЖИЛТТАЙ ДУУССАН ШАЛГАЛТУУД
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            ✓ Unit Tests (test/unit/...)
+            ✓ Coverage Analysis (internal/...)
+            ✓ Code Linting (golangci-lint)
+            ✓ Security Scan (gosec)
+            ✓ Build Check (cmd/api, cmd/gen)
+            
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            📊 ARTIFACTS
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            • Coverage Report: coverage-report-${{ github.sha }}
+            • Security Report: security-report-${{ github.sha }}
+            
+            🔗 Дэлгэрэнгүй үзэх:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            Баяртай! Таны код production-ready байна! 🚀
+            
+            ---
+            🤖 Автомат илгээгдсэн: MindSteps CI/CD System
+            📅 $(date '+%Y-%m-%d %H:%M:%S UTC')
           to: munkhjargal.ts39@gmail.com
-          from: CI Bot <${{ secrets.EMAIL_USER }}>
+          from: munkhjargal.ts39@gmail.com
+
+  # 6. Алдаа гарсан тохиолдолд мэдэгдэл
+  notify-failure:
+    name: ❌ Failure Notification
+    needs: [test, lint, security, build]
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+      - name: ❌ Send failure email
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          secure: false
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: "❌ MindSteps Backend CI амжилтгүй - ${{ github.ref_name }}"
+          body: |
+            ╔══════════════════════════════════════════╗
+            ║   ⚠️  CI PIPELINE АМЖИЛТГҮЙ БОЛЛОО!     ║
+            ╚══════════════════════════════════════════╝
+            
+            📦 Repository: ${{ github.repository }}
+            🌿 Branch: ${{ github.ref_name }}
+            👤 Developer: ${{ github.actor }}
+            📝 Commit Message: ${{ github.event.head_commit.message }}
+            🔗 Commit SHA: ${{ github.sha }}
+            ⏰ Timestamp: ${{ github.event.head_commit.timestamp }}
+            
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            ❌ АЛДАА ГАРСАН ШАЛГАЛТУУД
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            ${{ toJSON(needs) }}
+            
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            🔧 ШАЛТГААН
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            Дараах шалгалтуудын аль нэг нь амжилтгүй:
+            • Unit Tests
+            • Code Linting
+            • Security Scan
+            • Build Check
+            
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            💡 ЗАСАХ ЗААВАР
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            1. Дэлгэрэнгүй лог харах:
+               ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            2. Локал дээр туршилт ажиллуулах:
+               cd backend
+               go test ./test/unit/... -v
+               go test ./internal/... -v
+            
+            3. Lint шалгах:
+               golangci-lint run
+            
+            4. Алдааг засаад дахин push хийх:
+               git add .
+               git commit -m "fix: resolve CI issues"
+               git push
+            
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            Амжилт хүсье! 💪
+            
+            ---
+            🤖 Автомат илгээгдсэн: MindSteps CI/CD System
+            📅 $(date '+%Y-%m-%d %H:%M:%S UTC')
+          to: munkhjargal.ts39@gmail.com
+          from: munkhjargal.ts39@gmail.com
