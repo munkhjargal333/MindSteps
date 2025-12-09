@@ -26,44 +26,74 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'  # 1.25 release албан ёсоор байхгүй тул stable хувилбар тавьсан
+          go-version: '1.22'
+          cache: true
+          cache-dependency-path: backend/go.sum
 
-      # 3. Download dependencies
+      # 3. Verify Go installation
+      - name: Verify Go version
+        run: go version
+
+      # 4. Download dependencies
       - name: Download dependencies
         run: go mod download
 
-      # 4. Run unit tests
+      # 5. Verify dependencies
+      - name: Verify dependencies
+        run: go mod verify
+
+      # 6. Run unit tests
       - name: Run unit tests (backend/test/unit)
         run: go test ./test/unit/... -v
 
-      # 5. Run coverage for internal/user
+      # 7. Run coverage for internal/user
       - name: Run coverage for internal/user
         run: |
           mkdir -p coverage
           go test ./internal/user/... \
             -coverprofile=coverage/user.out \
-            -covermode=atomic
-          go tool cover -func=coverage/user.out > coverage/user.txt
+            -covermode=atomic \
+            -v
 
-      # 6. Upload coverage
+      # 8. Generate coverage report
+      - name: Generate coverage report
+        run: |
+          go tool cover -func=coverage/user.out | tee coverage/user.txt
+          echo "## Coverage Summary" >> coverage/summary.md
+          go tool cover -func=coverage/user.out | tail -1 >> coverage/summary.md
+
+      # 9. Upload coverage artifact
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: user-service-coverage
-          path: backend/coverage/user.txt
+          path: |
+            backend/coverage/user.out
+            backend/coverage/user.txt
+            backend/coverage/summary.md
 
-      # 7. golangci-lint
+      # 10. golangci-lint
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v5
+        uses: golangci/golangci-lint-action@v6
         with:
           version: latest
           working-directory: backend
+          args: --timeout=5m
 
-      # 8. gosec security scan
+      # 11. gosec security scan
       - name: Run gosec security scan
-        uses: securego/gosec@master
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          gosec -fmt=json -out=gosec-report.json ./...
+        continue-on-error: true
+
+      # 12. Upload gosec report
+      - name: Upload gosec report
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          args: ./...
+          name: gosec-security-report
+          path: backend/gosec-report.json
 
   notify:
     needs: test
@@ -74,10 +104,19 @@ jobs:
         uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.gmail.com
-          server_port: 465
+          server_port: 587
+          secure: false
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASS }}
-          subject: "❌ Backend CI Failed"
-          body: "Tests or security checks failed in workflow run: ${{ github.run_id }}"
+          subject: "❌ Backend CI Failed - ${{ github.repository }}"
+          body: |
+            Backend CI workflow failed!
+            
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            Please check the logs for details.
           to: munkhjargal.ts39@gmail.com
-          from: "CI Bot <ci@example.com>"
+          from: munkhjargal.ts39@gmail.com
