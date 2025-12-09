@@ -287,8 +287,11 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           secure: false
-          username: ${{ secrets.EMAIL_USER }}
-          password: ${{ secrets.EMAIL_PASS }}
+          # username: ${{ secrets.EMAIL_USER }}
+          # password: ${{ secrets.EMAIL_PASS }}
+
+          username: munkhjargal.ts39@gmail.com
+          password: nmcy etus adzg xdwl
           subject: "✅ MindSteps Backend CI амжилттай - ${{ github.ref_name }}"
           body: |
             ╔══════════════════════════════════════════╗
