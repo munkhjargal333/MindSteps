@@ -25,15 +25,10 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      # -----------------------
-      # 1️⃣ UNIT TEST ONLY
-      # -----------------------
+
       - name: Run unit tests (backend/test/unit)
         run: go test ./test/unit/... -v
 
-      # -----------------------
-      # 2️⃣ Coverage ONLY for internal/user
-      # -----------------------
       - name: Run coverage for internal/user
         run: |
           mkdir -p coverage

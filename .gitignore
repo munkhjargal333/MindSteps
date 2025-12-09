@@ -1,1 +1,5 @@
 .vercel
+'architect docs'/
+bin/
+aiAPI/
+conver/

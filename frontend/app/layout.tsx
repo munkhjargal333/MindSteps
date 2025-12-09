@@ -1,4 +1,4 @@
-import { AuthProvider } from '@/context/AuthContext';
+import { Providers } from '@/context/Providers';
 import './globals.css';
 import type { Metadata } from 'next';
 
@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Mindful - Таны сэтгэцийн аюулгүй орон зай',
   description: 'Өдрийн тэмдэглэл, сэтгэл санаа, зорилго, болон бясалгалын платформ',
   icons: {
-    icon: '/logo.png', // ✅ public/logo.webp рүү заана
+    icon: '/logo.png',
   },
 };
 
@@ -16,9 +16,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="mn">
+    <html lang="mn" suppressHydrationWarning>
       <body className="antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
