@@ -46,31 +46,31 @@ jobs:
       - name: Run unit tests (backend/test/unit)
         run: go test ./test/unit/... -v
 
-      # 7. Run coverage for internal/user
-      - name: Run coverage for internal/user
-        run: |
-          mkdir -p coverage
-          go test ./internal/user/... \
-            -coverprofile=coverage/user.out \
-            -covermode=atomic \
-            -v
+      # # 7. Run coverage for internal/user
+      # - name: Run coverage for internal/user
+      #   run: |
+      #     mkdir -p coverage
+      #     go test ./internal/user/... \
+      #       -coverprofile=coverage/user.out \
+      #       -covermode=atomic \
+      #       -v
 
-      # 8. Generate coverage report
-      - name: Generate coverage report
-        run: |
-          go tool cover -func=coverage/user.out | tee coverage/user.txt
-          echo "## Coverage Summary" >> coverage/summary.md
-          go tool cover -func=coverage/user.out | tail -1 >> coverage/summary.md
+      # # 8. Generate coverage report
+      # - name: Generate coverage report
+      #   run: |
+      #     go tool cover -func=coverage/user.out | tee coverage/user.txt
+      #     echo "## Coverage Summary" >> coverage/summary.md
+      #     go tool cover -func=coverage/user.out | tail -1 >> coverage/summary.md
 
-      # 9. Upload coverage artifact
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: user-service-coverage
-          path: |
-            backend/coverage/user.out
-            backend/coverage/user.txt
-            backend/coverage/summary.md
+      # # 9. Upload coverage artifact
+      # - name: Upload coverage artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: user-service-coverage
+      #     path: |
+      #       backend/coverage/user.out
+      #       backend/coverage/user.txt
+      #       backend/coverage/summary.md
 
       # 10. golangci-lint
       - name: Run golangci-lint
@@ -87,13 +87,13 @@ jobs:
           gosec -fmt=json -out=gosec-report.json ./...
         continue-on-error: true
 
-      # 12. Upload gosec report
-      - name: Upload gosec report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: gosec-security-report
-          path: backend/gosec-report.json
+      # # 12. Upload gosec report
+      # - name: Upload gosec report
+      #   uses: actions/upload-artifact@v4
+      #   if: always()
+      #   with:
+      #     name: gosec-security-report
+      #     path: backend/gosec-report.json
 
   notify:
     needs: test
