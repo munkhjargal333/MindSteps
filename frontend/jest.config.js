@@ -1,25 +1,15 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+const nextJest = require('next/jest')
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const createJestConfig = nextJest({
+  dir: './',
+})
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-  {
-    files: ["{app,components,lib,context}/**/*.{js,jsx,ts,tsx}"],   // 👈 🔥 lint хийх target-ууд
-    ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"],
-    rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-      "react/no-unescaped-entities": "off",
-    },
+const customJestConfig = {
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1', // <rootDir> = frontend/
   },
-];
+}
 
-export default eslintConfig;
+module.exports = createJestConfig(customJestConfig)
