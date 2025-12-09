@@ -19,12 +19,12 @@ jobs:
         working-directory: ./backend
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.22'   # 1.25 албан ёсоор байхгүй тул тогтвортой хувилбар тавьсан
 
       - name: Download dependencies
         run: go mod download
@@ -35,7 +35,9 @@ jobs:
       - name: Run coverage for internal/user
         run: |
           mkdir -p coverage
-          go test ./internal/user/... -coverprofile=coverage/user.out -covermode=atomic
+          go test ./internal/user/... \
+            -coverprofile=coverage/user.out \
+            -covermode=atomic
           go tool cover -func=coverage/user.out > coverage/user.txt
 
       - name: Upload coverage artifact
@@ -44,15 +46,14 @@ jobs:
           name: user-service-coverage
           path: backend/coverage/user.txt
 
-
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v5
         with:
           version: latest
-          working-directory: ./backend
+          working-directory: backend
 
       - name: Run gosec security scan
-        uses: securego/gosec@master
+        uses: securego/gosec@v2
         with:
           args: ./...
 
@@ -62,7 +63,7 @@ jobs:
     if: failure()
     steps:
       - name: Send email notification
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.gmail.com
           server_port: 465
@@ -71,4 +72,4 @@ jobs:
           subject: "❌ Backend CI Failed"
           body: "Tests or security checks failed in workflow run: ${{ github.run_id }}"
           to: munkhjargal.ts39@gmail.com
-          from: CI Bot <ci@example.com>
+          from: "CI Bot <ci@example.com>"
