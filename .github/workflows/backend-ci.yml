@@ -26,7 +26,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.25'
           cache: true
           cache-dependency-path: backend/go.sum
 
@@ -104,19 +104,19 @@ jobs:
         uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.gmail.com
-          server_port: 587
-          secure: false
+          server_port: 465          # SSL порт
+          secure: true              # TLS/SSL идэвхжүүлсэн
           username: ${{ secrets.EMAIL_USER }}
           password: ${{ secrets.EMAIL_PASS }}
           subject: "❌ Backend CI Failed - ${{ github.repository }}"
           body: |
-            Backend CI workflow failed!
-            
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            
+            🚨 Backend CI workflow failed!
+
+            📂 Repository: ${{ github.repository }}
+            🌿 Branch: ${{ github.ref_name }}
+            🔑 Commit: ${{ github.sha }}
+            ▶️ Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
             Please check the logs for details.
           to: munkhjargal.ts39@gmail.com
-          from: munkhjargal.ts39@gmail.com
+          from: CI Bot <${{ secrets.EMAIL_USER }}>
