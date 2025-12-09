@@ -1,4 +1,3 @@
-
 LAB1: DONE
     Сэтгэцийн эрүүл мэнд хувь хүний хөгжил
 
@@ -18,7 +17,7 @@ LAB5: DONE
     1. GitHub дээр шинэ pull request үүсгэх
     2. Кодын үнэлгээ (code review) хийлгэх
     3. CI/CD pipeline-аар туршилтуудыг гүйцэтгэх
-    4. Pull request-г merge хийх
+    4. Pull request-г merge хийх ?
 
 LAB6: 
     Pair Programming ба код үзэх (Code Review)
@@ -49,7 +48,7 @@ LAB9:
         Алдааны лог хийх, боловсруулах
             backend/cmd/api/main.go
 
-LAB10:  DONE
+LAB10:  DONE(сайжруулж байгаа)
     Хоёрдогч Sprint - Дэвшилтэт функцууд
         Залруулсан(зорилгын хэсгийг хойшлуулах өөрчлөх талаар бодсон)
 
@@ -60,3 +59,14 @@ LAB11:  DONE
         Хэрэглэгчийн туршлагыг сайжруулах - DONE()
         Хэрэглэгчийн мэдээлэл - сайжруулж байгаа
         LocalStorage ашиглах - DONE lib/api/client.go
+
+LAB12: 
+
+LAB13: 
+    Гүйцэтгэлийн туршилт ба аюулгүй байдлын үндэс
+        Гүйцэтгэлийн туршилт(Performance testing)
+        SQL injection, XSS
+        Нууц үгийг хэрхэн аюулгүй хадгалах талаар
+
+LAB14: 
+    

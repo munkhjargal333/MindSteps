@@ -1,0 +1,69 @@
+@startuml
+skinparam componentStyle rectangle
+
+package "Frontend" {
+  component [Dashboard UI]
+  component [Journal Editor]
+  component [Mood Tracker]
+  component [Goal Manager]
+  component [Meditation Player]
+  component [API Client]
+}
+
+package "Backend Services" {
+  component [Auth Service]
+  component [Journal Service]
+  component [Mood Service]
+  component [Goal Service]
+  component [Meditation Service]
+  component [Lesson Service]
+  component [Gamification Service]
+  component [Notification Service]
+}
+
+package "AI Services" {
+  component [NLP Engine]
+  component [Emotion Detector]
+  component [Pattern Recognition]
+  component [Value Extractor]
+  component [Recommender]
+}
+
+package "Data Layer" {
+  component [User Repository]
+  component [Journal Repository]
+  component [Mood Repository]
+  component [Goal Repository]
+  database "PostgreSQL"
+}
+
+[Dashboard UI] --> [API Client]
+[Journal Editor] --> [API Client]
+[Mood Tracker] --> [API Client]
+[Goal Manager] --> [API Client]
+
+[API Client] --> [Auth Service]
+[API Client] --> [Journal Service]
+[API Client] --> [Mood Service]
+[API Client] --> [Goal Service]
+[API Client] --> [Meditation Service]
+
+[Journal Service] --> [NLP Engine]
+[Mood Service] --> [Emotion Detector]
+[Goal Service] --> [Pattern Recognition]
+[Lesson Service] --> [Recommender]
+
+[NLP Engine] --> [Value Extractor]
+[Emotion Detector] --> [Pattern Recognition]
+
+[Auth Service] --> [User Repository]
+[Journal Service] --> [Journal Repository]
+[Mood Service] --> [Mood Repository]
+[Goal Service] --> [Goal Repository]
+
+[User Repository] --> PostgreSQL
+[Journal Repository] --> PostgreSQL
+[Mood Repository] --> PostgreSQL
+[Goal Repository] --> PostgreSQL
+
+@enduml

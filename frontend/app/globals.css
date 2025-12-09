@@ -3,8 +3,43 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --primary-color: #6366f1;
+    --primary-rgb: 99, 102, 241;
+  }
+
+  /* Light theme (default) */
+  .light {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-gradient-start: #eff6ff;
+    --bg-gradient-middle: #eef2ff;
+    --bg-gradient-end: #faf5ff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --card-bg: #ffffff;
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  }
+
+  /* Dark theme */
+  .dark {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-gradient-start: #020617;
+    --bg-gradient-middle: #0f172a;
+    --bg-gradient-end: #1e1b4b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --card-bg: #1e293b;
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -15,8 +50,56 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  .bg-theme-primary {
+    background-color: var(--bg-primary);
+  }
+
+  .bg-theme-secondary {
+    background-color: var(--bg-secondary);
+  }
+
+  .bg-theme-gradient {
+    background: linear-gradient(
+      to bottom right,
+      var(--bg-gradient-start),
+      var(--bg-gradient-middle),
+      var(--bg-gradient-end)
+    );
+  }
+
+  .text-theme-primary {
+    color: var(--text-primary);
+  }
+
+  .text-theme-secondary {
+    color: var(--text-secondary);
+  }
+
+  .border-theme {
+    border-color: var(--border-color);
+  }
+
+  .card-theme {
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow);
+  }
+
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.1);
+  }
+
+  .text-primary-color {
+    color: var(--primary-color);
+  }
 }
-/* globals.css эсвэл module.css дотор */
+
 .container {
   padding: 1rem;
 }

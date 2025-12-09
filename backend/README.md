@@ -21,10 +21,3 @@ Edge case, exception flow test                  (optional)
 SQL Injection хамгаалалт энд баталгаажна
 → Parameterized query / Prepared statement
 → Dynamic query бол whitelist + escape
-
-5. Quality Gate
-
-Test cases бүгд амжилттай
-Coverage хангалттай (Service өндөр)
-CI/CD Passed
-Lint/Security scan OK
