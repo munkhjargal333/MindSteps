@@ -18,7 +18,7 @@ env:
 jobs:
   # 1. Туршилт ажиллуулах
   test:
-    name: 🧪 Unit Tests & Coverage
+    name:  Unit Tests & Coverage
     runs-on: ubuntu-latest
     
     defaults:
@@ -57,95 +57,95 @@ jobs:
           echo ""
           echo "✓ Unit tests амжилттай дууслаа"
 
-      - name: 📊 Run tests with coverage
-        run: |
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📊 Coverage тайлан гаргаж байна..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          mkdir -p coverage
+      # - name: 📊 Run tests with coverage
+      #   run: |
+      #     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      #     echo "📊 Coverage тайлан гаргаж байна..."
+      #     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      #     mkdir -p coverage
           
-          # Бүх internal модулиудын coverage
-          go test ./internal/... \
-            -coverprofile=coverage/all.out \
-            -covermode=atomic \
-            -timeout 10m
+      #     # Бүх internal модулиудын coverage
+      #     go test ./internal/... \
+      #       -coverprofile=coverage/all.out \
+      #       -covermode=atomic \
+      #       -timeout 10m
           
-          # user service-ийн тусгай coverage
-          go test ./internal/user/... \
-            -coverprofile=coverage/user.out \
-            -covermode=atomic
+      #     # user service-ийн тусгай coverage
+      #     go test ./internal/user/... \
+      #       -coverprofile=coverage/user.out \
+      #       -covermode=atomic
           
-          # auth service-ийн coverage
-          go test ./internal/auth/... \
-            -coverprofile=coverage/auth.out \
-            -covermode=atomic \
-            2>/dev/null || echo "⚠️  Auth tests алга байна"
+      #     # auth service-ийн coverage
+      #     go test ./internal/auth/... \
+      #       -coverprofile=coverage/auth.out \
+      #       -covermode=atomic \
+      #       2>/dev/null || echo "⚠️  Auth tests алга байна"
           
-          echo ""
-          echo "✓ Coverage файлууд үүсгэгдлээ"
+      #     echo ""
+      #     echo "✓ Coverage файлууд үүсгэгдлээ"
 
-      - name: 📈 Generate coverage reports
-        run: |
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📈 Coverage тайлан боловсруулж байна..."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      # - name: 📈 Generate coverage reports
+      #   run: |
+      #     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      #     echo "📈 Coverage тайлан боловсруулж байна..."
+      #     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
-          # Нийт coverage
-          if [ -f coverage/all.out ]; then
-            echo ""
-            echo "🎯 НИЙТ COVERAGE:"
-            go tool cover -func=coverage/all.out | tee coverage/all.txt
-            TOTAL=$(go tool cover -func=coverage/all.out | grep total | awk '{print $3}')
-            echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "📊 НИЙТ COVERAGE: $TOTAL"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          fi
+      #     # Нийт coverage
+      #     if [ -f coverage/all.out ]; then
+      #       echo ""
+      #       echo "🎯 НИЙТ COVERAGE:"
+      #       go tool cover -func=coverage/all.out | tee coverage/all.txt
+      #       TOTAL=$(go tool cover -func=coverage/all.out | grep total | awk '{print $3}')
+      #       echo ""
+      #       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      #       echo "📊 НИЙТ COVERAGE: $TOTAL"
+      #       echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      #     fi
           
-          # User service coverage
-          if [ -f coverage/user.out ]; then
-            echo ""
-            echo "👤 USER SERVICE COVERAGE:"
-            go tool cover -func=coverage/user.out | tee coverage/user.txt
-            USER_COVERAGE=$(go tool cover -func=coverage/user.out | grep total | awk '{print $3}')
-            echo "User service: $USER_COVERAGE"
-          fi
+      #     # User service coverage
+      #     if [ -f coverage/user.out ]; then
+      #       echo ""
+      #       echo "👤 USER SERVICE COVERAGE:"
+      #       go tool cover -func=coverage/user.out | tee coverage/user.txt
+      #       USER_COVERAGE=$(go tool cover -func=coverage/user.out | grep total | awk '{print $3}')
+      #       echo "User service: $USER_COVERAGE"
+      #     fi
           
-          # Summary файл үүсгэх
-          cat > coverage/summary.md << EOF
-          # 📊 Coverage Report
+      #     # Summary файл үүсгэх
+      #     cat > coverage/summary.md << EOF
+      #     # 📊 Coverage Report
           
-          **Огноо:** $(date '+%Y-%m-%d %H:%M:%S')
-          **Branch:** ${{ github.ref_name }}
-          **Commit:** ${{ github.sha }}
+      #     **Огноо:** $(date '+%Y-%m-%d %H:%M:%S')
+      #     **Branch:** ${{ github.ref_name }}
+      #     **Commit:** ${{ github.sha }}
           
-          ## 📈 Coverage Statistics
+      #     ## 📈 Coverage Statistics
           
-          | Module | Coverage |
-          |--------|----------|
-          | Нийт | $TOTAL |
-          | User Service | ${USER_COVERAGE:-N/A} |
+      #     | Module | Coverage |
+      #     |--------|----------|
+      #     | Нийт | $TOTAL |
+      #     | User Service | ${USER_COVERAGE:-N/A} |
           
-          ## 📝 Detailed Report
+      #     ## 📝 Detailed Report
           
-          \`\`\`
-          $(cat coverage/all.txt 2>/dev/null || echo "Coverage data not available")
-          \`\`\`
-          EOF
+      #     \`\`\`
+      #     $(cat coverage/all.txt 2>/dev/null || echo "Coverage data not available")
+      #     \`\`\`
+      #     EOF
           
-          echo ""
-          echo "✓ Coverage тайлангууд бэлэн боллоо"
+      #     echo ""
+      #     echo "✓ Coverage тайлангууд бэлэн боллоо"
 
-      - name: 📤 Upload coverage artifacts
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-report-${{ github.sha }}
-          path: |
-            backend/coverage/*.out
-            backend/coverage/*.txt
-            backend/coverage/summary.md
-          retention-days: 30
+      # - name: 📤 Upload coverage artifacts
+      #   uses: actions/upload-artifact@v4
+      #   if: always()
+      #   with:
+      #     name: coverage-report-${{ github.sha }}
+      #     path: |
+      #       backend/coverage/*.out
+      #       backend/coverage/*.txt
+      #       backend/coverage/summary.md
+      #     retention-days: 30
 
   # 2. Code quality шалгалт
   lint:
@@ -158,10 +158,10 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}
 
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Set up Go ${{ env.GO_VERSION }}
+      - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
@@ -189,24 +189,24 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}
 
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Set up Go ${{ env.GO_VERSION }}
+      - name: Set up Go ${{ env.GO_VERSION }}
         uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - name: 🔐 Install gosec
+      - name: Install gosec
         run: |
           echo "gosec суулгаж байна..."
           go install github.com/securego/gosec/v2/cmd/gosec@latest
           echo "✓ gosec амжилттай суулгалаа"
 
-      - name: 🔍 Run security scan
+      - name: Run security scan
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🔐 Аюулгүй байдлын шалгалт эхэллээ..."
+          echo "Аюулгүй байдлын шалгалт эхэллээ..."
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           
           # JSON тайлан гаргах
@@ -220,7 +220,7 @@ jobs:
           echo "✓ Аюулгүй байдлын шалгалт дууслаа"
         continue-on-error: true
 
-      - name: 📤 Upload security report
+      - name: Upload security report
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -239,7 +239,7 @@ jobs:
         working-directory: ${{ env.WORKING_DIR }}
 
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: 🔧 Set up Go ${{ env.GO_VERSION }}
@@ -249,7 +249,7 @@ jobs:
           cache: true
           cache-dependency-path: backend/go.sum
 
-      - name: 🏗️ Build application
+      - name: Build application
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "🏗️  Application build хийж байна..."
@@ -275,13 +275,13 @@ jobs:
 
   # 5. Амжилттай болсон тохиолдолд мэдэгдэл
   notify-success:
-    name: ✅ Success Notification
+    name: Success Notification
     needs: [test, lint, security, build]
     runs-on: ubuntu-latest
     if: success()
     
     steps:
-      - name: ✅ Send success email
+      - name: Send success email
         uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.gmail.com
@@ -349,8 +349,11 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 587
           secure: false
-          username: ${{ secrets.EMAIL_USER }}
-          password: ${{ secrets.EMAIL_PASS }}
+          # username: ${{ secrets.EMAIL_USER }}
+          # password: ${{ secrets.EMAIL_PASS }}
+
+          username: munkhjargal.ts39@gmail.com
+          password: nmcy etus adzg xdwl
           subject: "❌ MindSteps Backend CI амжилтгүй - ${{ github.ref_name }}"
           body: |
             ╔══════════════════════════════════════════╗
