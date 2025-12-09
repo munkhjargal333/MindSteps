@@ -5,6 +5,10 @@ on:
     branches: [ main, develop ]
     paths:
       - 'backend/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/**'
 
 jobs:
   test:
@@ -16,7 +20,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -24,7 +28,6 @@ jobs:
 
       - name: Download dependencies
         run: go mod download
-
 
       - name: Run unit tests (backend/test/unit)
         run: go test ./test/unit/... -v
@@ -40,3 +43,31 @@ jobs:
         with:
           name: user-service-coverage
           path: backend/coverage/user.txt
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+          working-directory: ./backend
+
+      - name: Run gosec security scan
+        uses: securego/gosec@master
+        with:
+          args: ./...
+
+  notify:
+    needs: test
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: "❌ Backend CI Failed"
+          body: "Tests or security checks failed in workflow run: ${{ github.run_id }}"
+          to: team@example.com
+          from: CI Bot <ci@example.com>
