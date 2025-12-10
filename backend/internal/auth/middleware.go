@@ -129,6 +129,111 @@ func ensureUTF8(data []byte) []byte {
 	return data
 }
 
+// func FetchPreviousDataMiddleware(c *fiber.Ctx) error {
+// 	if c.Method() != fiber.MethodPut && c.Method() != fiber.MethodDelete {
+// 		return c.Next()
+// 	}
+// 	resourceID := c.Params("id")
+// 	if resourceID == "" {
+// 		return shared.ResponseBadRequest(c, "Resource ID is required")
+// 	}
+
+// 	path := c.Path()
+// 	tableName := ""
+// 	for _, route := range routes {
+// 		if strings.Contains(path, route.Path) {
+// 			tableName = route.Table
+// 			break
+// 		}
+// 	}
+
+// 	if tableName == "" {
+// 		return shared.ResponseBadRequest(c, "Сервер алдаа")
+// 	}
+
+// 	// Fetch previous data
+// 	var previousData map[string]interface{}
+// 	err := database.DB.Table(tableName).
+// 		Where("id = ?", resourceID).
+// 		Scan(&previousData).Error
+// 	if err != nil {
+// 		return shared.ResponseBadRequest(c, "Сервер алдаа")
+// 	}
+// 	fmt.Println("previous data", previousData)
+
+// 	// Attach previous data to context
+// 	c.Locals("previousData", previousData)
+
+// 	return c.Next()
+// }
+
+// func LoginLogMiddleware(c *fiber.Ctx) error {
+// 	// Оролтын зам нь зөвхөн LOGIN үед
+// 	if c.Method() != fiber.MethodPost || c.Path() != "/auth/login" {
+// 		return c.Next()
+// 	}
+
+// 	var err error
+
+// 	// ---- 1. Request body авах ----
+// 	contentType := c.Get("Content-Type")
+// 	var requestBody []byte
+
+// 	switch {
+// 	case strings.Contains(contentType, "multipart/form-data"):
+// 		formData := make(map[string]interface{})
+// 		multipartForm, err := c.MultipartForm()
+// 		if err == nil {
+// 			// Form values
+// 			for key, values := range multipartForm.Value {
+// 				if len(values) > 0 {
+// 					formData[key] = values[0]
+// 				}
+// 			}
+// 		} else {
+// 			// Fallback
+// 			c.Request().PostArgs().VisitAll(func(key, value []byte) {
+// 				formData[string(key)] = string(value)
+// 			})
+// 		}
+
+// 		requestBody, _ = json.Marshal(formData)
+
+// 	default:
+// 		// JSON эсвэл бусад raw body
+// 		requestBody = c.Body()
+// 	}
+
+// 	// ---- 2. Handler ажиллуулна ----
+// 	if err = c.Next(); err != nil {
+// 		return err
+// 	}
+
+// 	// ---- 3. Response авах ----
+// 	responseBody := c.Response().Body()
+// 	statusCode := strconv.Itoa(c.Response().StatusCode())
+
+// 	// ---- 4. UTF-8-safe ----
+// 	reqBody := ensureUTF8(requestBody)
+// 	respBody := ensureUTF8(responseBody)
+
+// 	// ---- 5. Лог structure ----
+// 	loginLog := models.LoginLog{
+// 		Path:        c.Path(),
+// 		Method:      "LOGIN",
+// 		StatusCode:  statusCode,
+// 		RequestBody: string(reqBody),
+// 		Response:    string(respBody),
+// 		CreatedAt:   time.Now(),
+// 	}
+
+// 	if err := CreateLoginLog(&loginLog); err != nil {
+// 		log.Errorf("Failed to save login log: %v", err)
+// 	}
+
+// 	return nil
+// }
+
 // func LogMiddleware(c *fiber.Ctx) error {
 // 	if c.Method() == fiber.MethodGet {
 // 		return c.Next()
@@ -268,42 +373,4 @@ func ensureUTF8(data []byte) []byte {
 // 	}
 
 // 	return nil
-// }
-
-// func FetchPreviousDataMiddleware(c *fiber.Ctx) error {
-// 	if c.Method() != fiber.MethodPut && c.Method() != fiber.MethodDelete {
-// 		return c.Next()
-// 	}
-// 	resourceID := c.Params("id")
-// 	if resourceID == "" {
-// 		return shared.ResponseBadRequest(c, "Resource ID is required")
-// 	}
-
-// 	path := c.Path()
-// 	tableName := ""
-// 	for _, route := range routes {
-// 		if strings.Contains(path, route.Path) {
-// 			tableName = route.Table
-// 			break
-// 		}
-// 	}
-
-// 	if tableName == "" {
-// 		return shared.ResponseBadRequest(c, "Сервер алдаа")
-// 	}
-
-// 	// Fetch previous data
-// 	var previousData map[string]interface{}
-// 	err := database.DB.Table(tableName).
-// 		Where("id = ?", resourceID).
-// 		Scan(&previousData).Error
-// 	if err != nil {
-// 		return shared.ResponseBadRequest(c, "Сервер алдаа")
-// 	}
-// 	fmt.Println("previous data", previousData)
-
-// 	// Attach previous data to context
-// 	c.Locals("previousData", previousData)
-
-// 	return c.Next()
 // }

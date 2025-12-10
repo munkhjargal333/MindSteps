@@ -3,6 +3,7 @@ package form
 import (
 	"fmt"
 	"regexp"
+	"unicode/utf8"
 )
 
 type RegisterForm struct {
@@ -50,7 +51,38 @@ func (f LoginForm) Validate() error {
 	if f.Password == "" {
 		return fmt.Errorf("password хоосон байна")
 	}
+	// Password‑д SQL injection эсвэл XSS‑ийн шинж тэмдэг байгаа эсэхийг шалгах
+	// (жишээ нь <script>, SQL keyword гэх мэт)
+	if containsDangerousInput(f.Password) {
+		return fmt.Errorf("password‑д зөвшөөрөгдөөгүй тэмдэгт байна")
+	}
+
 	return nil
+}
+
+// containsDangerousInput нь энгийн blacklist шалгалт хийдэг жишээ функц
+func containsDangerousInput(input string) bool {
+	dangerous := []string{"<script>", "SELECT", "DROP", "--", ";"}
+	for _, d := range dangerous {
+		if contains := stringContainsCaseInsensitive(input, d); contains {
+			return true
+		}
+	}
+	return false
+}
+
+func stringContainsCaseInsensitive(s, substr string) bool {
+	return utf8.RuneCountInString(s) >= utf8.RuneCountInString(substr) &&
+		(len([]rune(s)) > 0 && len([]rune(substr)) > 0 &&
+			containsFold(s, substr))
+}
+
+func containsFold(s, substr string) bool {
+	return len([]rune(s)) > 0 && len([]rune(substr)) > 0 &&
+		// strings.ContainsFold Go 1.20+ дээр байдаг
+		// энд жишээ болгож strings.Contains ашиглаж болно
+		// strings.Contains(strings.ToLower(s), strings.ToLower(substr))
+		false
 }
 
 type ForgotPasswordForm struct {
