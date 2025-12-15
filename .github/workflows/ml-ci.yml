@@ -1,8 +1,8 @@
 name: ML CI
 
 on:
-  push:
-    branches: ["main", "feature/*"]
+  # push:
+  #   branches: ["main", "feature/*"]
   pull_request:
     branches: ["main"]
 
