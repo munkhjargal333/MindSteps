@@ -3,3 +3,4 @@ architect docs/
 bin/
 aiAPI/
 convertor/
+node_modules/
