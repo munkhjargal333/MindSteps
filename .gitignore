@@ -4,3 +4,4 @@ bin/
 aiAPI/
 convertor/
 node_modules/
+.env

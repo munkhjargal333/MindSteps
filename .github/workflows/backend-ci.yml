@@ -1,11 +1,11 @@
 name: MindSteps Backend CI
 
 on:
-  push:
-    branches: [ main, develop, feature/* ]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yml'
+  # push:
+  #   branches: [ main, develop, feature/* ]
+  #   paths:
+  #     - 'backend/**'
+  #     - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
