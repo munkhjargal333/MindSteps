@@ -125,7 +125,7 @@ func (s *moodEntryService) GetStatistics(userID uint, days int) (map[string]inte
 
 		for _, entry := range entries {
 			totalIntensity += entry.Intensity
-			moodCounts[entry.MoodID]++
+			moodCounts[entry.MoodUnitID]++
 		}
 
 		stats["average_intensity"] = float64(totalIntensity) / float64(len(entries))

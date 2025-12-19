@@ -289,6 +289,7 @@ func main() {
 			},
 			JSONTag: tag("User"),
 		}),
+
 		gen.FieldRelate(field.BelongsTo, "MaslowLevel", maslowLevels, &field.RelateConfig{
 			RelatePointer: true,
 			GORMTag: field.GormTag{
@@ -331,40 +332,40 @@ func main() {
 	// ============================================================================
 
 	// Consciousness levels
-	consciousnessLevels := g.GenerateModelAs(
-		model("consciousness_levels"),
-		"ConsciousnessLevels",
-		gen.FieldType("id", "int"),
-		gen.FieldType("level_score", "int"),
-		gen.FieldType("sort_order", "int"),
-	)
+	// consciousnessLevels := g.GenerateModelAs(
+	// 	model("consciousness_levels"),
+	// 	"ConsciousnessLevels",
+	// 	gen.FieldType("id", "int"),
+	// 	gen.FieldType("level_score", "int"),
+	// 	gen.FieldType("sort_order", "int"),
+	// )
 
 	// User consciousness tracking
-	userConsciousnessTracking := g.GenerateModelAs(
-		model("user_consciousness_tracking"),
-		"UserConsciousnessTracking",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("consciousness_score", "int"),
-		gen.FieldType("primary_level_id", "int"),
-		gen.FieldType("source_id", "uint"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-		gen.FieldRelate(field.BelongsTo, "PrimaryLevel", consciousnessLevels, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"primary_level_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("PrimaryLevel"),
-		}),
-	)
+	// userConsciousnessTracking := g.GenerateModelAs(
+	// 	model("user_consciousness_tracking"),
+	// 	"UserConsciousnessTracking",
+	// 	gen.FieldType("id", "uint"),
+	// 	gen.FieldType("user_id", "uint"),
+	// 	gen.FieldType("consciousness_score", "int"),
+	// 	gen.FieldType("primary_level_id", "int"),
+	// 	gen.FieldType("source_id", "uint"),
+	// 	gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+	// 		RelatePointer: true,
+	// 		GORMTag: field.GormTag{
+	// 			"foreignKey": []string{"user_id"},
+	// 			"references": []string{"id"},
+	// 		},
+	// 		JSONTag: tag("User"),
+	// 	}),
+	// 	gen.FieldRelate(field.BelongsTo, "PrimaryLevel", consciousnessLevels, &field.RelateConfig{
+	// 		RelatePointer: true,
+	// 		GORMTag: field.GormTag{
+	// 			"foreignKey": []string{"primary_level_id"},
+	// 			"references": []string{"id"},
+	// 		},
+	// 		JSONTag: tag("PrimaryLevel"),
+	// 	}),
+	// )
 
 	// ============================================================================
 	// PLUTCHIK'S EMOTION WHEEL
@@ -455,48 +456,37 @@ func main() {
 	)
 
 	// Moods
-	moods := g.GenerateModelAs(
-		model("moods"),
-		"Moods",
-		gen.FieldType("id", "int"),
-		gen.FieldType("category_id", "int"),
-		gen.FieldType("intensity_level", "int"),
-		gen.FieldRelate(field.BelongsTo, "Category", moodCategories, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"category_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("Category"),
-		}),
-	)
+	// moods := g.GenerateModelAs(
+	// 	model("moods"),
+	// 	"Moods",
+	// 	gen.FieldType("id", "int"),
+	// 	gen.FieldType("category_id", "int"),
+	// 	gen.FieldType("intensity_level", "int"),
+	// 	gen.FieldRelate(field.BelongsTo, "Category", moodCategories, &field.RelateConfig{
+	// 		RelatePointer: true,
+	// 		GORMTag: field.GormTag{
+	// 			"foreignKey": []string{"category_id"},
+	// 			"references": []string{"id"},
+	// 		},
+	// 		JSONTag: tag("Category"),
+	// 	}),
+	// )
 
-	// Mood entries
-	moodEntries := g.GenerateModelAs(
-		model("mood_entries"),
-		"MoodEntries",
+	// Mood unit
+	MoodUnit := g.GenerateModelAs(
+		model("mood_unit"),
+		"MoodUnit",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("mood_id", "int"),
-		gen.FieldType("plutchik_id", "int"),
-		gen.FieldType("intensity", "int"),
-		gen.FieldType("trigger_event", "string"),
-		gen.FieldType("related_value_ids", "*[]uint"),
-		gen.FieldType("ai_detected_values", "*[]uint"),
-
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
+		gen.FieldType("category_id", "uint"),
+		gen.FieldType("plutchik_id", "uint"),
+		gen.FieldType("combination_id", "uint"),
+		gen.FieldType("display_name_mn", "string"),
+		gen.FieldType("display_icon", "string"),
 
 		gen.FieldRelate(field.BelongsTo, "MoodCategories", moodCategories, &field.RelateConfig{
 			RelatePointer: true,
 			GORMTag: field.GormTag{
-				"foreignKey": []string{"mood_id"},
+				"foreignKey": []string{"category_id"},
 				"references": []string{"id"},
 			},
 			JSONTag: tag("MoodCategories"),
@@ -509,6 +499,56 @@ func main() {
 				"references": []string{"id"},
 			},
 			JSONTag: tag("PlutchikEmotions"),
+		}),
+
+		gen.FieldRelate(field.BelongsTo, "PlutchikCombinations", plutchikCombinations, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"combination_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("PlutchikCombinations"),
+		}),
+	)
+
+	// Mood entries
+	moodEntries := g.GenerateModelAs(
+		model("mood_entries"),
+		"MoodEntries",
+		gen.FieldType("id", "uint"),
+		gen.FieldType("user_id", "uint"),
+		gen.FieldType("mood_unit_id", "int"),
+		// gen.FieldType("mood_id", "int"),
+		// gen.FieldType("plutchik_id", "int"),
+		gen.FieldType("intensity", "int"),
+		gen.FieldType("trigger_event", "string"),
+		gen.FieldType("ai_detected_values", "*[]uint"),
+
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
+		}),
+
+		gen.FieldRelate(field.BelongsTo, "CoreValues", coreValues, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"core_value_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("CoreValues"),
+		}),
+
+		gen.FieldRelate(field.BelongsTo, "MoodUnit", MoodUnit, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"mood_unit_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("MoodUnit"),
 		}),
 	)
 
@@ -1257,7 +1297,8 @@ func main() {
 		maslowLevels, coreValues, valueReflections,
 
 		// Consciousness Levels
-		consciousnessLevels, userConsciousnessTracking,
+		// consciousnessLevels,
+		// userConsciousnessTracking,
 
 		// Plutchik's Emotion Wheel
 		plutchikEmotions, plutchikCombinations, userEmotionWheel,
@@ -1266,7 +1307,7 @@ func main() {
 		journals,
 
 		// Mood Tracking
-		moodCategories, moods, moodEntries,
+		moodCategories, MoodUnit, moodEntries,
 
 		// Goals & Milestones
 		goals, goalMilestones,

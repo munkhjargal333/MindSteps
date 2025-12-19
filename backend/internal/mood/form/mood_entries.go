@@ -7,7 +7,6 @@ import (
 )
 
 type MoodEntryForm struct {
-	MoodID         int    `json:"mood_id" validate:"required"`
 	Intensity      int    `json:"intensity" validate:"required,min=1,max=10"`
 	WhenFelt       string `json:"when_felt"`
 	TriggerEvent   string `json:"trigger_event"`
@@ -15,33 +14,30 @@ type MoodEntryForm struct {
 	Notes          string `json:"notes"`
 	Location       string `json:"location"`
 	Weather        string `json:"weather"`
-	PlutchikID     int    `json:"plutchik_id"`
-	//RelatedValueIds uint   `json:"related_value_ids"`
-	UserID uint `json:"user_id"`
+	MoodUnitId     int    `json:"mood_unit_id"`
+	CorevalueID    uint   `json:"core_value_id"`
+	UserID         uint   `json:"user_id"`
 }
 
 func (f MoodEntryForm) Validate() error {
-	if f.MoodID == 0 {
-		return fmt.Errorf("mood_id шаардлагатай")
+	if f.MoodUnitId == 0 {
+		return fmt.Errorf("mood_unit_id шаардлагатай")
 	}
-	if f.PlutchikID == 0 {
-		return fmt.Errorf("plutchik_id шаардлагатай")
+
+	if f.CorevalueID == 0 {
+		return fmt.Errorf("core_value_id шаардлагатай")
 	}
+
 	if f.Intensity < 1 || f.Intensity > 10 {
 		return fmt.Errorf("intensity 1-10 хооронд байх ёстой")
 	}
-	// if f.WhenFelt != "" {
-	// 	return fmt.Errorf("WhenFelt шаардлагатай")
-	// }
-
 	return nil
 }
 
 func NewMoodEntryFromForm(f MoodEntryForm) *model.MoodEntries {
 	return &model.MoodEntries{
 		UserID:         f.UserID,
-		MoodID:         f.MoodID,
-		PlutchikID:     f.PlutchikID,
+		MoodUnitID:     f.MoodUnitId,
 		Intensity:      f.Intensity,
 		WhenFelt:       f.WhenFelt,
 		TriggerEvent:   f.TriggerEvent,
@@ -49,8 +45,7 @@ func NewMoodEntryFromForm(f MoodEntryForm) *model.MoodEntries {
 		Notes:          f.Notes,
 		Location:       f.Location,
 		Weather:        f.Weather,
-		// RelatedValueIds:  nil,
-		// AiDetectedValues: nil,
-		EntryDate: time.Now(),
+		CoreValueID:    int64(f.CorevalueID),
+		EntryDate:      time.Now(),
 	}
 }

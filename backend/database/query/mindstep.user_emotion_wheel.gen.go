@@ -51,15 +51,77 @@ func newUserEmotionWheel(db *gorm.DB, opts ...gen.DOOption) userEmotionWheel {
 		}{
 			RelationField: field.NewRelation("MoodEntry.User", "model.Users"),
 		},
-		MoodCategories: struct {
+		CoreValues: struct {
 			field.RelationField
+			User struct {
+				field.RelationField
+			}
+			MaslowLevel struct {
+				field.RelationField
+			}
 		}{
-			RelationField: field.NewRelation("MoodEntry.MoodCategories", "model.MoodCategories"),
+			RelationField: field.NewRelation("MoodEntry.CoreValues", "model.CoreValues"),
+			User: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("MoodEntry.CoreValues.User", "model.Users"),
+			},
+			MaslowLevel: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("MoodEntry.CoreValues.MaslowLevel", "model.MaslowLevels"),
+			},
 		},
-		PlutchikEmotions: struct {
+		MoodUnit: struct {
 			field.RelationField
+			MoodCategories struct {
+				field.RelationField
+			}
+			PlutchikEmotions struct {
+				field.RelationField
+			}
+			PlutchikCombinations struct {
+				field.RelationField
+				Emotion1 struct {
+					field.RelationField
+				}
+				Emotion2 struct {
+					field.RelationField
+				}
+			}
 		}{
-			RelationField: field.NewRelation("MoodEntry.PlutchikEmotions", "model.PlutchikEmotions"),
+			RelationField: field.NewRelation("MoodEntry.MoodUnit", "model.MoodUnit"),
+			MoodCategories: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("MoodEntry.MoodUnit.MoodCategories", "model.MoodCategories"),
+			},
+			PlutchikEmotions: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("MoodEntry.MoodUnit.PlutchikEmotions", "model.PlutchikEmotions"),
+			},
+			PlutchikCombinations: struct {
+				field.RelationField
+				Emotion1 struct {
+					field.RelationField
+				}
+				Emotion2 struct {
+					field.RelationField
+				}
+			}{
+				RelationField: field.NewRelation("MoodEntry.MoodUnit.PlutchikCombinations", "model.PlutchikCombinations"),
+				Emotion1: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("MoodEntry.MoodUnit.PlutchikCombinations.Emotion1", "model.PlutchikEmotions"),
+				},
+				Emotion2: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("MoodEntry.MoodUnit.PlutchikCombinations.Emotion2", "model.PlutchikEmotions"),
+				},
+			},
 		},
 	}
 
@@ -303,11 +365,32 @@ type userEmotionWheelBelongsToMoodEntry struct {
 	User struct {
 		field.RelationField
 	}
-	MoodCategories struct {
+	CoreValues struct {
 		field.RelationField
+		User struct {
+			field.RelationField
+		}
+		MaslowLevel struct {
+			field.RelationField
+		}
 	}
-	PlutchikEmotions struct {
+	MoodUnit struct {
 		field.RelationField
+		MoodCategories struct {
+			field.RelationField
+		}
+		PlutchikEmotions struct {
+			field.RelationField
+		}
+		PlutchikCombinations struct {
+			field.RelationField
+			Emotion1 struct {
+				field.RelationField
+			}
+			Emotion2 struct {
+				field.RelationField
+			}
+		}
 	}
 }
 

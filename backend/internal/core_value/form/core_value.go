@@ -14,6 +14,7 @@ type CoreValueForm struct {
 	PriorityOrder int    `json:"priority_order" validate:"required,min=1,max=7"`
 	UserID        uint   `json:"user_id"`
 	IsActive      bool   `json:"is_active"`
+	// CoreValueId   uint   `json:"core_values_id"`
 }
 
 func (f CoreValueForm) Validate() error {
