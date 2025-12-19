@@ -20,6 +20,8 @@ type PlutchikCombinations struct {
 	CombinationType string            `gorm:"column:combination_type;type:character varying(20)" json:"combination_type"`
 	Description     string            `gorm:"column:description;type:text" json:"description"`
 	CreatedAt       time.Time         `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	Color           string            `gorm:"column:color;type:character varying(7)" json:"color"`
+	Emoji           string            `gorm:"column:emoji;type:character varying(20)" json:"emoji"`
 	Emotion1        *PlutchikEmotions `gorm:"foreignKey:emotion1_id;references:id" json:"Emotion1"`
 	Emotion2        *PlutchikEmotions `gorm:"foreignKey:emotion2_id;references:id" json:"Emotion2"`
 }

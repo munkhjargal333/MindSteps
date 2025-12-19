@@ -24,7 +24,6 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		AIScoringCriteria:         newAIScoringCriteria(db, opts...),
 		AIWeeklyMoodDeepAnalysis:  newAIWeeklyMoodDeepAnalysis(db, opts...),
 		AuthOTP:                   newAuthOTP(db, opts...),
-		ConsciousnessLevels:       newConsciousnessLevels(db, opts...),
 		CoreValues:                newCoreValues(db, opts...),
 		DataRetentionPolicies:     newDataRetentionPolicies(db, opts...),
 		DeletedDataLog:            newDeletedDataLog(db, opts...),
@@ -44,7 +43,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		MeditationTechniques:      newMeditationTechniques(db, opts...),
 		MoodCategories:            newMoodCategories(db, opts...),
 		MoodEntries:               newMoodEntries(db, opts...),
-		Moods:                     newMoods(db, opts...),
+		MoodUnit:                  newMoodUnit(db, opts...),
 		Notifications:             newNotifications(db, opts...),
 		PlutchikCombinations:      newPlutchikCombinations(db, opts...),
 		PlutchikEmotions:          newPlutchikEmotions(db, opts...),
@@ -56,7 +55,6 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		SystemAuditLog:            newSystemAuditLog(db, opts...),
 		SystemSettings:            newSystemSettings(db, opts...),
 		UserAchievements:          newUserAchievements(db, opts...),
-		UserConsciousnessTracking: newUserConsciousnessTracking(db, opts...),
 		UserDataAccessLog:         newUserDataAccessLog(db, opts...),
 		UserDataRequests:          newUserDataRequests(db, opts...),
 		UserEmotionWheel:          newUserEmotionWheel(db, opts...),
@@ -80,7 +78,6 @@ type Query struct {
 	AIScoringCriteria         aIScoringCriteria
 	AIWeeklyMoodDeepAnalysis  aIWeeklyMoodDeepAnalysis
 	AuthOTP                   authOTP
-	ConsciousnessLevels       consciousnessLevels
 	CoreValues                coreValues
 	DataRetentionPolicies     dataRetentionPolicies
 	DeletedDataLog            deletedDataLog
@@ -100,7 +97,7 @@ type Query struct {
 	MeditationTechniques      meditationTechniques
 	MoodCategories            moodCategories
 	MoodEntries               moodEntries
-	Moods                     moods
+	MoodUnit                  moodUnit
 	Notifications             notifications
 	PlutchikCombinations      plutchikCombinations
 	PlutchikEmotions          plutchikEmotions
@@ -112,7 +109,6 @@ type Query struct {
 	SystemAuditLog            systemAuditLog
 	SystemSettings            systemSettings
 	UserAchievements          userAchievements
-	UserConsciousnessTracking userConsciousnessTracking
 	UserDataAccessLog         userDataAccessLog
 	UserDataRequests          userDataRequests
 	UserEmotionWheel          userEmotionWheel
@@ -137,7 +133,6 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		AIScoringCriteria:         q.AIScoringCriteria.clone(db),
 		AIWeeklyMoodDeepAnalysis:  q.AIWeeklyMoodDeepAnalysis.clone(db),
 		AuthOTP:                   q.AuthOTP.clone(db),
-		ConsciousnessLevels:       q.ConsciousnessLevels.clone(db),
 		CoreValues:                q.CoreValues.clone(db),
 		DataRetentionPolicies:     q.DataRetentionPolicies.clone(db),
 		DeletedDataLog:            q.DeletedDataLog.clone(db),
@@ -157,7 +152,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		MeditationTechniques:      q.MeditationTechniques.clone(db),
 		MoodCategories:            q.MoodCategories.clone(db),
 		MoodEntries:               q.MoodEntries.clone(db),
-		Moods:                     q.Moods.clone(db),
+		MoodUnit:                  q.MoodUnit.clone(db),
 		Notifications:             q.Notifications.clone(db),
 		PlutchikCombinations:      q.PlutchikCombinations.clone(db),
 		PlutchikEmotions:          q.PlutchikEmotions.clone(db),
@@ -169,7 +164,6 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		SystemAuditLog:            q.SystemAuditLog.clone(db),
 		SystemSettings:            q.SystemSettings.clone(db),
 		UserAchievements:          q.UserAchievements.clone(db),
-		UserConsciousnessTracking: q.UserConsciousnessTracking.clone(db),
 		UserDataAccessLog:         q.UserDataAccessLog.clone(db),
 		UserDataRequests:          q.UserDataRequests.clone(db),
 		UserEmotionWheel:          q.UserEmotionWheel.clone(db),
@@ -201,7 +195,6 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		AIScoringCriteria:         q.AIScoringCriteria.replaceDB(db),
 		AIWeeklyMoodDeepAnalysis:  q.AIWeeklyMoodDeepAnalysis.replaceDB(db),
 		AuthOTP:                   q.AuthOTP.replaceDB(db),
-		ConsciousnessLevels:       q.ConsciousnessLevels.replaceDB(db),
 		CoreValues:                q.CoreValues.replaceDB(db),
 		DataRetentionPolicies:     q.DataRetentionPolicies.replaceDB(db),
 		DeletedDataLog:            q.DeletedDataLog.replaceDB(db),
@@ -221,7 +214,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		MeditationTechniques:      q.MeditationTechniques.replaceDB(db),
 		MoodCategories:            q.MoodCategories.replaceDB(db),
 		MoodEntries:               q.MoodEntries.replaceDB(db),
-		Moods:                     q.Moods.replaceDB(db),
+		MoodUnit:                  q.MoodUnit.replaceDB(db),
 		Notifications:             q.Notifications.replaceDB(db),
 		PlutchikCombinations:      q.PlutchikCombinations.replaceDB(db),
 		PlutchikEmotions:          q.PlutchikEmotions.replaceDB(db),
@@ -233,7 +226,6 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		SystemAuditLog:            q.SystemAuditLog.replaceDB(db),
 		SystemSettings:            q.SystemSettings.replaceDB(db),
 		UserAchievements:          q.UserAchievements.replaceDB(db),
-		UserConsciousnessTracking: q.UserConsciousnessTracking.replaceDB(db),
 		UserDataAccessLog:         q.UserDataAccessLog.replaceDB(db),
 		UserDataRequests:          q.UserDataRequests.replaceDB(db),
 		UserEmotionWheel:          q.UserEmotionWheel.replaceDB(db),
@@ -255,7 +247,6 @@ type queryCtx struct {
 	AIScoringCriteria         *aIScoringCriteriaDo
 	AIWeeklyMoodDeepAnalysis  *aIWeeklyMoodDeepAnalysisDo
 	AuthOTP                   *authOTPDo
-	ConsciousnessLevels       *consciousnessLevelsDo
 	CoreValues                *coreValuesDo
 	DataRetentionPolicies     *dataRetentionPoliciesDo
 	DeletedDataLog            *deletedDataLogDo
@@ -275,7 +266,7 @@ type queryCtx struct {
 	MeditationTechniques      *meditationTechniquesDo
 	MoodCategories            *moodCategoriesDo
 	MoodEntries               *moodEntriesDo
-	Moods                     *moodsDo
+	MoodUnit                  *moodUnitDo
 	Notifications             *notificationsDo
 	PlutchikCombinations      *plutchikCombinationsDo
 	PlutchikEmotions          *plutchikEmotionsDo
@@ -287,7 +278,6 @@ type queryCtx struct {
 	SystemAuditLog            *systemAuditLogDo
 	SystemSettings            *systemSettingsDo
 	UserAchievements          *userAchievementsDo
-	UserConsciousnessTracking *userConsciousnessTrackingDo
 	UserDataAccessLog         *userDataAccessLogDo
 	UserDataRequests          *userDataRequestsDo
 	UserEmotionWheel          *userEmotionWheelDo
@@ -309,7 +299,6 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		AIScoringCriteria:         q.AIScoringCriteria.WithContext(ctx),
 		AIWeeklyMoodDeepAnalysis:  q.AIWeeklyMoodDeepAnalysis.WithContext(ctx),
 		AuthOTP:                   q.AuthOTP.WithContext(ctx),
-		ConsciousnessLevels:       q.ConsciousnessLevels.WithContext(ctx),
 		CoreValues:                q.CoreValues.WithContext(ctx),
 		DataRetentionPolicies:     q.DataRetentionPolicies.WithContext(ctx),
 		DeletedDataLog:            q.DeletedDataLog.WithContext(ctx),
@@ -329,7 +318,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		MeditationTechniques:      q.MeditationTechniques.WithContext(ctx),
 		MoodCategories:            q.MoodCategories.WithContext(ctx),
 		MoodEntries:               q.MoodEntries.WithContext(ctx),
-		Moods:                     q.Moods.WithContext(ctx),
+		MoodUnit:                  q.MoodUnit.WithContext(ctx),
 		Notifications:             q.Notifications.WithContext(ctx),
 		PlutchikCombinations:      q.PlutchikCombinations.WithContext(ctx),
 		PlutchikEmotions:          q.PlutchikEmotions.WithContext(ctx),
@@ -341,7 +330,6 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		SystemAuditLog:            q.SystemAuditLog.WithContext(ctx),
 		SystemSettings:            q.SystemSettings.WithContext(ctx),
 		UserAchievements:          q.UserAchievements.WithContext(ctx),
-		UserConsciousnessTracking: q.UserConsciousnessTracking.WithContext(ctx),
 		UserDataAccessLog:         q.UserDataAccessLog.WithContext(ctx),
 		UserDataRequests:          q.UserDataRequests.WithContext(ctx),
 		UserEmotionWheel:          q.UserEmotionWheel.WithContext(ctx),

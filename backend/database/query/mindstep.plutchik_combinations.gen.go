@@ -35,6 +35,8 @@ func newPlutchikCombinations(db *gorm.DB, opts ...gen.DOOption) plutchikCombinat
 	_plutchikCombinations.CombinationType = field.NewString(tableName, "combination_type")
 	_plutchikCombinations.Description = field.NewString(tableName, "description")
 	_plutchikCombinations.CreatedAt = field.NewTime(tableName, "created_at")
+	_plutchikCombinations.Color = field.NewString(tableName, "color")
+	_plutchikCombinations.Emoji = field.NewString(tableName, "emoji")
 	_plutchikCombinations.Emotion1 = plutchikCombinationsBelongsToEmotion1{
 		db: db.Session(&gorm.Session{}),
 
@@ -64,6 +66,8 @@ type plutchikCombinations struct {
 	CombinationType field.String
 	Description     field.String
 	CreatedAt       field.Time
+	Color           field.String
+	Emoji           field.String
 	Emotion1        plutchikCombinationsBelongsToEmotion1
 
 	Emotion2 plutchikCombinationsBelongsToEmotion2
@@ -91,6 +95,8 @@ func (p *plutchikCombinations) updateTableName(table string) *plutchikCombinatio
 	p.CombinationType = field.NewString(table, "combination_type")
 	p.Description = field.NewString(table, "description")
 	p.CreatedAt = field.NewTime(table, "created_at")
+	p.Color = field.NewString(table, "color")
+	p.Emoji = field.NewString(table, "emoji")
 
 	p.fillFieldMap()
 
@@ -119,7 +125,7 @@ func (p *plutchikCombinations) GetFieldByName(fieldName string) (field.OrderExpr
 }
 
 func (p *plutchikCombinations) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 10)
+	p.fieldMap = make(map[string]field.Expr, 12)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["emotion1_id"] = p.Emotion1ID
 	p.fieldMap["emotion2_id"] = p.Emotion2ID
@@ -128,6 +134,8 @@ func (p *plutchikCombinations) fillFieldMap() {
 	p.fieldMap["combination_type"] = p.CombinationType
 	p.fieldMap["description"] = p.Description
 	p.fieldMap["created_at"] = p.CreatedAt
+	p.fieldMap["color"] = p.Color
+	p.fieldMap["emoji"] = p.Emoji
 
 }
 
