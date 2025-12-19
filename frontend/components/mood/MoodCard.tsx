@@ -21,13 +21,6 @@ export default function MoodCard({
     return 'text-green-600 bg-green-50';
   };
 
-  const getIntensityEmoji = (intensity: number) => {
-    if (intensity >= 8) return '🔥';
-    if (intensity >= 6) return '😊';
-    if (intensity >= 4) return '😐';
-    return '😌';
-  };
-
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Огноо байхгүй';
     try {
@@ -109,14 +102,14 @@ export default function MoodCard({
           </div>
           
           <div className={`px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-2 ${getIntensityColor(entry.intensity)}`}>
-            <span>{getIntensityEmoji(entry.intensity)}</span>
+             <span>{entry.MoodUnit?.display_emoji}</span>
             <span>{entry.intensity}/10</span>
           </div>
         </div>
 
         {/* MOOD NAME */}
         <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition">
-          {entry.PlutchikEmotions?.name_mn || 'Сэтгэл санаа'}
+          {entry.MoodUnit?.display_name_mn}
         </h3>
         
         {/* TRIGGER EVENT */}
@@ -127,21 +120,21 @@ export default function MoodCard({
         )}
         
         {/* COPING STRATEGY */}
-        {entry.coping_strategy && (
+        {/* {entry.coping_strategy && (
           <p className="text-sm sm:text-base text-gray-600 mb-2">
             <span className="font-semibold text-gray-700">Арга:</span> {entry.coping_strategy}
           </p>
-        )}
+        )} */}
         
         {/* NOTES */}
-        {entry.notes && (
+        {/* {entry.notes && (
           <p className="text-sm text-gray-500 line-clamp-2 mt-3 italic">
             "{entry.notes}"
           </p>
-        )}
+        )} */}
         
         {/* METADATA */}
-        <div className="flex flex-wrap gap-3 mt-3 text-xs text-gray-400">
+        {/* <div className="flex flex-wrap gap-3 mt-3 text-xs text-gray-400">
           {entry.location && (
             <span className="flex items-center gap-1">
               📍 {entry.location}
@@ -152,7 +145,8 @@ export default function MoodCard({
               🌤️ {entry.weather}
             </span>
           )}
-        </div>
+        </div> */}
+
         </div>
       </Link>
 
