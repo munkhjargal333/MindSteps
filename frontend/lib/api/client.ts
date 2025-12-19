@@ -6,8 +6,8 @@ import {
   User,
   UserStreak,
   MoodCategory,
-  Mood,
-  PlutchikMood,
+  MoodUnit,
+  PlutchikEmotion,
   MoodEntry,
   Goal,
   Lesson,
@@ -95,9 +95,6 @@ interface CoreValueListResponse {
   total: number;
 }
 
-interface MaslowListResponse {
-  maslow_levels: Maslow[];
-}
 
 class APIClient {
   private axiosInstance: AxiosInstance;
@@ -387,6 +384,7 @@ class APIClient {
     );
     return data.core_values;
   }
+  
   async getMaslow(token?: string) {
     const { data } = await this.axiosInstance.get<Maslow[]>(
       '/core-values/maslow',
@@ -443,7 +441,7 @@ class APIClient {
   }
 
   async getMoodsByCategory(categoryId: number, token?: string) {
-    const { data } = await this.axiosInstance.get<PlutchikMood[]>(
+    const { data } = await this.axiosInstance.get<MoodUnit[]>(
       `/moods/types/categories/${categoryId}`,
       this.getConfig(token)
     );
@@ -451,7 +449,7 @@ class APIClient {
   }
 
   async getAllMoods(token?: string) {
-    const { data } = await this.axiosInstance.get<Mood[]>(
+    const { data } = await this.axiosInstance.get<MoodEntry[]>(
       '/moods/me',
       this.getConfig(token)
     );
@@ -459,7 +457,7 @@ class APIClient {
   }
 
   async getMood(id: number, token?: string) {
-    const { data } = await this.axiosInstance.get<Mood>(
+    const { data } = await this.axiosInstance.get<MoodEntry>(
       `/moods/${id}`,
       this.getConfig(token)
     );
@@ -488,8 +486,9 @@ class APIClient {
   }
 
   async createMoodEntry(moodData: {
-    mood_id: number;
-    plutchik_id?: number;
+    mood_unit_id: number;
+    core_value_id?: number;
+   // entry_date: string;
     intensity: number;
     when_felt?: string;
     trigger_event?: string;
@@ -497,7 +496,6 @@ class APIClient {
     notes?: string;
     location?: string;
     weather?: string;
-    related_value_ids?: number[];
   }, token?: string) {
     const { data } = await this.axiosInstance.post<MoodEntry>(
       '/mood-entries',

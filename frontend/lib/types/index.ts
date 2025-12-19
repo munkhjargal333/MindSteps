@@ -64,22 +64,13 @@ export interface Journal {
 
 export interface MoodCategory {
   id: number;
-  name: string;
+  name_mn: string;
   color?: string;
   emoji?: string;
   created_at: string;
 }
 
-export interface Mood {
-  id: number;
-  category_id: number;
-  name: string;
-  description?: string;
-  intensity_level?: number;
-  emoji?: string;
-  created_at: string;
-}
-export interface PlutchikMood {
+export interface PlutchikEmotion {
   id: number;
   category_id: number;
   name_mn: string;
@@ -90,11 +81,42 @@ export interface PlutchikMood {
   color: string;
   created_at: string;
 }
+
+export interface PlutchikCombination {
+  id: number;
+  emotion1_id: number;
+  emotion2_id: number;
+  combined_name_en?: string;
+  combined_name_mn?: string;
+  combined_type: 'primary' | 'secondary' | 'tertiary';
+  description?: string;
+  emoji?: string;
+  color?: string;
+}
+
+export interface MoodUnit{
+  id: number;
+  category_id: number;
+  plutchik_id?: number;
+  combination_id?: number;
+  type: 'primary' | 'dyad';
+  description?: string;
+  display_name_mn: string;
+  display_name_en: string;
+  display_color: string;
+  display_emoji: string;
+
+  MoodCategories?: MoodCategory;
+  PlutchikEmotions?: PlutchikEmotion;
+  PlutchikCombinations?: PlutchikCombination;
+}
+
+
 export interface MoodEntry {
   id: number;
   user_id: number;
+  mood_unit_id: number;
   entry_date: string;
-  mood_id: number;
   intensity: number;
   when_felt?: string;
   trigger_event?: string;
@@ -103,37 +125,14 @@ export interface MoodEntry {
   location?: string;
   weather?: string;
   created_at: string;
-  PlutchikEmotions:  PlutchikMood
+  core_value_id: number;
+  CoreValues?:  CoreValue;
+  MoodUnit: MoodUnit;
 }
 
 // ////////////////////////////////////////////////////////////////
 // CORE VALUES & GOALS
 // ////////////////////////////////////////////////////////////////
-
-export interface CoreValue {
-  id: number;
-  user_id: number;
-  name: string;
-  description?: string;
-  priority_order?: number;
-  maslow_level_id?: number
-  color?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-export interface CoreValue {
-  id: number;
-  user_id: number;
-  name: string;
-  description?: string;
-  priority_order?: number;
-  maslow_level_id?: number
-  color?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
 
 export interface Maslow {
   id: number;
@@ -145,7 +144,19 @@ export interface Maslow {
   icon: string;
 }
 
-
+export interface CoreValue {
+  id: number;
+  user_id: number;
+  name: string;
+  description?: string;
+  priority_order?: number;
+  maslow_level_id?: number
+  color?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  MaslowLevel?: Maslow;
+}
 
 export interface Goal {
   id: number;

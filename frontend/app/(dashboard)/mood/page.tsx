@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import { MoodEntry, MoodCategory, Mood } from '@/lib/types';
+import { MoodEntry } from '@/lib/types';
 import { useToast } from '@/components/ui/toast';
 
 
@@ -29,10 +29,11 @@ export default function MoodListPage() {
       const data = await apiClient.getMoodEntries(page, 10, token);
       setMoodEntries(data.entries);
       setTotal(data.total);
+      console.log('Mood entries loaded:', data.entries);
       
       // Load statistics
-      const stats = await apiClient.getMoodStatistics(30, token);
-      setStatistics(stats);
+      // const stats = await apiClient.getMoodStatistics(30, token);
+      // setStatistics(stats);
     } catch (error) {
       console.error('Error loading mood entries:', error);
     } finally {

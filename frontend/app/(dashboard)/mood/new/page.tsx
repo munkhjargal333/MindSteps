@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import { MoodCategory, Mood , PlutchikMood } from '@/lib/types';
+import { MoodCategory, MoodEntry , MoodUnit, CoreValue } from '@/lib/types';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
  
@@ -16,39 +16,45 @@ export default function NewMoodPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<MoodCategory[]>([]);
+  const [values, setValues] = useState<CoreValue[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [moods, setMoods] = useState<PlutchikMood[]>([]);
-  const [selectedMood, setSelectedMood] = useState<number | null>(null);
-  const [selectedPlutchikMood, setSelectedPlutchikMood] = useState<number | null>(null);
+  const [moods, setMoods] = useState<MoodUnit[]>([]);
+  const [selectedMoodUnit, setSelectedMoodUnit] = useState<number | null>(null);
   const [intensity, setIntensity] = useState(5);
   const [whenFelt, setWhenFelt] = useState('');
   const [triggerEvent, setTriggerEvent] = useState('');
   const [copingStrategy, setCopingStrategy] = useState('');
   const [notes, setNotes] = useState('');
-  const [location, setLocation] = useState('');
-  const [weather, setWeather] = useState('');
+  const [selectedCoreValue, setSelectedCoreValue] = useState<number | null>(null);
+  // const [location, setLocation] = useState('');
+  // const [weather, setWeather] = useState('');
 
   useEffect(() => {
-    loadCategories();
+    loadData();
   }, [token]);
 
-  useEffect(() => {
-    if (selectedCategory) {
-      loadMoodsByCategory(selectedCategory);
-    }
-  }, [selectedCategory, token]);
-
-  const loadCategories = async () => {
+  const loadData = async () => {
     if (!token) return;
+    setLoading(true);
     try {
-      const data = await apiClient.getMoodCategories(token);
-      setCategories(data);
+      const [categories, coreValues] = await Promise.all([
+        apiClient.getMoodCategories(token),
+        apiClient.getCoreValues(token),
+      ]);
+      setCategories(categories);
+      setValues(coreValues);
     } catch (error) {
       console.error('Error loading categories:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (selectedCategory) {
+      loadMoodsByCategory(selectedCategory);
+    }
+  }, [selectedCategory, token]);
 
   const loadMoodsByCategory = async (categoryId: number) => {
     if (!token) return;
@@ -62,20 +68,20 @@ export default function NewMoodPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !selectedMood) return;
+    if (!token || !selectedMoodUnit) return;
 
     setSubmitting(true);
     try {
       await apiClient.createMoodEntry({
-        mood_id: selectedMood,
-        plutchik_id: selectedPlutchikMood || undefined,
+        mood_unit_id: selectedMoodUnit,
         intensity,
         when_felt: whenFelt || undefined,
         trigger_event: triggerEvent || undefined,
         coping_strategy: copingStrategy || undefined,
         notes: notes || undefined,
-        location: location || undefined,
-        weather: weather || undefined,
+        core_value_id: selectedCoreValue || 0,
+        // location: location || undefined,
+        // weather: weather || undefined,
       }, token);
       
       showToast('✅ Сэтгэл санаа амжилттай хадгалагдлаа!', 'success');
@@ -113,7 +119,7 @@ export default function NewMoodPage() {
         {/* CATEGORY */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-3">
-            1. Категори сонгох *
+            1. Үндсэн төрөл сонгох *
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {categories.map((cat) => (
@@ -122,7 +128,6 @@ export default function NewMoodPage() {
                 type="button"
                 onClick={() => {
                   setSelectedCategory(cat.id);
-                  setSelectedMood(cat.id);
                 }}
                 className={`p-4 rounded-lg border-2 transition ${
                   selectedCategory === cat.id
@@ -131,7 +136,7 @@ export default function NewMoodPage() {
                 }`}
               >
                 <div className="text-2xl mb-1">{cat.emoji || '💭'}</div>
-                <div className="text-sm font-semibold">{cat.name}</div>
+                <div className="text-sm font-semibold">{cat.name_mn}</div>
               </button>
             ))}
           </div>
@@ -148,40 +153,45 @@ export default function NewMoodPage() {
                 <button
                   key={mood.id}
                   type="button"
-                  onClick={() => setSelectedPlutchikMood(mood.id)}
+                  onClick={() => setSelectedMoodUnit(mood.id)}
                   className={`p-4 rounded-lg border-2 transition ${
-                    selectedPlutchikMood == mood.id
+                    selectedMoodUnit == mood.id
                       ? 'border-purple-600 bg-purple-50'
                       : 'border-gray-200 hover:border-purple-300'
                   }`}
                 >
-                  <div className="text-2xl mb-1">{mood.emoji || '😊'}</div>
-                  <div className="text-sm font-semibold">{mood.name_mn}</div>
+                  <div className="text-2xl mb-1">{mood.display_emoji}</div>
+                  <div className="text-sm font-semibold">{mood.display_name_mn}</div>
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* INTENSITY */}
-        {selectedMood && (
+        {/* ADDITIONAL */}
+        {selectedMoodUnit && (
           <>
+            {/* CORE VALUES */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">
-                3. Эрчим хүч (1-10) *
+                3. Үнэт зүйл сонгох
               </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={intensity}
-                  onChange={(e) => setIntensity(Number(e.target.value))}
-                  className="flex-1 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
-                />
-                <div className="text-3xl font-bold text-purple-600 min-w-[3rem] text-center">
-                  {intensity}
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {values.map((value) => (
+                  <button
+                    key={value.id}
+                    type="button"
+                    onClick={() => setSelectedCoreValue(value.id)}
+                    className={`p-4 rounded-lg border-2 transition ${
+                      selectedCoreValue === value.id
+                        ? 'border-purple-600 bg-purple-50'
+                        : 'border-gray-200 hover:border-purple-300'
+                    }`}
+                  >
+                    <div className="text-2xl mb-1">{value.MaslowLevel?.icon || '💎'}</div>
+                    <div className="text-sm font-semibold">{value.name}</div>
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -227,10 +237,30 @@ export default function NewMoodPage() {
               />
             </div>
 
+            {/* INTENSITY */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                7. Эрчим хүч (1-10) *
+              </label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={intensity}
+                  onChange={(e) => setIntensity(Number(e.target.value))}
+                  className="flex-1 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="text-3xl font-bold text-purple-600 min-w-[3rem] text-center">
+                  {intensity}
+                </div>
+              </div>
+            </div>
+
             {/* NOTES */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                7. Нэмэлт тэмдэглэл
+                8. Нэмэлт тэмдэглэл
               </label>
               <textarea
                 value={notes}
@@ -242,7 +272,7 @@ export default function NewMoodPage() {
             </div>
 
             {/* LOCATION & WEATHER */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   📍 Байршил
@@ -268,7 +298,7 @@ export default function NewMoodPage() {
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* SUBMIT */}
             <button
