@@ -12,9 +12,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   const navigation = [
     { name: 'Нүүр', href: '/dashboard', icon: '🏠' },
-    { name: 'Өдрийн тэмдэглэл', href: '/journal', icon: '📔' },
+    { name: 'Тэмдэглэл', href: '/journal', icon: '📔' },
     { name: 'Сэтгэл санаа', href: '/mood', icon: '😊' },
-    { name: 'Зорилго', href: '/goals', icon: '🎯' },
+    { name: 'Үнэт зүйл', href: '/core-values', icon: '💎' },
     { name: 'Хичээл', href: '/lessons', icon: '📚' },
     { name: 'Бясалгал', href: '/meditation', icon: '🧘' },
   ];

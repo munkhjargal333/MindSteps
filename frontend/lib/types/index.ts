@@ -111,7 +111,6 @@ export interface MoodUnit{
   PlutchikCombinations?: PlutchikCombination;
 }
 
-
 export interface MoodEntry {
   id: number;
   user_id: number;
@@ -189,6 +188,20 @@ export interface Milestone {
 // ////////////////////////////////////////////////////////////////
 // LESSONS & CONTENT
 // ////////////////////////////////////////////////////////////////
+
+export interface LessonCategory {
+  id: number;
+  parent_id?: number;
+  sort_order?: number;
+  created_at: string;
+  name_mn: string;
+  name_en: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  emoji?: string;
+  children?: LessonCategory[];
+}
 
 export interface Lesson {
   id: number;
