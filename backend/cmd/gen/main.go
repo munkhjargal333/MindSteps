@@ -671,14 +671,35 @@ func main() {
 	// LESSONS & LEARNING
 	// ============================================================================
 
-	// Lesson categories
+	// Lesson categories (basic definition first)
 	lessonCategories := g.GenerateModelAs(
 		model("lesson_categories"),
-		"LessonCategories",
+		"LessonCategory",
+
 		gen.FieldType("id", "int"),
-		gen.FieldType("parent_id", "int"),
+		gen.FieldType("parent_id", "*int"), // NULL зөв дэмжинэ
 		gen.FieldType("sort_order", "int"),
 		gen.FieldType("is_active", "bool"),
+	)
+
+	// Add self-referential relationships after the model is defined
+	lessonCategories = g.GenerateModelAs(
+		model("lesson_categories"),
+		"LessonCategory",
+
+		gen.FieldType("id", "int"),
+		gen.FieldType("parent_id", "*int"), // NULL зөв дэмжинэ
+		gen.FieldType("sort_order", "int"),
+		gen.FieldType("is_active", "bool"),
+
+		gen.FieldRelate(field.HasMany, "Children", lessonCategories, &field.RelateConfig{
+			RelatePointer: false,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"parent_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("children"),
+		}),
 	)
 
 	// Lessons
@@ -687,7 +708,7 @@ func main() {
 		"Lessons",
 		gen.FieldType("id", "uint"),
 		gen.FieldType("category_id", "int"),
-		gen.FieldType("parent_id", "uint"),
+		gen.FieldType("parent_id", "*uint"),
 		gen.FieldType("required_level", "int"),
 		gen.FieldType("estimated_duration", "int"),
 		gen.FieldType("points_reward", "int"),
@@ -696,6 +717,8 @@ func main() {
 		gen.FieldType("view_count", "int"),
 		gen.FieldType("like_count", "int"),
 		gen.FieldType("sort_order", "int"),
+		gen.FieldType("related_value_keywords", "*string"),
+		gen.FieldType("related_emotion_keywords", "*string"),
 		gen.FieldIgnore("deleted_at"),
 		gen.FieldRelate(field.BelongsTo, "Category", lessonCategories, &field.RelateConfig{
 			RelatePointer: true,
@@ -718,6 +741,7 @@ func main() {
 		gen.FieldType("time_spent", "int"),
 		gen.FieldType("rating", "int"),
 		gen.FieldType("is_bookmarked", "bool"),
+
 		gen.FieldRelate(field.BelongsTo, "Lesson", lessons, &field.RelateConfig{
 			RelatePointer: true,
 			GORMTag: field.GormTag{

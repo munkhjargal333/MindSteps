@@ -55,7 +55,12 @@ func newLessons(db *gorm.DB, opts ...gen.DOOption) lessons {
 	_lessons.Category = lessonsBelongsToCategory{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Category", "model.LessonCategories"),
+		RelationField: field.NewRelation("Category", "model.LessonCategory"),
+		Children: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Category.Children", "model.LessonCategory"),
+		},
 	}
 
 	_lessons.fillFieldMap()
@@ -204,6 +209,10 @@ type lessonsBelongsToCategory struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Children struct {
+		field.RelationField
+	}
 }
 
 func (a lessonsBelongsToCategory) Where(conds ...field.Expr) *lessonsBelongsToCategory {
@@ -240,11 +249,11 @@ func (a lessonsBelongsToCategory) Unscoped() *lessonsBelongsToCategory {
 
 type lessonsBelongsToCategoryTx struct{ tx *gorm.Association }
 
-func (a lessonsBelongsToCategoryTx) Find() (result *model.LessonCategories, err error) {
+func (a lessonsBelongsToCategoryTx) Find() (result *model.LessonCategory, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a lessonsBelongsToCategoryTx) Append(values ...*model.LessonCategories) (err error) {
+func (a lessonsBelongsToCategoryTx) Append(values ...*model.LessonCategory) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -252,7 +261,7 @@ func (a lessonsBelongsToCategoryTx) Append(values ...*model.LessonCategories) (e
 	return a.tx.Append(targetValues...)
 }
 
-func (a lessonsBelongsToCategoryTx) Replace(values ...*model.LessonCategories) (err error) {
+func (a lessonsBelongsToCategoryTx) Replace(values ...*model.LessonCategory) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -260,7 +269,7 @@ func (a lessonsBelongsToCategoryTx) Replace(values ...*model.LessonCategories) (
 	return a.tx.Replace(targetValues...)
 }
 
-func (a lessonsBelongsToCategoryTx) Delete(values ...*model.LessonCategories) (err error) {
+func (a lessonsBelongsToCategoryTx) Delete(values ...*model.LessonCategory) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v

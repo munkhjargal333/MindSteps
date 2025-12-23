@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,6 +15,8 @@ import (
 	"mindsteps/database"
 	"mindsteps/internal/auth"
 	"mindsteps/internal/router"
+	"mindsteps/pkg/cloudflare"
+	cache "mindsteps/pkg/redis"
 )
 
 func main() {
@@ -24,14 +27,18 @@ func main() {
 	// if err != nil {
 	// 	println(err.Error())
 	// }
+	if _, err := cache.InitRedis(context.Background()); err != nil {
+		fmt.Println("⚠️ Redis холбогдохгүй байна: %v", err)
+	}
+	defer cache.CloseRedis()
 
-	// err = minio.Load()
-	// if err != nil {
-	// 	println(err.Error())
-	// }
+	err := cloudflare.Load()
+	if err != nil {
+		println(err.Error())
+	}
 
 	app := fiber.New(fiber.Config{
-		BodyLimit: 8.5 * 1024 * 1024,
+		BodyLimit: 100 * 1024 * 1024, // 100 MB
 	})
 
 	app.Use(cors.New(cors.Config{
@@ -63,7 +70,7 @@ func main() {
 	auth.MustInitGjwt()
 	router.RegisterRoutes(app)
 
-	err := app.Listen(fmt.Sprintf(`:8080`))
+	err = app.Listen(fmt.Sprintf(`:8080`))
 	if err != nil {
 		log.Errorf("server stopped: %v", err)
 	}

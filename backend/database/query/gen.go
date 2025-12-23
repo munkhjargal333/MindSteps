@@ -33,7 +33,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		GoalMilestones:            newGoalMilestones(db, opts...),
 		Goals:                     newGoals(db, opts...),
 		Journals:                  newJournals(db, opts...),
-		LessonCategories:          newLessonCategories(db, opts...),
+		LessonCategory:            newLessonCategory(db, opts...),
 		LessonComments:            newLessonComments(db, opts...),
 		LessonReactions:           newLessonReactions(db, opts...),
 		LessonRecommendations:     newLessonRecommendations(db, opts...),
@@ -87,7 +87,7 @@ type Query struct {
 	GoalMilestones            goalMilestones
 	Goals                     goals
 	Journals                  journals
-	LessonCategories          lessonCategories
+	LessonCategory            lessonCategory
 	LessonComments            lessonComments
 	LessonReactions           lessonReactions
 	LessonRecommendations     lessonRecommendations
@@ -142,7 +142,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		GoalMilestones:            q.GoalMilestones.clone(db),
 		Goals:                     q.Goals.clone(db),
 		Journals:                  q.Journals.clone(db),
-		LessonCategories:          q.LessonCategories.clone(db),
+		LessonCategory:            q.LessonCategory.clone(db),
 		LessonComments:            q.LessonComments.clone(db),
 		LessonReactions:           q.LessonReactions.clone(db),
 		LessonRecommendations:     q.LessonRecommendations.clone(db),
@@ -204,7 +204,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		GoalMilestones:            q.GoalMilestones.replaceDB(db),
 		Goals:                     q.Goals.replaceDB(db),
 		Journals:                  q.Journals.replaceDB(db),
-		LessonCategories:          q.LessonCategories.replaceDB(db),
+		LessonCategory:            q.LessonCategory.replaceDB(db),
 		LessonComments:            q.LessonComments.replaceDB(db),
 		LessonReactions:           q.LessonReactions.replaceDB(db),
 		LessonRecommendations:     q.LessonRecommendations.replaceDB(db),
@@ -256,7 +256,7 @@ type queryCtx struct {
 	GoalMilestones            *goalMilestonesDo
 	Goals                     *goalsDo
 	Journals                  *journalsDo
-	LessonCategories          *lessonCategoriesDo
+	LessonCategory            *lessonCategoryDo
 	LessonComments            *lessonCommentsDo
 	LessonReactions           *lessonReactionsDo
 	LessonRecommendations     *lessonRecommendationsDo
@@ -308,7 +308,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		GoalMilestones:            q.GoalMilestones.WithContext(ctx),
 		Goals:                     q.Goals.WithContext(ctx),
 		Journals:                  q.Journals.WithContext(ctx),
-		LessonCategories:          q.LessonCategories.WithContext(ctx),
+		LessonCategory:            q.LessonCategory.WithContext(ctx),
 		LessonComments:            q.LessonComments.WithContext(ctx),
 		LessonReactions:           q.LessonReactions.WithContext(ctx),
 		LessonRecommendations:     q.LessonRecommendations.WithContext(ctx),

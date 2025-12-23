@@ -49,10 +49,12 @@ type smtp struct {
 	ClientSecret string
 }
 
-type cloudApi struct {
-	Endpoint  string
-	AccessKey string
-	SecretKey string
+type cloudApi struct { //cloudflare
+	Endpoint   string
+	AccessKey  string
+	SecretKey  string
+	BucketName string
+	CdnURL     string
 }
 
 type config struct {
@@ -91,6 +93,15 @@ func MustLoad() {
 			JwtPublicKey:  loadString("AUTH_JWT_PUBLIC_KEY"),
 			JwtPrivateKey: loadString("AUTH_JWT_PRIVATE_KEY"),
 		},
+
+		CloudApi: &cloudApi{
+			Endpoint:   loadString("ENDPOINT"),
+			AccessKey:  loadString("ACCESSKEY"),
+			SecretKey:  loadString("SECRETKEY"),
+			BucketName: loadString("BUCKET_NAME"),
+			CdnURL:     loadString("CDN_URL"),
+		},
+
 		// Smtp: &smtp{
 		// 	SMTPServer:   loadString("SMTP_SERVER"),
 		// 	SMTPPort:     loadInt("SMTP_PORT"),
@@ -99,11 +110,6 @@ func MustLoad() {
 		// 	ClientID:     loadString("SMTP_CLIENT_ID"),
 		// 	TenantID:     loadString("SMTP_TENANT_ID"),
 		// 	ClientSecret: loadString("SMTP_CLIENT_SECRET"),
-		// },
-		// CloudApi: &cloudApi{
-		// 	Endpoint:  loadString("ENDPOINT"),
-		// 	AccessKey: loadString("ACCESSKEY"),
-		// 	SecretKey: loadString("SECRETKEY"),
 		// },
 
 		// Firebase: &firebase{

@@ -19,32 +19,37 @@ import (
 	"mindsteps/database/model"
 )
 
-func newLessonCategories(db *gorm.DB, opts ...gen.DOOption) lessonCategories {
-	_lessonCategories := lessonCategories{}
+func newLessonCategory(db *gorm.DB, opts ...gen.DOOption) lessonCategory {
+	_lessonCategory := lessonCategory{}
 
-	_lessonCategories.lessonCategoriesDo.UseDB(db, opts...)
-	_lessonCategories.lessonCategoriesDo.UseModel(&model.LessonCategories{})
+	_lessonCategory.lessonCategoryDo.UseDB(db, opts...)
+	_lessonCategory.lessonCategoryDo.UseModel(&model.LessonCategory{})
 
-	tableName := _lessonCategories.lessonCategoriesDo.TableName()
-	_lessonCategories.ALL = field.NewAsterisk(tableName)
-	_lessonCategories.ID = field.NewInt(tableName, "id")
-	_lessonCategories.ParentID = field.NewInt(tableName, "parent_id")
-	_lessonCategories.NameEn = field.NewString(tableName, "name_en")
-	_lessonCategories.NameMn = field.NewString(tableName, "name_mn")
-	_lessonCategories.Description = field.NewString(tableName, "description")
-	_lessonCategories.Icon = field.NewString(tableName, "icon")
-	_lessonCategories.Color = field.NewString(tableName, "color")
-	_lessonCategories.SortOrder = field.NewInt(tableName, "sort_order")
-	_lessonCategories.IsActive = field.NewBool(tableName, "is_active")
-	_lessonCategories.CreatedAt = field.NewTime(tableName, "created_at")
+	tableName := _lessonCategory.lessonCategoryDo.TableName()
+	_lessonCategory.ALL = field.NewAsterisk(tableName)
+	_lessonCategory.ID = field.NewInt(tableName, "id")
+	_lessonCategory.ParentID = field.NewInt(tableName, "parent_id")
+	_lessonCategory.NameEn = field.NewString(tableName, "name_en")
+	_lessonCategory.NameMn = field.NewString(tableName, "name_mn")
+	_lessonCategory.Description = field.NewString(tableName, "description")
+	_lessonCategory.Icon = field.NewString(tableName, "icon")
+	_lessonCategory.Color = field.NewString(tableName, "color")
+	_lessonCategory.SortOrder = field.NewInt(tableName, "sort_order")
+	_lessonCategory.IsActive = field.NewBool(tableName, "is_active")
+	_lessonCategory.CreatedAt = field.NewTime(tableName, "created_at")
+	_lessonCategory.Children = lessonCategoryHasManyChildren{
+		db: db.Session(&gorm.Session{}),
 
-	_lessonCategories.fillFieldMap()
+		RelationField: field.NewRelation("Children", "model.LessonCategory"),
+	}
 
-	return _lessonCategories
+	_lessonCategory.fillFieldMap()
+
+	return _lessonCategory
 }
 
-type lessonCategories struct {
-	lessonCategoriesDo lessonCategoriesDo
+type lessonCategory struct {
+	lessonCategoryDo lessonCategoryDo
 
 	ALL         field.Asterisk
 	ID          field.Int
@@ -57,21 +62,22 @@ type lessonCategories struct {
 	SortOrder   field.Int
 	IsActive    field.Bool
 	CreatedAt   field.Time
+	Children    lessonCategoryHasManyChildren
 
 	fieldMap map[string]field.Expr
 }
 
-func (l lessonCategories) Table(newTableName string) *lessonCategories {
-	l.lessonCategoriesDo.UseTable(newTableName)
+func (l lessonCategory) Table(newTableName string) *lessonCategory {
+	l.lessonCategoryDo.UseTable(newTableName)
 	return l.updateTableName(newTableName)
 }
 
-func (l lessonCategories) As(alias string) *lessonCategories {
-	l.lessonCategoriesDo.DO = *(l.lessonCategoriesDo.As(alias).(*gen.DO))
+func (l lessonCategory) As(alias string) *lessonCategory {
+	l.lessonCategoryDo.DO = *(l.lessonCategoryDo.As(alias).(*gen.DO))
 	return l.updateTableName(alias)
 }
 
-func (l *lessonCategories) updateTableName(table string) *lessonCategories {
+func (l *lessonCategory) updateTableName(table string) *lessonCategory {
 	l.ALL = field.NewAsterisk(table)
 	l.ID = field.NewInt(table, "id")
 	l.ParentID = field.NewInt(table, "parent_id")
@@ -89,19 +95,19 @@ func (l *lessonCategories) updateTableName(table string) *lessonCategories {
 	return l
 }
 
-func (l *lessonCategories) WithContext(ctx context.Context) *lessonCategoriesDo {
-	return l.lessonCategoriesDo.WithContext(ctx)
+func (l *lessonCategory) WithContext(ctx context.Context) *lessonCategoryDo {
+	return l.lessonCategoryDo.WithContext(ctx)
 }
 
-func (l lessonCategories) TableName() string { return l.lessonCategoriesDo.TableName() }
+func (l lessonCategory) TableName() string { return l.lessonCategoryDo.TableName() }
 
-func (l lessonCategories) Alias() string { return l.lessonCategoriesDo.Alias() }
+func (l lessonCategory) Alias() string { return l.lessonCategoryDo.Alias() }
 
-func (l lessonCategories) Columns(cols ...field.Expr) gen.Columns {
-	return l.lessonCategoriesDo.Columns(cols...)
+func (l lessonCategory) Columns(cols ...field.Expr) gen.Columns {
+	return l.lessonCategoryDo.Columns(cols...)
 }
 
-func (l *lessonCategories) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
+func (l *lessonCategory) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := l.fieldMap[fieldName]
 	if !ok || _f == nil {
 		return nil, false
@@ -110,8 +116,8 @@ func (l *lessonCategories) GetFieldByName(fieldName string) (field.OrderExpr, bo
 	return _oe, ok
 }
 
-func (l *lessonCategories) fillFieldMap() {
-	l.fieldMap = make(map[string]field.Expr, 10)
+func (l *lessonCategory) fillFieldMap() {
+	l.fieldMap = make(map[string]field.Expr, 11)
 	l.fieldMap["id"] = l.ID
 	l.fieldMap["parent_id"] = l.ParentID
 	l.fieldMap["name_en"] = l.NameEn
@@ -122,163 +128,248 @@ func (l *lessonCategories) fillFieldMap() {
 	l.fieldMap["sort_order"] = l.SortOrder
 	l.fieldMap["is_active"] = l.IsActive
 	l.fieldMap["created_at"] = l.CreatedAt
+
 }
 
-func (l lessonCategories) clone(db *gorm.DB) lessonCategories {
-	l.lessonCategoriesDo.ReplaceConnPool(db.Statement.ConnPool)
+func (l lessonCategory) clone(db *gorm.DB) lessonCategory {
+	l.lessonCategoryDo.ReplaceConnPool(db.Statement.ConnPool)
+	l.Children.db = db.Session(&gorm.Session{Initialized: true})
+	l.Children.db.Statement.ConnPool = db.Statement.ConnPool
 	return l
 }
 
-func (l lessonCategories) replaceDB(db *gorm.DB) lessonCategories {
-	l.lessonCategoriesDo.ReplaceDB(db)
+func (l lessonCategory) replaceDB(db *gorm.DB) lessonCategory {
+	l.lessonCategoryDo.ReplaceDB(db)
+	l.Children.db = db.Session(&gorm.Session{})
 	return l
 }
 
-type lessonCategoriesDo struct{ gen.DO }
+type lessonCategoryHasManyChildren struct {
+	db *gorm.DB
 
-func (l lessonCategoriesDo) Debug() *lessonCategoriesDo {
+	field.RelationField
+}
+
+func (a lessonCategoryHasManyChildren) Where(conds ...field.Expr) *lessonCategoryHasManyChildren {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a lessonCategoryHasManyChildren) WithContext(ctx context.Context) *lessonCategoryHasManyChildren {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a lessonCategoryHasManyChildren) Session(session *gorm.Session) *lessonCategoryHasManyChildren {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a lessonCategoryHasManyChildren) Model(m *model.LessonCategory) *lessonCategoryHasManyChildrenTx {
+	return &lessonCategoryHasManyChildrenTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a lessonCategoryHasManyChildren) Unscoped() *lessonCategoryHasManyChildren {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type lessonCategoryHasManyChildrenTx struct{ tx *gorm.Association }
+
+func (a lessonCategoryHasManyChildrenTx) Find() (result []*model.LessonCategory, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a lessonCategoryHasManyChildrenTx) Append(values ...*model.LessonCategory) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a lessonCategoryHasManyChildrenTx) Replace(values ...*model.LessonCategory) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a lessonCategoryHasManyChildrenTx) Delete(values ...*model.LessonCategory) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a lessonCategoryHasManyChildrenTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a lessonCategoryHasManyChildrenTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a lessonCategoryHasManyChildrenTx) Unscoped() *lessonCategoryHasManyChildrenTx {
+	a.tx = a.tx.Unscoped()
+	return &a
+}
+
+type lessonCategoryDo struct{ gen.DO }
+
+func (l lessonCategoryDo) Debug() *lessonCategoryDo {
 	return l.withDO(l.DO.Debug())
 }
 
-func (l lessonCategoriesDo) WithContext(ctx context.Context) *lessonCategoriesDo {
+func (l lessonCategoryDo) WithContext(ctx context.Context) *lessonCategoryDo {
 	return l.withDO(l.DO.WithContext(ctx))
 }
 
-func (l lessonCategoriesDo) ReadDB() *lessonCategoriesDo {
+func (l lessonCategoryDo) ReadDB() *lessonCategoryDo {
 	return l.Clauses(dbresolver.Read)
 }
 
-func (l lessonCategoriesDo) WriteDB() *lessonCategoriesDo {
+func (l lessonCategoryDo) WriteDB() *lessonCategoryDo {
 	return l.Clauses(dbresolver.Write)
 }
 
-func (l lessonCategoriesDo) Session(config *gorm.Session) *lessonCategoriesDo {
+func (l lessonCategoryDo) Session(config *gorm.Session) *lessonCategoryDo {
 	return l.withDO(l.DO.Session(config))
 }
 
-func (l lessonCategoriesDo) Clauses(conds ...clause.Expression) *lessonCategoriesDo {
+func (l lessonCategoryDo) Clauses(conds ...clause.Expression) *lessonCategoryDo {
 	return l.withDO(l.DO.Clauses(conds...))
 }
 
-func (l lessonCategoriesDo) Returning(value interface{}, columns ...string) *lessonCategoriesDo {
+func (l lessonCategoryDo) Returning(value interface{}, columns ...string) *lessonCategoryDo {
 	return l.withDO(l.DO.Returning(value, columns...))
 }
 
-func (l lessonCategoriesDo) Not(conds ...gen.Condition) *lessonCategoriesDo {
+func (l lessonCategoryDo) Not(conds ...gen.Condition) *lessonCategoryDo {
 	return l.withDO(l.DO.Not(conds...))
 }
 
-func (l lessonCategoriesDo) Or(conds ...gen.Condition) *lessonCategoriesDo {
+func (l lessonCategoryDo) Or(conds ...gen.Condition) *lessonCategoryDo {
 	return l.withDO(l.DO.Or(conds...))
 }
 
-func (l lessonCategoriesDo) Select(conds ...field.Expr) *lessonCategoriesDo {
+func (l lessonCategoryDo) Select(conds ...field.Expr) *lessonCategoryDo {
 	return l.withDO(l.DO.Select(conds...))
 }
 
-func (l lessonCategoriesDo) Where(conds ...gen.Condition) *lessonCategoriesDo {
+func (l lessonCategoryDo) Where(conds ...gen.Condition) *lessonCategoryDo {
 	return l.withDO(l.DO.Where(conds...))
 }
 
-func (l lessonCategoriesDo) Order(conds ...field.Expr) *lessonCategoriesDo {
+func (l lessonCategoryDo) Order(conds ...field.Expr) *lessonCategoryDo {
 	return l.withDO(l.DO.Order(conds...))
 }
 
-func (l lessonCategoriesDo) Distinct(cols ...field.Expr) *lessonCategoriesDo {
+func (l lessonCategoryDo) Distinct(cols ...field.Expr) *lessonCategoryDo {
 	return l.withDO(l.DO.Distinct(cols...))
 }
 
-func (l lessonCategoriesDo) Omit(cols ...field.Expr) *lessonCategoriesDo {
+func (l lessonCategoryDo) Omit(cols ...field.Expr) *lessonCategoryDo {
 	return l.withDO(l.DO.Omit(cols...))
 }
 
-func (l lessonCategoriesDo) Join(table schema.Tabler, on ...field.Expr) *lessonCategoriesDo {
+func (l lessonCategoryDo) Join(table schema.Tabler, on ...field.Expr) *lessonCategoryDo {
 	return l.withDO(l.DO.Join(table, on...))
 }
 
-func (l lessonCategoriesDo) LeftJoin(table schema.Tabler, on ...field.Expr) *lessonCategoriesDo {
+func (l lessonCategoryDo) LeftJoin(table schema.Tabler, on ...field.Expr) *lessonCategoryDo {
 	return l.withDO(l.DO.LeftJoin(table, on...))
 }
 
-func (l lessonCategoriesDo) RightJoin(table schema.Tabler, on ...field.Expr) *lessonCategoriesDo {
+func (l lessonCategoryDo) RightJoin(table schema.Tabler, on ...field.Expr) *lessonCategoryDo {
 	return l.withDO(l.DO.RightJoin(table, on...))
 }
 
-func (l lessonCategoriesDo) Group(cols ...field.Expr) *lessonCategoriesDo {
+func (l lessonCategoryDo) Group(cols ...field.Expr) *lessonCategoryDo {
 	return l.withDO(l.DO.Group(cols...))
 }
 
-func (l lessonCategoriesDo) Having(conds ...gen.Condition) *lessonCategoriesDo {
+func (l lessonCategoryDo) Having(conds ...gen.Condition) *lessonCategoryDo {
 	return l.withDO(l.DO.Having(conds...))
 }
 
-func (l lessonCategoriesDo) Limit(limit int) *lessonCategoriesDo {
+func (l lessonCategoryDo) Limit(limit int) *lessonCategoryDo {
 	return l.withDO(l.DO.Limit(limit))
 }
 
-func (l lessonCategoriesDo) Offset(offset int) *lessonCategoriesDo {
+func (l lessonCategoryDo) Offset(offset int) *lessonCategoryDo {
 	return l.withDO(l.DO.Offset(offset))
 }
 
-func (l lessonCategoriesDo) Scopes(funcs ...func(gen.Dao) gen.Dao) *lessonCategoriesDo {
+func (l lessonCategoryDo) Scopes(funcs ...func(gen.Dao) gen.Dao) *lessonCategoryDo {
 	return l.withDO(l.DO.Scopes(funcs...))
 }
 
-func (l lessonCategoriesDo) Unscoped() *lessonCategoriesDo {
+func (l lessonCategoryDo) Unscoped() *lessonCategoryDo {
 	return l.withDO(l.DO.Unscoped())
 }
 
-func (l lessonCategoriesDo) Create(values ...*model.LessonCategories) error {
+func (l lessonCategoryDo) Create(values ...*model.LessonCategory) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return l.DO.Create(values)
 }
 
-func (l lessonCategoriesDo) CreateInBatches(values []*model.LessonCategories, batchSize int) error {
+func (l lessonCategoryDo) CreateInBatches(values []*model.LessonCategory, batchSize int) error {
 	return l.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (l lessonCategoriesDo) Save(values ...*model.LessonCategories) error {
+func (l lessonCategoryDo) Save(values ...*model.LessonCategory) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return l.DO.Save(values)
 }
 
-func (l lessonCategoriesDo) First() (*model.LessonCategories, error) {
+func (l lessonCategoryDo) First() (*model.LessonCategory, error) {
 	if result, err := l.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.LessonCategories), nil
+		return result.(*model.LessonCategory), nil
 	}
 }
 
-func (l lessonCategoriesDo) Take() (*model.LessonCategories, error) {
+func (l lessonCategoryDo) Take() (*model.LessonCategory, error) {
 	if result, err := l.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.LessonCategories), nil
+		return result.(*model.LessonCategory), nil
 	}
 }
 
-func (l lessonCategoriesDo) Last() (*model.LessonCategories, error) {
+func (l lessonCategoryDo) Last() (*model.LessonCategory, error) {
 	if result, err := l.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.LessonCategories), nil
+		return result.(*model.LessonCategory), nil
 	}
 }
 
-func (l lessonCategoriesDo) Find() ([]*model.LessonCategories, error) {
+func (l lessonCategoryDo) Find() ([]*model.LessonCategory, error) {
 	result, err := l.DO.Find()
-	return result.([]*model.LessonCategories), err
+	return result.([]*model.LessonCategory), err
 }
 
-func (l lessonCategoriesDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.LessonCategories, err error) {
-	buf := make([]*model.LessonCategories, 0, batchSize)
+func (l lessonCategoryDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.LessonCategory, err error) {
+	buf := make([]*model.LessonCategory, 0, batchSize)
 	err = l.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -286,49 +377,49 @@ func (l lessonCategoriesDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch
 	return results, err
 }
 
-func (l lessonCategoriesDo) FindInBatches(result *[]*model.LessonCategories, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (l lessonCategoryDo) FindInBatches(result *[]*model.LessonCategory, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return l.DO.FindInBatches(result, batchSize, fc)
 }
 
-func (l lessonCategoriesDo) Attrs(attrs ...field.AssignExpr) *lessonCategoriesDo {
+func (l lessonCategoryDo) Attrs(attrs ...field.AssignExpr) *lessonCategoryDo {
 	return l.withDO(l.DO.Attrs(attrs...))
 }
 
-func (l lessonCategoriesDo) Assign(attrs ...field.AssignExpr) *lessonCategoriesDo {
+func (l lessonCategoryDo) Assign(attrs ...field.AssignExpr) *lessonCategoryDo {
 	return l.withDO(l.DO.Assign(attrs...))
 }
 
-func (l lessonCategoriesDo) Joins(fields ...field.RelationField) *lessonCategoriesDo {
+func (l lessonCategoryDo) Joins(fields ...field.RelationField) *lessonCategoryDo {
 	for _, _f := range fields {
 		l = *l.withDO(l.DO.Joins(_f))
 	}
 	return &l
 }
 
-func (l lessonCategoriesDo) Preload(fields ...field.RelationField) *lessonCategoriesDo {
+func (l lessonCategoryDo) Preload(fields ...field.RelationField) *lessonCategoryDo {
 	for _, _f := range fields {
 		l = *l.withDO(l.DO.Preload(_f))
 	}
 	return &l
 }
 
-func (l lessonCategoriesDo) FirstOrInit() (*model.LessonCategories, error) {
+func (l lessonCategoryDo) FirstOrInit() (*model.LessonCategory, error) {
 	if result, err := l.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.LessonCategories), nil
+		return result.(*model.LessonCategory), nil
 	}
 }
 
-func (l lessonCategoriesDo) FirstOrCreate() (*model.LessonCategories, error) {
+func (l lessonCategoryDo) FirstOrCreate() (*model.LessonCategory, error) {
 	if result, err := l.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*model.LessonCategories), nil
+		return result.(*model.LessonCategory), nil
 	}
 }
 
-func (l lessonCategoriesDo) FindByPage(offset int, limit int) (result []*model.LessonCategories, count int64, err error) {
+func (l lessonCategoryDo) FindByPage(offset int, limit int) (result []*model.LessonCategory, count int64, err error) {
 	result, err = l.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -343,7 +434,7 @@ func (l lessonCategoriesDo) FindByPage(offset int, limit int) (result []*model.L
 	return
 }
 
-func (l lessonCategoriesDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
+func (l lessonCategoryDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
 	count, err = l.Count()
 	if err != nil {
 		return
@@ -353,15 +444,15 @@ func (l lessonCategoriesDo) ScanByPage(result interface{}, offset int, limit int
 	return
 }
 
-func (l lessonCategoriesDo) Scan(result interface{}) (err error) {
+func (l lessonCategoryDo) Scan(result interface{}) (err error) {
 	return l.DO.Scan(result)
 }
 
-func (l lessonCategoriesDo) Delete(models ...*model.LessonCategories) (result gen.ResultInfo, err error) {
+func (l lessonCategoryDo) Delete(models ...*model.LessonCategory) (result gen.ResultInfo, err error) {
 	return l.DO.Delete(models)
 }
 
-func (l *lessonCategoriesDo) withDO(do gen.Dao) *lessonCategoriesDo {
+func (l *lessonCategoryDo) withDO(do gen.Dao) *lessonCategoryDo {
 	l.DO = *do.(*gen.DO)
 	return l
 }
