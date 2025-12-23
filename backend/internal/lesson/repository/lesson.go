@@ -1,3 +1,6 @@
+// ============================================
+// repository/lesson.go - Repository Layer
+// ============================================
 package repository
 
 import (
@@ -12,6 +15,8 @@ type LessonRepository interface {
 	FindByID(id uint) (*model.Lessons, error)
 	Update(lesson *model.Lessons) error
 	Delete(id uint) error
+	FindByCategoryID(categoryID uint) ([]model.Lessons, error)
+	CategoriesList() ([]model.LessonCategory, error)
 }
 
 type lessonRepo struct {
@@ -44,4 +49,23 @@ func (r *lessonRepo) Update(lesson *model.Lessons) error {
 
 func (r *lessonRepo) Delete(id uint) error {
 	return r.db.Delete(&model.Lessons{}, id).Error
+}
+
+func (r *lessonRepo) FindByCategoryID(categoryID uint) ([]model.Lessons, error) {
+	var lessons []model.Lessons
+	err := r.db.Where("category_id = ?", categoryID).
+		Order("id desc").
+		Find(&lessons).Error
+	return lessons, err
+}
+
+func (r *lessonRepo) CategoriesList() ([]model.LessonCategory, error) {
+	var categories []model.LessonCategory
+	err := r.db.
+		Where("is_active = true").
+		Where("parent_id IS NULL").
+		Order("sort_order asc, id asc").
+		Preload("Children").
+		Find(&categories).Error
+	return categories, err
 }

@@ -2,19 +2,28 @@ package form
 
 import (
 	"fmt"
-	"mindsteps/database/model"
 )
 
 type LessonForm struct {
-	Title           string `json:"title" validate:"required,min=1,max=255"`
-	CategoryID      uint   `json:"category_id" validate:"required"`
-	Description     string `json:"description"`
-	Content         string `json:"content"`
-	LessonType      string `json:"lesson_type"`
-	DifficultyLevel string `json:"difficulty_level"`
-	IsPremium       bool   `json:"is_premium"`
-	IsPublished     bool   `json:"is_published"`
-	Tags            string `json:"tags"`
+	CategoryID             uint   `json:"category_id" validate:"required"`
+	ParentID               *uint  `json:"parent_id"`
+	Title                  string `json:"title" validate:"required,min=1,max=255"`
+	Slug                   string `json:"slug"`
+	Description            string `json:"description"`
+	Content                string `json:"content"`
+	LessonType             string `json:"lesson_type"`
+	DifficultyLevel        string `json:"difficulty_level"`
+	RequiredLevel          int    `json:"required_level"`
+	EstimatedDuration      int    `json:"estimated_duration"`
+	PointsReward           int    `json:"points_reward"`
+	MediaURL               string `json:"media_url"`
+	ThumbnailURL           string `json:"thumbnail_url"`
+	Tags                   string `json:"tags"`
+	RelatedValueKeywords   string `json:"related_value_keywords"`
+	RelatedEmotionKeywords string `json:"related_emotion_keywords"`
+	IsPremium              bool   `json:"is_premium"`
+	IsPublished            bool   `json:"is_published"`
+	SortOrder              int    `json:"sort_order"`
 }
 
 func (f LessonForm) Validate() error {
@@ -27,19 +36,23 @@ func (f LessonForm) Validate() error {
 	if f.CategoryID == 0 {
 		return fmt.Errorf("category_id шаардлагатай")
 	}
-	return nil
-}
 
-func NewLessonFromForm(f LessonForm) *model.Lessons {
-	return &model.Lessons{
-		Title:           f.Title,
-		CategoryID:      int(f.CategoryID),
-		Description:     f.Description,
-		Content:         f.Content,
-		LessonType:      f.LessonType,
-		DifficultyLevel: f.DifficultyLevel,
-		IsPremium:       f.IsPremium,
-		IsPublished:     f.IsPublished,
-		Tags:            f.Tags,
+	// Validate lesson type
+	validTypes := map[string]bool{
+		"article": true, "video": true, "audio": true,
+		"interactive": true, "meditation": true,
 	}
+	if f.LessonType != "" && !validTypes[f.LessonType] {
+		return fmt.Errorf("буруу lesson_type")
+	}
+
+	// Validate difficulty level
+	validLevels := map[string]bool{
+		"beginner": true, "intermediate": true, "advanced": true,
+	}
+	if f.DifficultyLevel != "" && !validLevels[f.DifficultyLevel] {
+		return fmt.Errorf("буруу difficulty_level")
+	}
+
+	return nil
 }

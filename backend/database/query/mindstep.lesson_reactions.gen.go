@@ -38,8 +38,16 @@ func newLessonReactions(db *gorm.DB, opts ...gen.DOOption) lessonReactions {
 		RelationField: field.NewRelation("Lesson", "model.Lessons"),
 		Category: struct {
 			field.RelationField
+			Children struct {
+				field.RelationField
+			}
 		}{
-			RelationField: field.NewRelation("Lesson.Category", "model.LessonCategories"),
+			RelationField: field.NewRelation("Lesson.Category", "model.LessonCategory"),
+			Children: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("Lesson.Category.Children", "model.LessonCategory"),
+			},
 		},
 	}
 
@@ -147,6 +155,9 @@ type lessonReactionsBelongsToLesson struct {
 
 	Category struct {
 		field.RelationField
+		Children struct {
+			field.RelationField
+		}
 	}
 }
 

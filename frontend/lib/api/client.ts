@@ -15,10 +15,11 @@ import {
   UserLevel,
   CoreValue,
   Milestone,
-  Maslow
-} from './../types/index';
+  Maslow,
+  LessonCategory
+} from '@/lib/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
 // Response types
 interface ApiResponse<T> {
@@ -26,13 +27,6 @@ interface ApiResponse<T> {
   message?: string;
   data?: T;
 }
-
-// interface PaginatedResponse<T> {
-//   page: number;
-//   limit: number;
-//   total: number;
-//   data: T[];
-// }
 
 interface JournalListResponse {
   journals: Journal[];
@@ -95,6 +89,29 @@ interface CoreValueListResponse {
   total: number;
 }
 
+// Lesson interfaces
+interface CreateLessonData {
+  title: string;
+  slug?: string;
+  category_id: number;
+  description?: string;
+  content: string;
+  lesson_type: string;
+  difficulty_level: string;
+  required_level?: number;
+  estimated_duration?: number;
+  points_reward?: number;
+  media_url?: string;
+  thumbnail_url?: string;
+  tags?: string[];
+  related_value_keywords?: string;
+  related_emotion_keywords?: string;
+  is_premium?: boolean;
+  is_published?: boolean;
+  sort_order?: number;
+}
+
+interface UpdateLessonData extends Partial<CreateLessonData> {}
 
 class APIClient {
   private axiosInstance: AxiosInstance;
@@ -488,7 +505,6 @@ class APIClient {
   async createMoodEntry(moodData: {
     mood_unit_id: number;
     core_value_id?: number;
-   // entry_date: string;
     intensity: number;
     when_felt?: string;
     trigger_event?: string;
@@ -647,23 +663,245 @@ class APIClient {
   }
 
   // ==================== LESSONS ====================
-  
-  async getLessons(category?: number, token?: string) {
-    const { data } = await this.axiosInstance.get<Lesson[]>('/lessons', {
-      ...this.getConfig(token),
-      params: category ? { category } : {}
-    });
+
+  // Get all lesson categories
+  async getLessonCategories(token?: string) {
+    const { data } = await this.axiosInstance.get<LessonCategory[]>(
+      '/lessons/category',
+      this.getConfig(token)
+    );
     return data;
   }
-
-  async getLesson(slug: string, token?: string) {
-    const { data } = await this.axiosInstance.get<Lesson>(
-      `/lessons/${slug}`,
+  
+  // Get all lessons
+  async getLessons(token?: string) {
+    const { data } = await this.axiosInstance.get<Lesson[]>(
+      '/lessons',
       this.getConfig(token)
     );
     return data;
   }
 
+  // Get lessons by category
+  async getLessonsByCategory(categoryId: number, token?: string) {
+    const { data } = await this.axiosInstance.get<Lesson[]>(
+      `/lessons/category/${categoryId}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  // Get single lesson by ID
+  async getLesson(id: number, token?: string) {
+    const { data } = await this.axiosInstance.get<Lesson>(
+      `/lessons/${id}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  // Create lesson with FormData (for file uploads)
+  async createLesson(lessonData: CreateLessonData, token?: string) {
+    const formData = new FormData();
+    
+    // Add all text fields
+    formData.append('title', lessonData.title);
+    formData.append('category_id', lessonData.category_id.toString());
+    
+    if (lessonData.slug) formData.append('slug', lessonData.slug);
+    if (lessonData.description) formData.append('description', lessonData.description);
+    if (lessonData.content) formData.append('content', lessonData.content);
+    
+    formData.append('lesson_type', lessonData.lesson_type);
+    formData.append('difficulty_level', lessonData.difficulty_level);
+    
+    if (lessonData.required_level) formData.append('required_level', lessonData.required_level.toString());
+    if (lessonData.estimated_duration) formData.append('estimated_duration', lessonData.estimated_duration.toString());
+    if (lessonData.points_reward) formData.append('points_reward', lessonData.points_reward.toString());
+    if (lessonData.sort_order) formData.append('sort_order', lessonData.sort_order.toString());
+    
+    if (lessonData.media_url) formData.append('media_url', lessonData.media_url);
+    if (lessonData.thumbnail_url) formData.append('thumbnail_url', lessonData.thumbnail_url);
+    
+    if (lessonData.related_value_keywords) formData.append('related_value_keywords', lessonData.related_value_keywords);
+    if (lessonData.related_emotion_keywords) formData.append('related_emotion_keywords', lessonData.related_emotion_keywords);
+    
+    formData.append('is_premium', lessonData.is_premium ? 'true' : 'false');
+    formData.append('is_published', lessonData.is_published ? 'true' : 'false');
+    
+    // Add tags
+    if (lessonData.tags && lessonData.tags.length > 0) {
+      lessonData.tags.forEach(tag => formData.append('tags[]', tag));
+    }
+
+    const { data } = await this.axiosInstance.post<Lesson>(
+      '/admin/lessons',
+      formData,
+      {
+        ...this.getConfig(token),
+        headers: {
+          ...this.getConfig(token).headers,
+          'Content-Type': 'multipart/form-data',
+        }
+      }
+    );
+    return data;
+  }
+
+  // Create lesson with file objects
+  async createLessonWithFiles(
+    lessonData: CreateLessonData,
+    files?: {
+      thumbnail?: File;
+      media?: File;
+    },
+    token?: string
+  ) {
+    const formData = new FormData();
+    
+    // Add all text fields
+    formData.append('title', lessonData.title);
+    formData.append('category_id', lessonData.category_id.toString());
+    
+    if (lessonData.slug) formData.append('slug', lessonData.slug);
+    if (lessonData.description) formData.append('description', lessonData.description);
+    if (lessonData.content) formData.append('content', lessonData.content);
+    
+    formData.append('lesson_type', lessonData.lesson_type);
+    formData.append('difficulty_level', lessonData.difficulty_level);
+    
+    if (lessonData.required_level) formData.append('required_level', lessonData.required_level.toString());
+    if (lessonData.estimated_duration) formData.append('estimated_duration', lessonData.estimated_duration.toString());
+    if (lessonData.points_reward) formData.append('points_reward', lessonData.points_reward.toString());
+    if (lessonData.sort_order) formData.append('sort_order', lessonData.sort_order.toString());
+    
+    if (lessonData.related_value_keywords) formData.append('related_value_keywords', lessonData.related_value_keywords);
+    if (lessonData.related_emotion_keywords) formData.append('related_emotion_keywords', lessonData.related_emotion_keywords);
+    
+    formData.append('is_premium', lessonData.is_premium ? 'true' : 'false');
+    formData.append('is_published', lessonData.is_published ? 'true' : 'false');
+    
+    // Add tags
+    if (lessonData.tags && lessonData.tags.length > 0) {
+      lessonData.tags.forEach(tag => formData.append('tags[]', tag));
+    }
+    
+    // Add file uploads
+    if (files?.thumbnail) {
+      formData.append('thumbnail', files.thumbnail);
+    } else if (lessonData.thumbnail_url) {
+      formData.append('thumbnail_url', lessonData.thumbnail_url);
+    }
+    
+    if (files?.media) {
+      formData.append('media', files.media);
+    } else if (lessonData.media_url) {
+      formData.append('media_url', lessonData.media_url);
+    }
+
+    const { data } = await this.axiosInstance.post<Lesson>(
+      '/admin/lessons',
+      formData,
+      {
+        ...this.getConfig(token),
+        headers: {
+          ...this.getConfig(token).headers,
+          'Content-Type': 'multipart/form-data',
+        }
+      }
+    );
+    return data;
+  }
+
+  // Update lesson
+  async updateLesson(
+    id: number,
+    lessonData: UpdateLessonData,
+    files?: {
+      thumbnail?: File;
+      media?: File;
+    },
+    token?: string
+  ) {
+    const formData = new FormData();
+    
+    // Add all fields that are present
+    if (lessonData.title) formData.append('title', lessonData.title);
+    if (lessonData.category_id) formData.append('category_id', lessonData.category_id.toString());
+    if (lessonData.slug) formData.append('slug', lessonData.slug);
+    if (lessonData.description !== undefined) formData.append('description', lessonData.description);
+    if (lessonData.content !== undefined) formData.append('content', lessonData.content);
+    if (lessonData.lesson_type) formData.append('lesson_type', lessonData.lesson_type);
+    if (lessonData.difficulty_level) formData.append('difficulty_level', lessonData.difficulty_level);
+    if (lessonData.required_level !== undefined) formData.append('required_level', lessonData.required_level.toString());
+    if (lessonData.estimated_duration !== undefined) formData.append('estimated_duration', lessonData.estimated_duration.toString());
+    if (lessonData.points_reward !== undefined) formData.append('points_reward', lessonData.points_reward.toString());
+    if (lessonData.sort_order !== undefined) formData.append('sort_order', lessonData.sort_order.toString());
+    if (lessonData.related_value_keywords !== undefined) formData.append('related_value_keywords', lessonData.related_value_keywords);
+    if (lessonData.related_emotion_keywords !== undefined) formData.append('related_emotion_keywords', lessonData.related_emotion_keywords);
+    if (lessonData.is_premium !== undefined) formData.append('is_premium', lessonData.is_premium ? 'true' : 'false');
+    if (lessonData.is_published !== undefined) formData.append('is_published', lessonData.is_published ? 'true' : 'false');
+    
+    // Add tags
+    if (lessonData.tags && lessonData.tags.length > 0) {
+      lessonData.tags.forEach(tag => formData.append('tags[]', tag));
+    }
+    
+    // Add file uploads
+    if (files?.thumbnail) {
+      formData.append('thumbnail', files.thumbnail);
+    } else if (lessonData.thumbnail_url) {
+      formData.append('thumbnail_url', lessonData.thumbnail_url);
+    }
+    
+    if (files?.media) {
+      formData.append('media', files.media);
+    } else if (lessonData.media_url) {
+      formData.append('media_url', lessonData.media_url);
+    }
+
+    const { data } = await this.axiosInstance.put<Lesson>(
+      `/admin/lessons/${id}`,
+      formData,
+      {
+        ...this.getConfig(token),
+        headers: {
+          ...this.getConfig(token).headers,
+          'Content-Type': 'multipart/form-data',
+        }
+      }
+    );
+    return data;
+  }
+
+  // Delete lesson
+  async deleteLesson(id: number, token?: string) {
+    const { data } = await this.axiosInstance.delete<{ message: string }>(
+      `/admin/lessons/${id}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  // Delete only thumbnail
+  async deleteLessonThumbnail(id: number, token?: string) {
+    const { data } = await this.axiosInstance.delete<{ message: string }>(
+      `/admin/lessons/${id}/thumbnail`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  // Delete only media
+  async deleteLessonMedia(id: number, token?: string) {
+    const { data } = await this.axiosInstance.delete<{ message: string }>(
+      `/admin/lessons/${id}/media`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  // User lesson progress tracking
   async markLessonProgress(lessonId: number, progressData: {
     progress_percentage?: number;
     status?: string;
@@ -677,9 +915,7 @@ class APIClient {
     return data;
   }
 
- 
-
- async completeLesson(lessonId: number, token?: string) {
+  async completeLesson(lessonId: number, token?: string) {
     const { data } = await this.axiosInstance.post(
       `/lessons/${lessonId}/complete`,
       {},
