@@ -1,6 +1,6 @@
 'use client';
 
-import { Pencil, Trash2 , ChevronDown, Plus} from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { CoreValue } from '@/lib/types';
 import { motion } from 'framer-motion';
 
@@ -16,34 +16,64 @@ export function ValueCard({ value, onEdit, onDelete }: Props) {
   return (
     <motion.div
       layout
-      className="group relative flex items-center gap-2 p-2 sm:p-4 w-full rounded-lg sm:rounded-2xl bg-white border border-gray-50 shadow-sm"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="
+        group relative flex items-center gap-2 sm:gap-3
+        p-2 sm:p-3
+        w-full
+        rounded-lg sm:rounded-xl
+        bg-white/80 backdrop-blur-md
+        border border-gray-50
+        transition-all
+        hover:shadow-md
+        active:scale-[0.98]
+      "
     >
-      {/* Жижиг өнгөт зураас */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg" style={{ backgroundColor: accentColor }} />
+      {/* Accent bar - илүү жижиг */}
+      <div
+        className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 sm:w-1 h-6 sm:h-8 rounded-r-full"
+        style={{ backgroundColor: accentColor }}
+      />
 
-      {/* Жижиг Icon */}
-      <div className="shrink-0 w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center bg-gray-50 overflow-hidden">
-        <span className="text-[10px] sm:text-lg">{value.MaslowLevel?.icon || '•'}</span>
+      {/* Icon - жижиг хэмжээ */}
+      <div
+        className="relative shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-md sm:rounded-lg flex items-center justify-center ml-1 sm:ml-0"
+        style={{ backgroundColor: `${accentColor}15`, border: `1px solid ${accentColor}30` }}
+      >
+        <span className="text-xs sm:text-sm" style={{ color: accentColor }}>
+          {value.MaslowLevel?.icon || '•'}
+        </span>
       </div>
 
-      {/* Текст - Хальж гарахаас сэргийлсэн */}
+      {/* Content - компакт текст */}
       <div className="flex-1 min-w-0">
-        <h4 className="text-[10px] sm:text-sm font-black text-gray-900 truncate uppercase tracking-tighter">
+        <h4 className="text-[10px] sm:text-xs font-black text-gray-900 truncate tracking-tight leading-tight">
           {value.name}
         </h4>
-        {/* Mobile дээр тайлбарыг нууж зай хэмнэх эсвэл маш богино харуулах */}
-        <p className="hidden sm:block text-[10px] text-gray-400 truncate">
-          {value.description || '...'}
-        </p>
+        {value.description && (
+          <p className="text-[8px] sm:text-[10px] text-gray-400 truncate font-medium leading-tight mt-0.5">
+            {value.description}
+          </p>
+        )}
       </div>
 
-      {/* Үйлдэл - Жижиг товчнууд */}
+      {/* Actions - жижиг товчнууд */}
       <div className="flex shrink-0 gap-0.5 sm:gap-1">
-        <button onClick={() => onEdit(value)} className="p-1 text-gray-300 hover:text-black">
-          <ChevronDown className="rotate-90 w-3 h-3 sm:w-4 sm:h-4" /> {/* Pencil-ийн оронд жижиг icon ашиглаж болно */}
+        <button 
+          onClick={() => onEdit(value)} 
+          className="p-1 sm:p-1.5 text-gray-300 hover:text-blue-500 transition-colors active:scale-95"
+          aria-label="Edit value"
+        >
+          <Pencil size={12} className="sm:w-3.5 sm:h-3.5" />
         </button>
-        <button onClick={() => onDelete(value)} className="p-1 text-gray-300 hover:text-red-500">
-          <Plus className="rotate-45 w-3 h-3 sm:w-4 sm:h-4" />
+        <button 
+          onClick={() => onDelete(value)} 
+          className="p-1 sm:p-1.5 text-gray-300 hover:text-red-500 transition-colors active:scale-95"
+          aria-label="Delete value"
+        >
+          <Trash2 size={12} className="sm:w-3.5 sm:h-3.5" />
         </button>
       </div>
     </motion.div>
