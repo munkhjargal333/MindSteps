@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     { name: 'Сэтгэл зүй', href: '/mood', icon: <Activity size={20} /> },
     { name: 'Үнэт зүйл', href: '/core-values', icon: <Gem size={20} /> },
     { name: 'Мэдлэгийн сан', href: '/lessons', icon: <Sparkles size={20} /> },
-    { name: 'Амар амгалан', href: '/meditation', icon: <Flower2 size={20} /> },
+    // { name: 'Амар амгалан', href: '/meditation', icon: <Flower2 size={20} /> },
   ];
 
   const isActive = (href: string) => {
@@ -103,55 +103,67 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div 
-            initial={{ opacity: 0, x: 100 }}
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 100 }}
-            className="fixed inset-0 z-[60] bg-white p-8 md:hidden overflow-y-auto"
+            exit={{ opacity: 0, x: 50 }}
+            className="fixed inset-0 z-[60] bg-white p-6 md:hidden overflow-y-auto"
           >
-            <div className="flex justify-between items-center mb-12">
-              <span className="font-black text-2xl italic">Цэс</span>
-              <button onClick={() => setMobileMenuOpen(false)} className="p-3 bg-gray-100 rounded-2xl">
-                <X size={24} />
+            {/* Дээд хэсэг - Компакт болгосон */}
+            <div className="flex justify-between items-center mb-8">
+              <span className="font-black text-lg uppercase tracking-widest italic text-gray-400">Цэс</span>
+              <button onClick={() => setMobileMenuOpen(false)} className="p-2 bg-gray-100 rounded-xl text-gray-500">
+                <X size={20} />
               </button>
             </div>
 
-            {/* User Info Mobile */}
-            <div className="mb-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-lg">
-                  <User size={28} />
+            {/* User Info - Илүү жижиг, нягт */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm border border-gray-100">
+                  <User size={20} />
                 </div>
                 <div>
-                  <p className="text-sm font-black text-gray-900">{user?.name || 'User'}</p>
-                  <p className="text-xs font-bold text-blue-600 uppercase tracking-wide mt-1">
-                    Level {user?.current_level || 1} • {user?.total_score || 0} pts
+                  <p className="text-[11px] font-black text-gray-900 uppercase tracking-tight leading-none">{user?.name || 'User'}</p>
+                  <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wide mt-1">
+                    Lvl {user?.current_level || 1} • {user?.total_score || 0} pts
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            {/* Цэсний жагсаалт - 2 баганатай grid */}
+            <div className="grid grid-cols-2 gap-3">
               {navigation.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-4 p-5 rounded-[2rem] text-sm font-black uppercase tracking-widest transition-all ${
+                  className={`flex flex-col items-start gap-3 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${
                     isActive(item.href) 
-                      ? 'bg-blue-600 text-white shadow-xl shadow-blue-100' 
-                      : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-100' 
+                      : 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50'
                   }`}
                 >
-                  {item.icon}
+                  <div className={`${isActive(item.href) ? 'text-white' : 'text-blue-500'}`}>
+                    {item.icon}
+                  </div>
                   {item.name}
                 </Link>
               ))}
+              
+              {/* Гарах товч - Цэсний хажууд ижил хэмжээтэй */}
               <button 
                 onClick={logout} 
-                className="mt-8 flex items-center justify-center gap-2 p-5 rounded-[2rem] bg-rose-50 text-rose-500 font-black uppercase tracking-widest hover:bg-rose-100 transition-colors"
+                className="flex flex-col items-start gap-3 p-4 rounded-2xl bg-rose-50 text-rose-500 border border-rose-100 text-[10px] font-black uppercase tracking-widest"
               >
-                <LogOut size={20} /> Гарах
+                <LogOut size={20} />
+                Гарах
               </button>
+            </div>
+
+            {/* Доод талын чимэглэл */}
+            <div className="mt-12 text-center">
+              <p className="text-[8px] font-bold text-gray-300 uppercase tracking-[0.5em]">Mindful App v1.0</p>
             </div>
           </motion.div>
         )}
