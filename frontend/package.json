@@ -16,6 +16,8 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-query-devtools": "^5.91.1",
     "acorn": "^8.15.0",
     "acorn-jsx": "^5.3.2",
     "acorn-walk": "^8.3.4",
@@ -155,7 +157,7 @@
     "for-each": "^0.3.5",
     "foreground-child": "^3.3.1",
     "fraction.js": "^4.3.7",
-    "framer-motion": "^12.23.24",
+    "framer-motion": "^12.23.26",
     "fs.realpath": "^1.0.0",
     "function-bind": "^1.1.2",
     "function.prototype.name": "^1.1.8",
@@ -307,7 +309,7 @@
     "napi-postinstall": "^0.3.3",
     "natural-compare": "^1.4.0",
     "neo-async": "^2.6.2",
-    "next": "^16.0.8",
+    "next": "^16.1.1-canary.6",
     "node-int64": "^0.4.0",
     "node-releases": "^2.0.23",
     "normalize-path": "^3.0.0",

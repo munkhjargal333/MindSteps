@@ -8,4 +8,15 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  // tailwind.config.ts
+theme: {
+  extend: {
+    colors: {
+      mindful: {
+        blue: '#2563eb',
+        soft: '#f8fafc',
+      }
+    }
+  }
+}
 }

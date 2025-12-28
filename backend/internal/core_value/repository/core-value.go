@@ -48,7 +48,7 @@ func (r *coreValueRepo) Delete(id uint) error {
 func (r *coreValueRepo) ListByUserID(userID uint) ([]model.CoreValues, error) {
 	var values []model.CoreValues
 	if err := r.db.Where("user_id = ? AND is_active IS true", userID).
-		Order("maslow_level_id ASC").
+		Order("maslow_level_id desc").
 		Preload("MaslowLevel").
 		Find(&values).Error; err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (r *coreValueRepo) CountByUserID(userID uint) (uint, error) {
 func (r *coreValueRepo) MaslowLevelList() ([]model.MaslowLevels, error) {
 	var res []model.MaslowLevels
 
-	err := r.db.Find(&res).Error
+	err := r.db.Order("sort_order desc").Find(&res).Error
 	if err != nil {
 		return nil, err
 	}

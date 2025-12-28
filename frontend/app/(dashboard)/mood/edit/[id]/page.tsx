@@ -131,7 +131,7 @@ export default function EditMoodPage() {
       <ToastContainer />
 
       <div className="mb-6">
-        <Link href={`/mood/${id}`} className="text-purple-600 hover:text-purple-700 font-medium">
+        <Link href={`/mood`} className="text-purple-600 hover:text-purple-700 font-medium">
           ← Буцах
         </Link>
       </div>
@@ -306,7 +306,7 @@ export default function EditMoodPage() {
               </button>
               
               <Link
-                href={`/mood/${id}`}
+                href={`/mood`}
                 className="px-6 py-4 border-2 border-gray-300 text-gray-700 font-bold text-lg rounded-lg hover:bg-gray-50 active:scale-95 transition text-center"
               >
                 Цуцлах

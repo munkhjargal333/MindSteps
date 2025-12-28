@@ -1,33 +1,35 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import { MoodCategory, MoodEntry , MoodUnit, CoreValue } from '@/lib/types';
+import { MoodCategory, MoodUnit, CoreValue } from '@/lib/types';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
- 
+import { ChevronLeft, Save, Sparkles, Clock, Target, Lightbulb, PencilLine, AlertCircle, Gem } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-// ==================== NEW MOOD ENTRY PAGE ====================
 export default function NewMoodPage() {
   const { token } = useAuth(); 
   const { showToast, ToastContainer } = useToast();
+  const router = useRouter();
 
+  // States
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<MoodCategory[]>([]);
   const [values, setValues] = useState<CoreValue[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [moods, setMoods] = useState<MoodUnit[]>([]);
-  const [selectedMoodUnit, setSelectedMoodUnit] = useState<number | null>(null);
+
+  // Selection states
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedMood, setSelectedMood] = useState<MoodUnit | null>(null);
+  const [selectedCoreValue, setSelectedCoreValue] = useState<number | null>(null);
   const [intensity, setIntensity] = useState(5);
   const [whenFelt, setWhenFelt] = useState('');
   const [triggerEvent, setTriggerEvent] = useState('');
   const [copingStrategy, setCopingStrategy] = useState('');
   const [notes, setNotes] = useState('');
-  const [selectedCoreValue, setSelectedCoreValue] = useState<number | null>(null);
-  // const [location, setLocation] = useState('');
-  // const [weather, setWeather] = useState('');
 
   useEffect(() => {
     loadData();
@@ -37,58 +39,51 @@ export default function NewMoodPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const [categories, coreValues] = await Promise.all([
+      const [categoriesData, coreValuesData] = await Promise.all([
         apiClient.getMoodCategories(token),
         apiClient.getCoreValues(token),
       ]);
-      setCategories(categories);
-      setValues(coreValues);
+      setCategories(categoriesData);
+      setValues(coreValuesData);
     } catch (error) {
-      console.error('Error loading categories:', error);
+      console.error(error);
+      showToast('Өгөгдөл ачаалахад алдаа гарлаа', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (selectedCategory) {
-      loadMoodsByCategory(selectedCategory);
+    if (selectedCategory && token) {
+      apiClient.getMoodsByCategory(selectedCategory, token).then(setMoods).catch(console.error);
     }
   }, [selectedCategory, token]);
 
-  const loadMoodsByCategory = async (categoryId: number) => {
-    if (!token) return;
-    try {
-      const data = await apiClient.getMoodsByCategory(categoryId, token);
-      setMoods(data);
-    } catch (error) {
-      console.error('Error loading moods:', error);
-    }
-  };
+  const handleSubmit = async () => {
+    if (!token || !selectedMood) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!token || !selectedMoodUnit) return;
+    // Үнэт зүйлс байхгүй бол анхааруулга
+    if (values.length === 0) {
+      showToast('Эхлээд "Үнэт зүйл" хэсэгт очиж өөрийн үнэт зүйлсийг тохируулна уу', 'error');
+      return;
+    }
 
     setSubmitting(true);
     try {
       await apiClient.createMoodEntry({
-        mood_unit_id: selectedMoodUnit,
+        mood_unit_id: selectedMood.id,
         intensity,
         when_felt: whenFelt || undefined,
         trigger_event: triggerEvent || undefined,
         coping_strategy: copingStrategy || undefined,
         notes: notes || undefined,
-        core_value_id: selectedCoreValue || 0,
-        // location: location || undefined,
-        // weather: weather || undefined,
+        core_value_id: selectedCoreValue || undefined,
       }, token);
       
-      showToast('✅ Сэтгэл санаа амжилттай хадгалагдлаа!', 'success');
-      window.location.href = '/mood';
+      showToast('Амжилттай хадгалагдлаа', 'success');
+      setTimeout(() => router.push('/mood'), 1000);
     } catch (error) {
-      console.error('Error creating mood entry:', error);
-      showToast('❌ Алдаа гарлаа. Дахин оролдоно уу.', 'error');
+      showToast('Алдаа гарлаа', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -96,221 +91,240 @@ export default function NewMoodPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <div className="w-12 h-12 border-4 border-purple-100 border-t-purple-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-
+    <div className="min-h-screen bg-gray-50/50 pb-24">
       <ToastContainer />
-      <div className="mb-6">
-        <Link href="/mood" className="text-purple-600 hover:text-purple-700 font-medium">
-          ← Буцах
-        </Link>
+      
+      {/* HEADER */}
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/mood" className="p-2 hover:bg-gray-100 rounded-full transition-colors group">
+            <ChevronLeft size={24} className="text-gray-500 group-hover:text-black" />
+          </Link>
+          <h1 className="font-black text-gray-900">Шинэ тэмдэглэл</h1>
+          <div className="w-10"></div>
+        </div>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">💜 Сэтгэл санаагаа бичих</h1>
-    
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-xl shadow-lg p-6">
-        
-        {/* CATEGORY */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            1. Үндсэн төрөл сонгох *
-          </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => {
-                  setSelectedCategory(cat.id);
-                }}
-                className={`p-4 rounded-lg border-2 transition ${
-                  selectedCategory === cat.id
-                    ? 'border-purple-600 bg-purple-50'
-                    : 'border-gray-200 hover:border-purple-300'
-                }`}
-              >
-                <div className="text-2xl mb-1">{cat.emoji || '💭'}</div>
-                <div className="text-sm font-semibold">{cat.name_mn}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* MOOD */}
-        {selectedCategory && moods.length > 0 && (
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              2. Сэтгэл санаа сонгох *
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {moods.map((mood) => (
+      <main className="max-w-3xl mx-auto px-4 py-8">
+        <div className="space-y-10">
+          
+          {/* STEP 1: CATEGORY */}
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center gap-2 mb-4 text-purple-600">
+              <Sparkles size={18} />
+              <h2 className="text-xs font-black uppercase tracking-widest">Алхам 1: Үндсэн төрөл</h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {categories.map((cat) => (
                 <button
-                  key={mood.id}
+                  key={cat.id}
                   type="button"
-                  onClick={() => setSelectedMoodUnit(mood.id)}
-                  className={`p-4 rounded-lg border-2 transition ${
-                    selectedMoodUnit == mood.id
-                      ? 'border-purple-600 bg-purple-50'
-                      : 'border-gray-200 hover:border-purple-300'
+                  onClick={() => { 
+                    setSelectedCategory(cat.id); 
+                    setSelectedMood(null); 
+                  }}
+                  className={`p-4 rounded-3xl border-2 transition-all duration-200 text-center ${
+                    selectedCategory === cat.id
+                      ? 'border-purple-600 bg-purple-50 shadow-md'
+                      : 'border-white bg-white hover:border-purple-200 shadow-sm'
                   }`}
                 >
-                  <div className="text-2xl mb-1">{mood.display_emoji}</div>
-                  <div className="text-sm font-semibold">{mood.display_name_mn}</div>
+                  <div className="text-3xl mb-2">{cat.emoji || '💭'}</div>
+                  <div className="text-xs font-bold text-gray-700">{cat.name_mn}</div>
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          </section>
 
-        {/* ADDITIONAL */}
-        {selectedMoodUnit && (
-          <>
-            {/* CORE VALUES */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                3. Үнэт зүйл сонгох
-              </label>
+          {/* STEP 2: MOOD UNIT */}
+          {selectedCategory && (
+            <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center gap-2 mb-4 text-purple-600">
+                <Target size={18} />
+                <h2 className="text-xs font-black uppercase tracking-widest">Алхам 2: Сэтгэл санаа</h2>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {values.map((value) => (
+                {moods.map((mood) => (
                   <button
-                    key={value.id}
+                    key={mood.id}
                     type="button"
-                    onClick={() => setSelectedCoreValue(value.id)}
-                    className={`p-4 rounded-lg border-2 transition ${
-                      selectedCoreValue === value.id
-                        ? 'border-purple-600 bg-purple-50'
-                        : 'border-gray-200 hover:border-purple-300'
+                    onClick={() => setSelectedMood(mood)}
+                    style={{ borderColor: selectedMood?.id === mood.id ? mood.display_color : 'white' }}
+                    className={`p-4 rounded-3xl border-2 transition-all shadow-sm ${
+                      selectedMood?.id === mood.id ? 'bg-white shadow-md scale-[1.02]' : 'bg-white hover:bg-gray-50'
                     }`}
                   >
-                    <div className="text-2xl mb-1">{value.MaslowLevel?.icon || '💎'}</div>
-                    <div className="text-sm font-semibold">{value.name}</div>
+                    <div className="text-3xl mb-2">{mood.display_emoji}</div>
+                    <div className="text-sm font-bold text-gray-800">{mood.display_name_mn}</div>
                   </button>
                 ))}
               </div>
-            </div>
+            </section>
+          )}
 
-            {/* WHEN FELT */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                4. Хэзээ мэдэрсэн бэ?
-              </label>
-              <input
-                type="text"
-                placeholder="Жишээ нь: Өчигдөр орой 8 цагт, Ажлын дараа гэх мэт"
-                value={whenFelt}
-                onChange={(e) => setWhenFelt(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none placeholder-gray-400"
-              />
-            </div>
-
-            {/* TRIGGER */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                5. Ямар үйл явдал өдөөсөн бэ?
-              </label>
-              <input
-                type="text"
-                value={triggerEvent}
-                onChange={(e) => setTriggerEvent(e.target.value)}
-                placeholder="Жишээ: Ажлын уулзалт, найзтай уулзсан..."
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
-              />
-            </div>
-
-            {/* COPING */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                6. Яаж шийдэж болох вэ?
-              </label>
-              <input
-                type="text"
-                value={copingStrategy}
-                onChange={(e) => setCopingStrategy(e.target.value)}
-                placeholder="Жишээ: Амарч авах, спорт хийх, найзтайгаа ярих..."
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
-              />
-            </div>
-
-            {/* INTENSITY */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                7. Эрчим хүч (1-10) *
-              </label>
-              <div className="flex items-center gap-4">
+          {/* ADDITIONAL DETAILS */}
+          {selectedMood && (
+            <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+              
+              {/* INTENSITY RANGE */}
+              <section className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
+                <div className="flex justify-between items-end mb-6">
+                  <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">Эрчим хүч</h2>
+                  <span className="text-4xl font-black" style={{ color: selectedMood.display_color }}>{intensity}</span>
+                </div>
                 <input
-                  type="range"
-                  min="1"
+                  type="range" 
+                  min="1" 
                   max="10"
                   value={intensity}
                   onChange={(e) => setIntensity(Number(e.target.value))}
-                  className="flex-1 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
+                  style={{ accentColor: selectedMood.display_color }}
+                  className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer"
                 />
-                <div className="text-3xl font-bold text-purple-600 min-w-[3rem] text-center">
-                  {intensity}
+              </section>
+
+              {/* CORE VALUES */}
+              <section>
+                <div className="flex items-center gap-2 mb-4 text-purple-600">
+                  <Lightbulb size={18} />
+                  <h2 className="text-xs font-black uppercase tracking-widest">Холбоотой үнэт зүйл</h2>
                 </div>
-              </div>
-            </div>
 
-            {/* NOTES */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                8. Нэмэлт тэмдэглэл
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={4}
-                placeholder="Дэлгэрэнгүй тайлбар..."
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
-              />
-            </div>
+                {values.length === 0 ? (
+                  <div className="bg-amber-50 border-2 border-amber-200 rounded-[2rem] p-6 flex items-start gap-4">
+                    <AlertCircle size={24} className="text-amber-600 flex-shrink-0 mt-1" />
+                    <div>
+                      <h3 className="font-black text-amber-900 mb-2">Үнэт зүйлс тохируулаагүй байна</h3>
+                      <p className="text-sm text-amber-700 mb-4">
+                        Эхлээд өөрийн үнэт зүйлсийг тохируулснаар сэтгэл санааны тэмдэглэлтэй холбож чадна.
+                      </p>
+                      <Link 
+                        href="/core-values"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 text-white font-black rounded-2xl hover:bg-amber-700 transition-colors"
+                      >
+                        <Gem size={16} /> Үнэт зүйл тохируулах
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCoreValue(null)}
+                      className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-bold text-sm ${
+                        selectedCoreValue === null 
+                          ? 'bg-gray-100 text-gray-700 border-gray-200' 
+                          : 'bg-white border-white text-gray-400 shadow-sm hover:border-gray-100'
+                      }`}
+                    >
+                      Сонгохгүй
+                    </button>
+                    {values.map((v) => (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => setSelectedCoreValue(v.id)}
+                        className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-bold text-sm ${
+                          selectedCoreValue === v.id 
+                            ? 'bg-gray-900 text-white border-gray-900' 
+                            : 'bg-white border-white text-gray-500 shadow-sm'
+                        }`}
+                      >
+                        {v.MaslowLevel?.icon} {v.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
 
-            {/* LOCATION & WEATHER */}
-            {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  📍 Байршил
-                </label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Гэр, ажил..."
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+              {/* INPUT FIELDS */}
+              <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InputGroup 
+                  icon={<Clock size={16} />} 
+                  label="Хэзээ мэдэрсэн?" 
+                  placeholder="Жишээ: Ажлын дараа..." 
+                  value={whenFelt} 
+                  onChange={setWhenFelt} 
                 />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  🌤️ Цаг агаар
-                </label>
-                <input
-                  type="text"
-                  value={weather}
-                  onChange={(e) => setWeather(e.target.value)}
-                  placeholder="Нарлаг, үүлэрхэг..."
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+                <InputGroup 
+                  icon={<Sparkles size={16} />} 
+                  label="Шалтгаан" 
+                  placeholder="Жишээ: Найзын дуудлага..." 
+                  value={triggerEvent} 
+                  onChange={setTriggerEvent} 
                 />
-              </div>
-            </div> */}
+                <InputGroup 
+                  icon={<Target size={16} />} 
+                  label="Авсан арга хэмжээ" 
+                  placeholder="Жишээ: Гүйлтийн амьсгалах..." 
+                  value={copingStrategy} 
+                  onChange={setCopingStrategy} 
+                />
+                <div className="md:col-span-2">
+                  <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-2">
+                    <PencilLine size={14} /> Нэмэлт тэмдэглэл
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="w-full p-5 bg-white border-none rounded-[2rem] shadow-sm focus:ring-2 focus:ring-purple-500 outline-none text-gray-700 transition-all"
+                    placeholder="Өнөөдөр ямар юу болов?..."
+                  />
+                </div>
+              </section>
 
-            {/* SUBMIT */}
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full px-6 py-4 bg-purple-600 text-white font-bold text-lg rounded-lg hover:bg-purple-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg"
-            >
-              {submitting ? 'Хадгалж байна...' : '✅ Хадгалах'}
-            </button>
-          </>
-        )}
-      </form>
+              {/* SUBMIT BUTTON */}
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={submitting}
+                style={{ backgroundColor: selectedMood.display_color }}
+                className="w-full py-5 text-white font-black text-lg rounded-[2rem] shadow-xl hover:brightness-90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+              >
+                {submitting ? 'Түр хүлээнэ үү...' : <><Save size={20} /> Хадгалах</>}
+              </button>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// Reusable Input Component
+function InputGroup({ 
+  icon, 
+  label, 
+  placeholder, 
+  value, 
+  onChange 
+}: {
+  icon: React.ReactNode;
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="flex flex-col">
+      <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-2">
+        {icon} {label}
+      </label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full px-5 py-4 bg-white border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-purple-500 outline-none text-sm transition-all text-gray-700"
+        placeholder={placeholder}
+      />
     </div>
   );
 }

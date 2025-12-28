@@ -7,239 +7,193 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Journal } from '@/lib/types';
 import { useToast } from '@/components/ui/toast';
+import { 
+  ChevronLeft, 
+  Edit2, 
+  Trash2, 
+  Calendar, 
+  FileText, 
+  BarChart3, 
+  Clock 
+} from 'lucide-react';
+import DeleteConfirmModal from '@/components/ui/DeleteModal';
 
 export default function JournalDetailPage() {
   const { token } = useAuth();
   const router = useRouter();
   const params = useParams();
   const { showToast, ToastContainer } = useToast();
-  const journalId = params?.id as number | undefined;
+  const journalId = params?.id ? Number(params.id) : undefined;
 
   const [journal, setJournal] = useState<Journal | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-  
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const loadJournal = useCallback(async () => {
     if (!token || !journalId) return;
-    
     try {
       const data = await apiClient.getJournal(journalId, token);
       setJournal(data);
     } catch (error) {
-      console.error('Error loading journal:', error);
       showToast('Тэмдэглэл ачаалахад алдаа гарлаа', 'error');
       router.push('/journal');
     } finally {
       setLoading(false);
     }
-  }, [token, journalId, router]);
+  }, [token, router, showToast]);
 
   useEffect(() => {
-    if (token && journalId) {
-      loadJournal();
-    }
-  }, [token, journalId, loadJournal]);
+    loadJournal();
+  }, [loadJournal]);
 
-  const handleDelete = async () => {
+  const handleConfirmDelete = async () => {
     if (!token || !journalId) return;
-    
-    const confirmed = confirm('Энэ тэмдэглийг устгахдаа итгэлтэй байна уу?');
-    if (!confirmed) return;
-    
     setDeleting(true);
-    
     try {
       await apiClient.deleteJournal(journalId, token);
       showToast('Тэмдэглэл амжилттай устгагдлаа', 'success');
       router.push('/journal');
     } catch (error) {
-      console.error('Error deleting journal:', error);
-      showToast('Тэмдэглэл устгахад алдаа гарлаа', "error");
+      showToast('Устгахад алдаа гарлаа', "error");
+    } finally {
       setDeleting(false);
+      setDeleteModalOpen(false);
     }
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Огноо байхгүй';
-    try {
-      return new Date(dateString).toLocaleDateString('mn-MN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        weekday: 'long'
-      });
-    } catch {
-      return 'Огноо алдаатай';
-    }
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('mn-MN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    });
   };
-
-  const sentimentEmoji = journal?.sentiment_score 
-    ? journal.sentiment_score > 0.5 ? '😊' 
-    : journal.sentiment_score > 0 ? '😐' 
-    : '😔'
-    : '📝';
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-        <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <div className="text-base sm:text-lg text-gray-600">Тэмдэглэл ачаалж байна...</div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-10 h-10 border-4 border-blue-50 border-t-blue-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  if (!journal) {
-    return (
-      <div className="text-center py-16 px-4">
-        <div className="text-5xl mb-4">😕</div>
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-4">
-          тэмдэглэл олдсонгүй
-        </h2>
-        <Link
-          href="/journal"
-          className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition"
-        >
-          Буцах
-        </Link>
-      </div>
-    );
-  }
+  if (!journal) return null;
 
   return (
-    <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-      <ToastContainer/>
-      {/* BACK BUTTON */}
-      <Link
-        href="/journal"
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 text-sm sm:text-base"
-      >
-        <span>←</span>
-        <span>Буцах</span>
-      </Link>
+    <div className="min-h-screen bg-[#F8FAFC] pb-20">
+      <ToastContainer />
+      
+      <DeleteConfirmModal 
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={journal.title || 'Энэхүү бичвэр'}
+        isDeleting={deleting}
+      />
 
-      {/* MAIN CONTENT CARD */}
-      <article className="bg-white rounded-xl shadow-lg p-5 sm:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto px-5 py-8">
         
-        {/* HEADER WITH ACTIONS */}
-        <div className="flex justify-between items-start gap-4 mb-6 pb-6 border-b">
-          <div className="flex-1 min-w-0">
-            {/* DATE */}
-            <div className="text-xs sm:text-sm text-gray-500 mb-3">
-              {formatDate(journal.created_at)}
-            </div>
+        {/* BACK BUTTON */}
+        <Link
+          href="/journal"
+          className="inline-flex items-center gap-2 text-gray-400 hover:text-blue-600 font-black text-xs tracking-widest mb-8 transition-colors group"
+        >
+          <ChevronLeft size={18} strokeWidth={3} className="group-hover:-translate-x-1 transition-transform" />
+          <span>БУЦАХ</span>
+        </Link>
 
-            {/* TITLE */}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              {journal.title}
-            </h1>
-
-            {/* TAGS */}
-            {journal.tags && (
-              <div className="flex flex-wrap gap-2">
-                {journal.tags.split(',').map((tag, i) => (
-                  <span 
-                    key={i} 
-                    className="px-3 py-1 bg-gray-100 text-gray-600 text-xs sm:text-sm rounded"
-                  >
-                    {tag.trim()}
-                  </span>
-                ))}
+        {/* CONTENT CARD */}
+        <article className="bg-white rounded-[3rem] border border-gray-100 shadow-xl shadow-blue-50/50 overflow-hidden">
+          
+          {/* TOP HEADER SECTION */}
+          <div className="p-8 sm:p-12 border-b border-gray-50 bg-gradient-to-b from-blue-50/30 to-transparent">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 text-blue-500 font-bold text-[10px] uppercase tracking-[0.2em] mb-4">
+                  <Calendar size={14} />
+                  {formatDate(journal.created_at)}
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-black text-gray-900 leading-tight mb-6 italic">
+                  {journal.title || 'Гарчиггүй бичвэр'}
+                </h1>
+                
+                {journal.tags && (
+                  <div className="flex flex-wrap gap-2">
+                    {journal.tags.split(',').map((tag, i) => (
+                      <span key={i} className="px-4 py-1.5 bg-gray-50 text-gray-500 text-[11px] font-black rounded-xl border border-gray-100 uppercase tracking-wider">
+                        #{tag.trim()}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* ACTION BUTTONS */}
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Link
-              href={`/journal/edit/${journal.id}`}
-              className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition text-sm font-medium whitespace-nowrap"
-            >
-              ✏️ Засах
-            </Link>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm font-medium whitespace-nowrap disabled:opacity-50"
-            >
-              {deleting ? '⏳' : '🗑️'} {deleting ? 'Устгаж байна...' : 'Устгах'}
-            </button>
-          </div>
-        </div>
-
-        {/* CONTENT */}
-        <div className="prose prose-sm sm:prose lg:prose-lg max-w-none mb-6">
-          <div className="text-base sm:text-lg text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {journal.content}
-          </div>
-        </div>
-
-        {/* STATS & INFO */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t">
-          {/* Word Count */}
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <div className="text-xs text-gray-500 mb-1">Үгийн тоо</div>
-            <div className="text-lg sm:text-xl font-bold text-gray-900">{journal.word_count}</div>
-          </div>
-
-          {/* Sentiment */}
-          {journal.sentiment_score !== undefined && journal.sentiment_score !== null && (
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-xs text-gray-500 mb-1">Сэтгэл</div>
-              <div className="text-2xl sm:text-3xl">{sentimentEmoji}</div>
-            </div>
-          )}
-
-          {/* Points
-          {journal.ai_analysis && (
-            <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-xs text-blue-600 mb-1">Оноо</div>
-              <div className="text-lg sm:text-xl font-bold text-blue-700">
-                {journal.ai_analysis.final_points}
+              {/* ACTION BUTTONS */}
+              <div className="flex gap-2">
+                <Link
+                  href={`/journal/edit/${journal.id}`}
+                  className="w-12 h-12 flex items-center justify-center bg-blue-50 text-blue-600 rounded-2xl hover:bg-blue-100 transition-all active:scale-95"
+                >
+                  <Edit2 size={20} />
+                </Link>
+                <button
+                  onClick={() => setDeleteModalOpen(true)}
+                  className="w-12 h-12 flex items-center justify-center bg-red-50 text-red-500 rounded-2xl hover:bg-red-100 transition-all active:scale-95"
+                >
+                  <Trash2 size={20} />
+                </button>
               </div>
             </div>
-          )} */}
+          </div>
 
-          {/* Created Date */}
-          <div className="text-center p-3 bg-gray-50 rounded-lg">
-            <div className="text-xs text-gray-500 mb-1">Үүсгэсэн</div>
-            <div className="text-xs sm:text-sm font-medium text-gray-700">
-              {new Date(journal.created_at).toLocaleDateString('mn-MN')}
+          {/* MAIN TEXT CONTENT */}
+          <div className="p-8 sm:p-12">
+            <div className="text-lg sm:text-xl text-gray-700 leading-[1.8] whitespace-pre-wrap font-medium">
+              {journal.content}
             </div>
           </div>
-        </div>
 
-        {/* AI ANALYSIS - If available */}
-        {/* {journal.ai_analysis && (
-          <div className="mt-6 p-4 sm:p-5 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border border-purple-100">
-            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <span>🤖</span>
-              <span>AI дүн шинжилгээ</span>
-            </h3>
-            
-            {journal.ai_analysis.summary && (
-              <div className="mb-3">
-                <div className="text-xs sm:text-sm font-semibold text-gray-700 mb-1">Хураангуй:</div>
-                <p className="text-sm sm:text-base text-gray-600">{journal.ai_analysis.summary}</p>
+          {/* STATS FOOTER */}
+          <div className="p-8 bg-gray-50/50 grid grid-cols-2 sm:grid-cols-3 gap-4 border-t border-gray-100">
+            <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                <BarChart3 size={20} />
               </div>
-            )}
-
-            {journal.ai_analysis.insights && journal.ai_analysis.insights.length > 0 && (
               <div>
-                <div className="text-xs sm:text-sm font-semibold text-gray-700 mb-2">Ойлголтууд:</div>
-                <ul className="space-y-1 text-sm sm:text-base text-gray-600">
-                  {journal.ai_analysis.insights.map((insight, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-purple-500 mt-1">•</span>
-                      <span>{insight}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Үгс</div>
+                <div className="text-lg font-black text-gray-900 leading-none mt-1">{journal.word_count}</div>
               </div>
-            )}
+            </div>
+
+            <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                <Clock size={20} />
+              </div>
+              <div>
+                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Үүсгэсэн</div>
+                <div className="text-sm font-black text-gray-900 leading-none mt-1">
+                  {new Date(journal.created_at).toLocaleTimeString('mn-MN', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            </div>
+
+            {/* <div className="flex items-center gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm col-span-2 sm:col-span-1">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-2xl">
+                {journal.sentiment_score ? (journal.sentiment_score > 0.5 ? '😊' : journal.sentiment_score > 0 ? '😐' : '😔') : '📝'}
+              </div>
+              <div>
+                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">AI шинжилгээ</div>
+                <div className="text-sm font-black text-gray-900 leading-none mt-1 uppercase italic">
+                  {journal.sentiment_score ? (journal.sentiment_score > 0.5 ? 'Эерэг' : journal.sentiment_score > 0 ? 'Төвийг сахисан' : 'Сөрөг') : 'Бичиж байна'}
+                </div>
+              </div>
+            </div> */}
           </div>
-        )} */}
-      </article>
+        </article>
+      </div>
     </div>
   );
 }

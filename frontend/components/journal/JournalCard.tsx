@@ -83,7 +83,7 @@ export default function JournalCard({ journal, onDelete, isDeleting }: JournalCa
             {journal.title}
           </h3>
           <p className="text-sm sm:text-base text-gray-600 mb-3 line-clamp-2">{journal.content}</p>
-          {journal.tags && (
+          {/* {journal.tags && (
             <div className="flex flex-wrap gap-1.5 mb-3">
               {journal.tags.split(',').slice(0, 3).map((tag, i) => (
                 <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded">{tag.trim()}</span>
@@ -94,8 +94,8 @@ export default function JournalCard({ journal, onDelete, isDeleting }: JournalCa
                 </span>
               )}
             </div>
-          )}
-          <div className="flex justify-between items-center text-xs text-gray-400">
+          )} */}
+          {/* <div className="flex justify-between items-center text-xs text-gray-400">
             <div className="flex items-center gap-2">
               {journal.sentiment_score !== undefined && journal.sentiment_score !== null && (
                 <>
@@ -104,7 +104,7 @@ export default function JournalCard({ journal, onDelete, isDeleting }: JournalCa
                 </>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
       </Link>
 

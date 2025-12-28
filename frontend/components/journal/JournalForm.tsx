@@ -85,7 +85,7 @@ export default function JournalForm({
         <p className="mt-2 text-sm text-gray-500">{content.split(/\s+/).length} үг</p>
       </div>
 
-      <div>
+      {/* <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Шошго</label>
         <input
           type="text"
@@ -94,9 +94,9 @@ export default function JournalForm({
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="өдөр тутмын, сэтгэл хөдлөл, ажил"
         />
-      </div>
+      </div> */}
 
-      <div className="flex items-center gap-3">
+      {/* <div className="flex items-center gap-3">
         <input
           type="checkbox"
           id="isPrivate"
@@ -107,7 +107,7 @@ export default function JournalForm({
         <label htmlFor="isPrivate" className="text-sm font-medium text-gray-700">
           Хувийн тэмдэглэл (зөвхөн би харах)
         </label>
-      </div>
+      </div> */}
 
       <div className="flex gap-4 pt-4">
         <button

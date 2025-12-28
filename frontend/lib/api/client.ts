@@ -16,7 +16,8 @@ import {
   CoreValue,
   Milestone,
   Maslow,
-  LessonCategory
+  LessonCategory,
+  PlutchikCombination
 } from '@/lib/types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
@@ -928,6 +929,91 @@ class APIClient {
     const { data } = await this.axiosInstance.post(
       `/lessons/${lessonId}/rate`,
       { rating, review },
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  // ==================== ADMIN ====================
+
+  async getMoodUnits(page: number, limit: number, token: string) {
+    const { data } = await this.axiosInstance.get(
+      `mood-units?page=${page}&limit=${limit}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async getMoodUnitsByCategory(categoryId: number, token: string) {
+    const { data } = await this.axiosInstance.get(
+      `/mood-units/category/${categoryId}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async getMoodUnitsByType(type: string, token: string) {
+    const { data } = await this.axiosInstance.get(
+      `/mood-units/type/${type}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async getMoodUnitById(id: number, token: string) {
+    const { data } = await this.axiosInstance.get(
+      `/mood-units/${id}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async getPlutchikCombinations(token: string) {
+    const { data } = await this.axiosInstance.get(
+      `/plutchik-combinations`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async getPlutchikEmotions(token: string) {
+    const { data } = await this.axiosInstance.get(
+      `/plutchik-combinations/emotions`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async getPlutchikCombinationById(id: number, token: string) {
+    const { data } = await this.axiosInstance.get(
+      `/plutchik-combinations/${id}`,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  async updatePlutchikCombination(id: number, plutchik: any, token: string) {
+    const { data } = await this.axiosInstance.put(
+      `/plutchik-combinations/${id}`,
+      plutchik,
+      this.getConfig(token)
+    );
+    return data;
+  }
+
+  // TODO
+  async createPlutchikCombination( plutchik: any, token: string) {
+    const { data } = await this.axiosInstance.post(
+      `/plutchik-combinations/`,
+      plutchik,
+      this.getConfig(token)
+    );
+    return data;
+  }
+  
+  async deletePlutchikCombination(id: number, token: string) {
+    const { data } = await this.axiosInstance.delete(
+      `/plutchik-combinations/${id}`,
       this.getConfig(token)
     );
     return data;
