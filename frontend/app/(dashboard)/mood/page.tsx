@@ -1,197 +1,238 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { MoodEntry } from '@/lib/types';
 import { useToast } from '@/components/ui/toast';
-
-
-import MoodCard from '@/components/mood/MoodCard';
+import DeleteConfirmModal from '@/components/ui/DeleteModal';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Plus, Calendar, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
-// ==================== MOOD LIST PAGE ====================
 export default function MoodListPage() {
   const { token } = useAuth();
+  const router = useRouter();
   const { showToast, ToastContainer } = useToast();
+  
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [statistics, setStatistics] = useState<any>(null);
 
-  const loadMoodEntries = useCallback(async () => {
-    if (!token) return;
+  // Modal-ийн state
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: number | null; title: string }>({
+    open: false,
+    id: null,
+    title: ''
+  });
 
-    setLoading(true);
-    try {
-      const data = await apiClient.getMoodEntries(page, 10, token);
-      setMoodEntries(data.entries);
-      setTotal(data.total);
-      console.log('Mood entries loaded:', data.entries);
-      
-      // Load statistics
-      // const stats = await apiClient.getMoodStatistics(30, token);
-      // setStatistics(stats);
-    } catch (error) {
-      console.error('Error loading mood entries:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [token, page]);
-
+  // useRef ашиглаж dependency-с зайлсхийх
+  const showToastRef = useRef(showToast);
   useEffect(() => {
-    if (token) {
-      loadMoodEntries();
-    }
-  }, [token, loadMoodEntries]);
+    showToastRef.current = showToast;
+  }, [showToast]);
 
-  const handleDelete = async (id: number) => {
+  // API дуудлага - ЗӨВХӨН token болон page өөрчлөгдөхөд
+  useEffect(() => {
     if (!token) return;
+
+    let isMounted = true;
     
-    const confirmed = confirm('Энэ сэтгэл санааны бичлэгийг устгахдаа итгэлтэй байна уу?');
-    if (!confirmed) return;
+    async function fetchData() {
+      try {
+        const data = await apiClient.getMoodEntries(page, 20, token ?? undefined);
+        if (isMounted) {
+          setMoodEntries(data.entries);
+          setTotal(data.total);
+        }
+      } catch (error) {
+        if (isMounted) {
+          showToastRef.current('Мэдээлэл авахад алдаа гарлаа', 'error');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token, page]); // ЗӨВХӨН token, page
+
+  // Устгах модалыг нээх
+  const openDeleteModal = (e: React.MouseEvent, id: number, title: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteModal({ open: true, id, title });
+  };
+
+  // Баталгаажуулсны дараа устгах
+  const handleConfirmDelete = async () => {
+    if (!token || !deleteModal.id) return;
     
-    setDeletingId(id);
-    
+    setDeletingId(deleteModal.id);
     try {
-      await apiClient.deleteMoodEntry(id, token);
-      setMoodEntries(prev => prev.filter(e => e.id !== id));
+      await apiClient.deleteMoodEntry(deleteModal.id, token);
+      setMoodEntries(prev => prev.filter(item => item.id !== deleteModal.id));
       setTotal(prev => prev - 1);
-      showToast('Бичлэг устгагдлаа 💜', 'success');
+      showToast('Амжилттай устгагдлаа', 'success');
+      
+      // Хэрэв хуудасны сүүлийн бичлэг байсан бол өмнөх хуудас руу шилжих
+      if (moodEntries.length === 1 && page > 1) {
+        setPage(p => p - 1);
+      }
     } catch (error) {
-      console.error('Error deleting mood entry:', error);
-      showToast('Устгахад алдаа гарлаа 😞', 'error');
+      showToast('Алдаа гарлаа', 'error');
     } finally {
       setDeletingId(null);
+      setDeleteModal({ open: false, id: null, title: '' });
     }
   };
 
-  if (loading) {
+  if (loading && moodEntries.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-        <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <div className="text-base sm:text-lg text-gray-600">Сэтгэл санаа ачааллаж байна...</div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-4 border-purple-100 border-t-purple-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-   
-    <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-      < ToastContainer />
-      {/* HEADER */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-          💜 Миний сэтгэл санаа
-        </h1>
-        <Link
-          href="/mood/new"
-          className="px-5 sm:px-6 py-2.5 sm:py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 active:scale-95 transition text-center text-sm sm:text-base shadow-lg"
-        >
-          <span className="sm:hidden">+ Шинэ</span>
-          <span className="hidden sm:inline">+ Сэтгэл санаа бичих</span>
-        </Link>
-      </div>
+    <div className="min-h-screen bg-[#F8FAFC] pb-24">
+      <ToastContainer />
+      
+      {/* Custom Delete Modal */}
+      <DeleteConfirmModal 
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ ...deleteModal, open: false })}
+        onConfirm={handleConfirmDelete}
+        title={deleteModal.title}
+        isDeleting={deletingId === deleteModal.id}
+      />
 
-      {/* STATISTICS CARDS */}
-      {/* {statistics && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
-            <div className="text-2xl sm:text-3xl font-bold text-purple-700 mb-1">
-              {statistics.total_entries}
-            </div>
-            <div className="text-xs sm:text-sm text-purple-600 font-medium">Нийт бичлэг</div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-            <div className="text-2xl sm:text-3xl font-bold text-blue-700 mb-1">
-              {statistics.period_days}
-            </div>
-            <div className="text-xs sm:text-sm text-blue-600 font-medium">Өдөр</div>
-          </div>
-          
-          {statistics.average_intensity && (
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
-              <div className="text-2xl sm:text-3xl font-bold text-green-700 mb-1">
-                {statistics.average_intensity.toFixed(1)}
-              </div>
-              <div className="text-xs sm:text-sm text-green-600 font-medium">Дундаж эрчим</div>
-            </div>
-          )}
-          
-          <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-4 border border-pink-200">
-            <div className="text-2xl sm:text-3xl font-bold text-pink-700 mb-1">
-              {Object.keys(statistics.mood_distribution || {}).length}
-            </div>
-            <div className="text-xs sm:text-sm text-pink-600 font-medium">Төрөл</div>
-          </div>
-        </div>
-      )} */}
-
-      {/* EMPTY STATE */}
-      {moodEntries.length === 0 ? (
-        <div className="text-center py-12 sm:py-16 px-4">
-          <div className="text-5xl sm:text-6xl mb-4">💜</div>
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">
-            Сэтгэл санааны бичлэг байхгүй байна
-          </h2>
-          <p className="text-sm sm:text-base text-gray-500 mb-6">
-            Өнөөдрийн сэтгэл санаагаа бичиж эхлээрэй!
-          </p>
-          <Link
-            href="/mood/new"
-            className="inline-block px-6 sm:px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 active:scale-95 transition shadow-lg"
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-black text-gray-900">
+            Миний <span className="text-purple-600">Түүх</span>
+          </h1>
+          <Link 
+            href="/mood/new" 
+            className="flex items-center gap-2 px-5 py-3 bg-purple-600 text-white font-bold rounded-2xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-100"
           >
-            Сэтгэл санаа бичих
+            <Plus size={20} /> <span>Шинэ</span>
           </Link>
         </div>
-      ) : (
-        <>
-          {/* MOOD ENTRIES LIST */}
-          <div className="space-y-3 sm:space-y-4">
-            {moodEntries.map((entry) => (
-              <MoodCard 
-                key={entry.id} 
-                entry={entry}
-                onDelete={handleDelete}
-                isDeleting={deletingId === entry.id}
-              />
-            ))}
+
+        {moodEntries.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-gray-400 text-lg mb-4">Одоогоор бичлэг алга байна</p>
+            <Link 
+              href="/mood/new"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white font-bold rounded-2xl hover:bg-purple-700 transition-all"
+            >
+              <Plus size={20} /> Эхний бичлэг үүсгэх
+            </Link>
+          </div>
+        ) : (
+// ... бусад хэсэг хэвээрээ
+
+<div className="space-y-3">
+  {moodEntries.map((entry) => (
+    <Link key={entry.id} href={`/mood/${entry.id}`} className="block group">
+      <div 
+        style={{ borderLeftColor: entry.MoodUnit.display_color }}
+        className="bg-white p-3.5 sm:p-4 rounded-[1.5rem] border border-gray-100 border-l-[6px] shadow-sm hover:shadow-md transition-all flex items-center justify-between"
+      >
+        <div className="flex items-center gap-4 min-w-0 flex-1">
+          {/* Mood Emoji хэсэг */}
+          <div 
+            className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-2xl shadow-inner shrink-0"
+            style={{ backgroundColor: `${entry.MoodUnit.display_color}10` }}
+          >
+            {entry.MoodUnit.display_emoji}
           </div>
 
-          {/* PAGINATION */}
-          {total > 10 && (
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 px-4">
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="w-full sm:w-auto px-5 py-2.5 border-2 border-gray-300 rounded-lg hover:bg-gray-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition text-sm sm:text-base"
-              >
-                ← Өмнөх
-              </button>
-              
-              <div className="px-4 py-2 bg-purple-50 text-purple-700 font-semibold rounded-lg text-sm sm:text-base">
-                {page} / {Math.ceil(total / 10)}
-              </div>
-              
-              <button
-                onClick={() => setPage(p => p + 1)}
-                disabled={page >= Math.ceil(total / 10)}
-                className="w-full sm:w-auto px-5 py-2.5 border-2 border-gray-300 rounded-lg hover:bg-gray-50 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition text-sm sm:text-base"
-              >
-                Дараах →
-              </button>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline gap-2">
+              <h4 className="font-bold text-gray-900 text-sm sm:text-base leading-tight">
+                {entry.MoodUnit.display_name_mn}
+              </h4>
+              <span className="text-[10px] text-gray-300 font-bold shrink-0 uppercase tracking-tighter">
+                • {new Date(entry.entry_date).toLocaleDateString('mn-MN')}
+              </span>
             </div>
-          )}
-        </>
-      )}
+
+            {/* ШАЛТГААН (TRIGGER_EVENT) ХЭСЭГ - Жижигхэн бас нэг мөрөнд */}
+            {entry.trigger_event && (
+              <p className="text-gray-400 text-[11px] truncate font-medium mt-0.5 pr-4 leading-normal">
+                {entry.trigger_event}
+              </p>
+            )}
+            
+            {/* Эрчим болон бусад жижиг мэдээлэл (хэрэв.trigger_event байхгүй бол илүү цэвэрхэн харагдана) */}
+            {!entry.trigger_event && (
+              <div className="text-[10px] text-gray-300 font-bold uppercase mt-0.5">
+                Эрчим: {entry.intensity}/10
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Үйлдлийн товчнууд */}
+        <div className="flex items-center gap-1 ml-2 shrink-0">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault(); e.stopPropagation();
+              router.push(`/mood/edit/${entry.id}`);
+            }}
+            className="p-2 text-gray-300 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all sm:opacity-0 group-hover:opacity-100"
+          >
+            <Edit2 size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => openDeleteModal(e, entry.id, entry.MoodUnit.display_name_mn)}
+            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all sm:opacity-0 group-hover:opacity-100"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+    </Link>
+  ))}
+</div>
+        )}
+
+        {/* PAGINATION */}
+        {total > 10 && (
+          <div className="mt-10 flex justify-center items-center gap-4">
+            <button 
+              type="button" disabled={page === 1} 
+              onClick={() => setPage(p => p - 1)} 
+              className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+            >
+              <ChevronLeft size={10} />
+            </button>
+            <span className="font-bold text-gray-500">
+              {page} / {Math.ceil(total / 10)}
+            </span>
+            <button 
+              type="button" disabled={page >= Math.ceil(total / 10)} 
+              onClick={() => setPage(p => p + 1)} 
+              className="p-3 bg-white rounded-xl shadow-sm border border-gray-100 disabled:opacity-30 hover:bg-gray-50 transition-colors"
+            >
+              <ChevronRight size={10} />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
-
-
-
-

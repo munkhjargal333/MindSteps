@@ -1,312 +1,169 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import { CoreValue, Maslow } from '@/lib/types';
 import { useToast } from '@/components/ui/toast';
+import { Plus, ChevronDown } from 'lucide-react';
+import { CoreValue, Maslow } from '@/lib/types';
+
+import { ValueCard } from '@/components/value/ValueCard';
+import { MaslowDropdown } from '@/components/value/MaslowDropdown';
+import DeleteConfirmModal from '@/components/ui/DeleteModal';
 
 export default function CoreValuesPage() {
   const { token } = useAuth();
   const { showToast, ToastContainer } = useToast();
-
+  
   const [values, setValues] = useState<CoreValue[]>([]);
   const [maslowLevels, setMaslowLevels] = useState<Maslow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [filterLevel, setFilterLevel] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    color: '#6366f1',
-    priority_order: 1,
-    maslow_level_id: undefined as number | undefined
+  const [deleteModal, setDeleteModal] = useState({ open: false, value: null as CoreValue | null });
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const [formData, setFormData] = useState({ 
+    name: '', description: '', color: '#6366f1', maslow_level_id: undefined as number | undefined, priority_order: 1 
   });
 
   useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+    const checkMobile = () => setIsMobile(window.innerWidth < 500);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!token) return;
-    setLoading(true);
     try {
-      const [valuesData, maslowData] = await Promise.all([
-        apiClient.getCoreValues(token),
-        apiClient.getMaslow(token)
-      ]);
-      setValues(valuesData);
-      setMaslowLevels(maslowData);
-    } catch (err) {
-      console.error(err);
-      showToast('Өгөгдөл татахад алдаа гарлаа', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
+      const [vData, mData] = await Promise.all([apiClient.getCoreValues(token), apiClient.getMaslow(token)]);
+      setValues(vData);
+      setMaslowLevels(mData);
+    } catch (err) { showToast('Мэдээлэл авахад алдаа гарлаа', 'error'); } 
+    finally { setLoading(false); }
+  }, [token, showToast]);
 
-  const handleSubmit = async () => {
-    if (!token || !formData.name) return;
-    try {
-      if (editingId) {
-        await apiClient.updateCoreValue(editingId, formData, token);
-        showToast('Амжилттай шинэчлэгдлээ', 'success');
-      } else {
-        await apiClient.createCoreValue(formData, token);
-        showToast('Амжилттай нэмэгдлээ', 'success');
-      }
-      setFormData({ name: '', description: '', color: '#6366f1', priority_order: 1, maslow_level_id: undefined });
-      setShowForm(false);
-      setEditingId(null);
-      await loadData();
-    } catch (err) {
-      console.error(err);
-      showToast('Алдаа гарлаа', 'error');
-    }
+  useEffect(() => { loadData(); }, [loadData]);
+
+  const resetForm = () => {
+    setFormData({ name: '', description: '', color: '#6366f1', maslow_level_id: undefined, priority_order: 1 });
+    setShowForm(false); setEditingId(null);
   };
 
   const handleEdit = (v: CoreValue) => {
-    setFormData({
-      name: v.name,
-      description: v.description || '',
-      color: v.color || '#6366f1',
-      priority_order: v.priority_order || 1,
-      maslow_level_id: v.maslow_level_id
-    });
-    setEditingId(v.id);
-    setShowForm(true);
+    setFormData({ name: v.name, description: v.description || '', color: v.color || '#6366f1', maslow_level_id: v.maslow_level_id, priority_order: v.priority_order || 1 });
+    setEditingId(v.id); setShowForm(true); window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDelete = async (id: number) => {
-    if (!token) return;
-    if (!confirm('Устгах уу?')) return;
-    try {
-      await apiClient.deleteCoreValue(id, token);
-      showToast('Амжилттай устгагдлаа', 'success');
-      await loadData();
-    } catch (err) {
-      console.error(err);
-      showToast('Алдаа гарлаа', 'error');
-    }
-  };
-
-  const getMaslowLevel = (id?: number) => maslowLevels.find(l => l.id === id);
-
-  const filteredValues = filterLevel ? values.filter(v => v.maslow_level_id === filterLevel) : values;
-  const valuesByLevel = maslowLevels.map(level => ({ level, values: values.filter(v => v.maslow_level_id === level.id) }));
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-        <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-[8px] font-black tracking-[0.5em] text-gray-300 uppercase">Loading</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 py-6">
-      <div className="max-w-6xl mx-auto px-4">
-        <ToastContainer />
+    <div className="max-w-4xl mx-auto px-4 py-12 sm:py-20 min-h-screen bg-[#FAFAFA]">
+      <ToastContainer />
+      
+      <header className="mb-20 text-center">
+        <p className="text-[8px] font-black text-gray-300 uppercase tracking-[0.6em] mb-4">Values System</p>
+        <h1 className="text-lg sm:text-xl font-black tracking-[0.2em] text-gray-900 uppercase">Pyramid</h1>
+      </header>
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">💎 Миний үнэт зүйлс</h1>
-            <p className="text-sm text-gray-600">Maslow-ын хэрэгцээний түвшингээр ангилсан</p>
-          </div>
+      {/* Шат хоорондын зайг gap-4 (mobile) болон gap-8 (desktop) болгож нэмсэн */}
+      <div className="flex flex-col gap-4 sm:gap-8 mb-32 items-center w-full">
+        <LayoutGroup>
+          {[...maslowLevels].reverse().map((level, index) => {
+            const isActive = filterLevel === level.id;
+            const levelValues = values.filter(v => v.maslow_level_id === level.id);
+            
+            const startWidth = isMobile ? 85 : 55;
+            const endWidth = isMobile ? 100 : 95;
+            const diff = endWidth - startWidth;
+            const levelWidth = `${startWidth + (index * (diff / (maslowLevels.length - 1 || 1)))}%`;
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setShowForm(s => !s);
-                setEditingId(null);
-                setFormData({ name: '', description: '', color: '#6366f1', priority_order: 1, maslow_level_id: undefined });
-              }}
-              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:shadow-lg transition"
-            >
-              + Үнэт зүйл нэмэх
-            </button>
-            <div className="hidden sm:block">
-              <button
-                onClick={() => { setFilterLevel(null); }}
-                className={`px-3 py-2 rounded-md text-sm ${filterLevel === null ? 'bg-gray-800 text-white' : 'bg-white border'}`}
-              >
-                Бүгд ({values.length})
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Maslow filter (responsive stack) */}
-        {maslowLevels.length > 0 && (
-          <div className="mb-6 bg-white rounded-xl p-4 shadow-sm">
-            <h3 className="text-base font-semibold mb-3">Түвшингээр шүүх:</h3>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setFilterLevel(null)}
-                className={`px-3 py-1.5 rounded-md text-sm ${filterLevel === null ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700'}`}
-              >
-                Бүгд ({values.length})
-              </button>
-
-              {maslowLevels.map(level => {
-                const count = values.filter(v => v.maslow_level_id === level.id).length;
-                const active = filterLevel === level.id;
-                return (
-                  <button
-                    key={level.id}
-                    onClick={() => setFilterLevel(level.id)}
-                    className={`px-3 py-1.5 rounded-md flex items-center gap-2 text-sm ${active ? 'shadow-lg scale-105 text-white' : 'bg-white border'}`}
-                    style={{ backgroundColor: active ? level.color : 'white', borderColor: level.color, color: active ? 'white' : level.color }}
-                  >
-                    <span className="text-base">{level.icon}</span>
-                    <span className="hidden sm:inline">{level.name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${active ? 'bg-white/30' : 'bg-gray-100'}`}>{count}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Form */}
-        {showForm && (
-          <div className="mb-6 bg-white rounded-xl p-4 shadow-md border">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-semibold">{editingId ? '✏️ Засах' : '➕ Шинэ үнэт зүйл'}</h3>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => { setShowForm(false); setEditingId(null); }}
-                  className="px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200"
+            return (
+              <div key={level.id} className="flex flex-col items-center w-full">
+                <motion.button
+                  layout
+                  onClick={() => setFilterLevel(isActive ? null : level.id)}
+                  style={{ backgroundColor: level.color, width: levelWidth }}
+                  className="relative h-10 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-between px-6 text-white shadow-sm hover:brightness-105 active:scale-[0.99] transition-all"
                 >
-                  хаах
-                </button>
+                  <div className="flex items-center gap-3">
+                    <ChevronDown className={`w-3 h-3 transition-transform duration-500 ${isActive ? 'rotate-180' : ''}`} />
+                    <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-[0.25em] truncate">
+                      {level.name}
+                    </span>
+                  </div>
+                  <span className="text-[8px] font-black bg-white/20 px-2 py-0.5 rounded-full">
+                    {levelValues.length}
+                  </span>
+                </motion.button>
+
+                <AnimatePresence>
+                  {isActive && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1, marginTop: 12, marginBottom: 4 }}
+                      exit={{ height: 0, opacity: 0, marginTop: 0, marginBottom: 0 }}
+                      style={{ width: levelWidth }}
+                      className="overflow-hidden"
+                    >
+                      {/* Картуудыг агуулсан хэсгийн стиль */}
+                      <div className="flex flex-col gap-2 p-2 bg-white/40 backdrop-blur-sm rounded-xl border border-gray-100/50 shadow-sm">
+                        {levelValues.length > 0 ? (
+                          levelValues.map(value => (
+                            <motion.div key={value.id} layoutId={`card-${value.id}`}>
+                              <ValueCard 
+                                value={value} 
+                                onEdit={handleEdit}
+                                onDelete={(v) => setDeleteModal({ open: true, value: v })} 
+                              />
+                            </motion.div>
+                          ))
+                        ) : (
+                          <div className="py-8 text-center text-[7px] font-black text-gray-300 uppercase tracking-[0.3em]">
+                            Empty Level
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
+            );
+          })}
+        </LayoutGroup>
+      </div>
+
+      <div className="flex justify-center mb-24">
+        {!showForm ? (
+          <button onClick={() => setShowForm(true)} className="flex flex-col items-center gap-4 group">
+            <div className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-300 group-hover:border-black group-hover:text-black transition-all">
+              <Plus size={16} />
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-1">
-                <label className="block text-sm font-medium mb-1">Нэр *</label>
-                <input
-                  className="w-full px-3 py-2 border rounded-md"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Жишээ: Гэр бүл, Эрүүл мэнд"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Maslow-ын түвшин</label>
-                <select
-                  className="w-full px-3 py-2 border rounded-md"
-                  value={formData.maslow_level_id || ''}
-                  onChange={(e) => {
-                    const levelId = e.target.value ? Number(e.target.value) : undefined;
-                    const level = getMaslowLevel(levelId);
-                    setFormData({ ...formData, maslow_level_id: levelId, color: level?.color || formData.color });
-                  }}
-                >
-                  <option value="">Сонгоогүй</option>
-                  {maslowLevels.map(l => <option key={l.id} value={l.id}>{l.icon} {l.name}</option>)}
-                </select>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium mb-1">Тайлбар</label>
-                <textarea
-                  className="w-full px-3 py-2 border rounded-md"
-                  rows={3}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Өнгө</label>
-                <div className="flex items-center gap-3">
-                  <input type="color" value={formData.color} onChange={(e) => setFormData({ ...formData, color: e.target.value })} className="w-14 h-10 rounded-md border" />
-                  <span className="font-mono text-sm">{formData.color}</span>
-                </div>
-              </div>
-
-              <div className="flex items-end justify-end gap-2">
-                <button onClick={() => { setShowForm(false); setEditingId(null); }} className="px-3 py-2 bg-gray-100 rounded-md">Цуцлах</button>
-                <button onClick={handleSubmit} disabled={!formData.name} className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-md disabled:opacity-50"> {editingId ? 'Хадгалах' : 'Нэмэх'} </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Values list */}
-        {values.length === 0 ? (
-          <div className="py-12 bg-white rounded-xl shadow text-center">
-            <div className="text-6xl mb-4">💎</div>
-            <h2 className="text-xl font-semibold mb-2">Үнэт зүйл байхгүй байна</h2>
-            <p className="text-sm text-gray-500">Эхлээд үнэт зүйлсээ тодорхойлоорой</p>
-          </div>
+            <span className="text-[8px] font-black uppercase tracking-[0.4em] text-gray-300 group-hover:text-black transition-all">Add Entry</span>
+          </button>
         ) : (
-          <div className="space-y-6">
-            {filterLevel ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredValues.map(v => {
-                  const level = getMaslowLevel(v.maslow_level_id);
-                  return (
-                    <article key={v.id} className="bg-white rounded-lg p-4 shadow-sm border-l-4" style={{ borderColor: v.color || '#e5e7eb' }}>
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-semibold truncate">{v.name}</h3>
-                            {level?.icon && <span className="text-xl">{level.icon}</span>}
-                          </div>
-                          {v.description && <p className="text-sm text-gray-600 mt-1">{v.description}</p>}
-                          {level && <span className="inline-block mt-2 px-2 py-1 text-xs rounded text-white" style={{ backgroundColor: level.color }}>{level.name}</span>}
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                          <button onClick={() => handleEdit(v)} className="text-blue-600">✏️</button>
-                          <button onClick={() => handleDelete(v.id)} className="text-red-600">🗑️</button>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            ) : (
-              valuesByLevel.map(({ level, values: lv }) => lv.length > 0 && (
-                <section key={level.id} className="bg-white rounded-xl p-4 shadow-sm">
-                  <div className="flex items-center gap-3 border-b pb-3 mb-3" style={{ borderColor: level.color }}>
-                    <span className="text-2xl">{level.icon}</span>
-                    <div>
-                      <h4 className="font-semibold" style={{ color: level.color }}>{level.name}</h4>
-                      <p className="text-xs text-gray-500">{level.description}</p>
-                    </div>
-                    <div className="ml-auto text-xs bg-gray-100 px-2 py-1 rounded">{lv.length}</div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {lv.map(v => (
-                      <div key={v.id} className="bg-gray-50 rounded p-3 border-l-4" style={{ borderColor: v.color || level.color }}>
-                        <div className="flex items-start justify-between">
-                          <div className="min-w-0">
-                            <h5 className="font-medium truncate">{v.name}</h5>
-                            {v.description && <p className="text-xs text-gray-600">{v.description}</p>}
-                          </div>
-                          <div className="flex flex-col gap-2 ml-3">
-                            <button onClick={() => handleEdit(v)} className="text-blue-600 text-sm">✏️</button>
-                            <button onClick={() => handleDelete(v.id)} className="text-red-600 text-sm">🗑️</button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              ))
-            )}
-          </div>
+          <motion.div layout className="w-full max-w-sm bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
+             <div className="grid gap-6">
+                <div className="flex justify-between items-center border-b border-gray-50 pb-4">
+                  <h2 className="text-[8px] font-black uppercase tracking-[0.3em] text-gray-400">Editor</h2>
+                  <button onClick={resetForm} className="text-gray-300 hover:text-black transition-all"><Plus className="rotate-45" size={16}/></button>
+                </div>
+                <input className="text-sm font-black outline-none bg-transparent placeholder:text-gray-200 uppercase tracking-widest" placeholder="Entry Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                <MaslowDropdown levels={maslowLevels} selectedValueId={formData.maslow_level_id} onSelect={id => setFormData({...formData, maslow_level_id: id})} />
+                <div className="flex justify-end gap-6 pt-4">
+                  <button onClick={resetForm} className="text-[8px] font-black text-gray-300 hover:text-black uppercase tracking-[0.2em]">Cancel</button>
+                  <button onClick={() => {}} className="bg-black text-white px-6 py-2 rounded-lg text-[8px] font-black uppercase tracking-[0.2em]">Save</button>
+                </div>
+             </div>
+          </motion.div>
         )}
       </div>
+
+      <DeleteConfirmModal isOpen={deleteModal.open} onClose={() => setDeleteModal({ open: false, value: null })} onConfirm={() => {}} title={deleteModal.value?.name || ''} isDeleting={isDeleting} />
     </div>
   );
 }

@@ -86,12 +86,14 @@ export interface PlutchikCombination {
   id: number;
   emotion1_id: number;
   emotion2_id: number;
-  combined_name_en?: string;
-  combined_name_mn?: string;
+  combined_name_en: string;
+  combined_name_mn: string;
   combined_type: 'primary' | 'secondary' | 'tertiary';
   description?: string;
   emoji?: string;
   color?: string;
+  Emotion1? : PlutchikEmotion
+  Emotion2? : PlutchikEmotion
 }
 
 export interface MoodUnit{
@@ -210,7 +212,7 @@ export interface Lesson {
   title: string;
   slug: string;
   description?: string;
-  content?: string;
+  content: string;
   lesson_type: 'article' | 'meditation' | 'video' | 'audio' | 'interactive';
   difficulty_level: 'beginner' | 'intermediate' | 'advanced';
   required_level: number;
