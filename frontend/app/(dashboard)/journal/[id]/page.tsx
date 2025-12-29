@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/api/client';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Journal } from '@/lib/types';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 import { 
   ChevronLeft, 
   Edit2, 
@@ -22,7 +22,7 @@ export default function JournalDetailPage() {
   const { token } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   const journalId = params?.id ? Number(params.id) : undefined;
 
   const [journal, setJournal] = useState<Journal | null>(null);
@@ -84,7 +84,7 @@ export default function JournalDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
-      <ToastContainer />
+      
       
       <DeleteConfirmModal 
         isOpen={deleteModalOpen}

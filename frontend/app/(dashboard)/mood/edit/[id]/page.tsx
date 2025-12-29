@@ -6,13 +6,13 @@ import { apiClient } from '@/lib/api/client';
 import { MoodEntry, MoodCategory, CoreValue, MoodUnit } from '@/lib/types';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 
 export default function EditMoodPage() {
   const { token } = useAuth();
   const params = useParams();
   const router = useRouter();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
 
   const id = params?.id as string;
 
@@ -128,7 +128,7 @@ export default function EditMoodPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <ToastContainer />
+      
 
       <div className="mb-6">
         <Link href={`/mood`} className="text-purple-600 hover:text-purple-700 font-medium">

@@ -37,6 +37,7 @@ func newLessonCategory(db *gorm.DB, opts ...gen.DOOption) lessonCategory {
 	_lessonCategory.SortOrder = field.NewInt(tableName, "sort_order")
 	_lessonCategory.IsActive = field.NewBool(tableName, "is_active")
 	_lessonCategory.CreatedAt = field.NewTime(tableName, "created_at")
+	_lessonCategory.Emoji = field.NewString(tableName, "emoji")
 	_lessonCategory.Children = lessonCategoryHasManyChildren{
 		db: db.Session(&gorm.Session{}),
 
@@ -62,6 +63,7 @@ type lessonCategory struct {
 	SortOrder   field.Int
 	IsActive    field.Bool
 	CreatedAt   field.Time
+	Emoji       field.String
 	Children    lessonCategoryHasManyChildren
 
 	fieldMap map[string]field.Expr
@@ -89,6 +91,7 @@ func (l *lessonCategory) updateTableName(table string) *lessonCategory {
 	l.SortOrder = field.NewInt(table, "sort_order")
 	l.IsActive = field.NewBool(table, "is_active")
 	l.CreatedAt = field.NewTime(table, "created_at")
+	l.Emoji = field.NewString(table, "emoji")
 
 	l.fillFieldMap()
 
@@ -117,7 +120,7 @@ func (l *lessonCategory) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (l *lessonCategory) fillFieldMap() {
-	l.fieldMap = make(map[string]field.Expr, 11)
+	l.fieldMap = make(map[string]field.Expr, 12)
 	l.fieldMap["id"] = l.ID
 	l.fieldMap["parent_id"] = l.ParentID
 	l.fieldMap["name_en"] = l.NameEn
@@ -128,6 +131,7 @@ func (l *lessonCategory) fillFieldMap() {
 	l.fieldMap["sort_order"] = l.SortOrder
 	l.fieldMap["is_active"] = l.IsActive
 	l.fieldMap["created_at"] = l.CreatedAt
+	l.fieldMap["emoji"] = l.Emoji
 
 }
 

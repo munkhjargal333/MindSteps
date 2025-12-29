@@ -3,6 +3,8 @@ package router
 import (
 	"mindsteps/database"
 	"mindsteps/internal/auth"
+	gamificationRepo "mindsteps/internal/gamification/repository"
+	gamificationService "mindsteps/internal/gamification/service"
 	"mindsteps/internal/mood/handler"
 	"mindsteps/internal/mood/repository"
 	"mindsteps/internal/mood/service"
@@ -12,12 +14,15 @@ import (
 
 func RegisterMoodRoutes(api fiber.Router) {
 
+	gamificationRepo := gamificationRepo.NewGamificationRepository(database.DB)
+	gamificationService := gamificationService.NewGamificationService(gamificationRepo)
+
 	moodRepo := repository.NewMoodRepository(database.DB)
 	moodService := service.NewMoodService(moodRepo)
 	moodHandler := handler.NewMoodHandler(moodService)
 
 	entryRepo := repository.NewMoodEntryRepository(database.DB)
-	entryService := service.NewMoodEntryService(entryRepo)
+	entryService := service.NewMoodEntryService(entryRepo, gamificationService)
 	entryHandler := handler.NewMoodEntryHandler(entryService)
 
 	moodUnitRepo := repository.NewMoodUnitRepository(database.DB)

@@ -230,6 +230,14 @@ export interface Lesson {
   published_at?: string;
 }
 
+export interface CompleteLessonPayload {
+  lesson_id: number;
+  points_reward: number;
+  time_spent: number; // секундээр
+  rating?: number;    // 1-5 одоор
+  comment?: string;   // Сэтгэгдэл
+}
+
 // ////////////////////////////////////////////////////////////////
 // MEDITATION & PRACTICE
 // ////////////////////////////////////////////////////////////////

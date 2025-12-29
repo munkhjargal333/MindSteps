@@ -5,13 +5,13 @@ import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { MoodCategory, MoodUnit, CoreValue } from '@/lib/types';
 import Link from 'next/link';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 import { ChevronLeft, Save, Sparkles, Clock, Target, Lightbulb, PencilLine, AlertCircle, Gem } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function NewMoodPage() {
   const { token } = useAuth(); 
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   const router = useRouter();
 
   // States
@@ -99,7 +99,7 @@ export default function NewMoodPage() {
 
   return (
     <div className="min-h-screen bg-gray-50/50 pb-24">
-      <ToastContainer />
+      
       
       {/* HEADER */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100">

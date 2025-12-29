@@ -5,6 +5,7 @@ package service
 
 import (
 	"mindsteps/database/model"
+	gamification "mindsteps/internal/gamification/service"
 	"mindsteps/internal/lesson/form"
 	"mindsteps/internal/lesson/repository"
 	"strings"
@@ -13,32 +14,108 @@ import (
 
 type LessonService interface {
 	GetLessonByID(id uint) (*model.Lessons, error)
-	GetAllLessons() ([]model.Lessons, error)
-	GetAllLessonsByCategory(categoryID uint) ([]model.Lessons, error)
+	GetAllLessons(page, limit int) ([]model.Lessons, int64, error)
+	GetLessonsByParent(parentID uint, page, limit int) ([]model.Lessons, int64, error)
+	GetLessonsByCategory(categoryID uint, page, limit int) ([]model.Lessons, int64, error)
 	GetAllCategory() ([]model.LessonCategory, error)
 	CreateLesson(f form.LessonForm) (*model.Lessons, error)
 	UpdateLesson(id uint, f form.LessonForm) (*model.Lessons, error)
 	DeleteLesson(id uint) error
+	CompleteLesson(userID uint, f *form.CompleteLessonForm) error
 }
 
 type lessonService struct {
-	repo repository.LessonRepository
+	repo         repository.LessonRepository
+	gamification gamification.GamificationService
 }
 
-func NewLessonService(repo repository.LessonRepository) LessonService {
-	return &lessonService{repo: repo}
+func NewLessonService(repo repository.LessonRepository, gamification gamification.GamificationService) LessonService {
+	return &lessonService{repo: repo, gamification: gamification}
 }
 
 func (s *lessonService) GetLessonByID(id uint) (*model.Lessons, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *lessonService) GetAllLessons() ([]model.Lessons, error) {
-	return s.repo.FindAll()
+// 1. Бүх хичээлийг авах (Шүүлтүүргүй үед)
+func (s *lessonService) GetAllLessons(page, limit int) ([]model.Lessons, int64, error) {
+	// Repo-гоос дата болон нийт тоог авна
+	lessons, count, err := s.repo.FindAll(page, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	return lessons, count, nil
 }
 
-func (s *lessonService) GetAllLessonsByCategory(categoryID uint) ([]model.Lessons, error) {
-	return s.repo.FindByCategoryID(categoryID)
+// 2. Үндсэн бүлгээр (Parent) шүүж авах
+func (s *lessonService) GetLessonsByParent(parentID uint, page, limit int) ([]model.Lessons, int64, error) {
+	// Үндсэн ангиллын ID-гаар шүүх
+	lessons, count, err := s.repo.FindByParentCategoryID(parentID, page, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	return lessons, count, nil
+}
+
+// 3. Дэд бүлгээр (Category) шүүж авах
+func (s *lessonService) GetLessonsByCategory(categoryID uint, page, limit int) ([]model.Lessons, int64, error) {
+	// Тодорхой нэг дэд ангиллын ID-гаар шүүх
+	lessons, count, err := s.repo.FindByCategoryID(categoryID, page, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	return lessons, count, nil
+}
+
+func (s *lessonService) CompleteLesson(userID uint, f *form.CompleteLessonForm) error {
+	// 2. Өмнөх прогрессийг шалгах
+	existingProgress, err := s.repo.GetProgress(userID, f.LessonID)
+
+	// Өмнө нь энэ хичээлийг бүрэн дуусгаж байсан эсэхийг тодорхойлох туг (flag)
+	alreadyCompleted := false
+	if err == nil && existingProgress != nil && existingProgress.ProgressPercentage == 100 {
+		alreadyCompleted = true
+	}
+
+	// Дата бэлдэх
+	progress := &model.UserLessonProgress{
+		UserID:             userID,
+		LessonID:           f.LessonID,
+		ProgressPercentage: 100,
+		TimeSpent:          f.TimeSpent,
+	}
+
+	// Rating & Comment logic (Урьдын адил)
+	if f.Rating != nil {
+		progress.Rating = f.Rating
+	} else if existingProgress != nil {
+		progress.Rating = existingProgress.Rating
+	}
+
+	if f.Comment != "" {
+		progress.ReviewText = f.Comment
+	} else if existingProgress != nil {
+		progress.ReviewText = existingProgress.ReviewText
+	}
+
+	// 3. Прогресс хадгалах
+	if err := s.repo.UpsertProgress(progress); err != nil {
+		return err
+	}
+
+	// 4. XP НЭМЭХ ХЭСЭГ (Зөвхөн анх удаа дуусгаж байгаа бол)
+	if !alreadyCompleted {
+		return s.gamification.AddXP(
+			userID,
+			f.PointsReward,
+			"lesson_complete",
+			f.LessonID,
+			f.Comment,
+		)
+	}
+
+	// Хэрэв аль хэдийн дуусгасан бол оноо нэмэхгүйгээр амжилттай буцаана
+	return nil
 }
 
 func (s *lessonService) GetAllCategory() ([]model.LessonCategory, error) {

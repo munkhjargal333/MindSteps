@@ -3,6 +3,8 @@ import { Providers } from '@/context/Providers';
 import { Plus_Jakarta_Sans } from 'next/font/google'; // Илүү зөөлөн, сэтгэл зүйн апп-д тохиромжтой
 import './globals.css';
 import PWARegister from '@/public/pwa-register';
+import { ToastProvider } from '@/context/ToastContext';
+
 
 // Фонт тохируулга
 const jakarta = Plus_Jakarta_Sans({ 
@@ -54,11 +56,12 @@ export default function RootLayout({
     >
       <body className={`${jakarta.className} antialiased min-h-screen bg-theme-gradient`}>
         <Providers>
-          {/* Main content wrapper */}
-          <main className="relative flex flex-col min-h-screen">
-            {children}
-          </main>
-          <PWARegister />
+          <ToastProvider>
+            <main className="relative flex flex-col min-h-screen">
+              {children}
+            </main>
+            <PWARegister />
+          </ToastProvider>
         </Providers>
       </body>
     </html>

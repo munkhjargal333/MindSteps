@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { Journal } from '@/lib/types';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Plus, Calendar, Edit2, Trash2, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
@@ -13,7 +13,7 @@ import DeleteConfirmModal from '@/components/ui/DeleteModal';
 export default function JournalListPage() {
   const { token } = useAuth();
   const router = useRouter();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   
   const [journals, setJournals] = useState<Journal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +76,7 @@ export default function JournalListPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-32">
-      <ToastContainer />
+      
       <DeleteConfirmModal 
         isOpen={deleteModal.open}
         onClose={() => setDeleteModal({ ...deleteModal, open: false })}

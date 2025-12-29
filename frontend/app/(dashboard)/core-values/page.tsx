@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 import { Plus, ChevronDown } from 'lucide-react';
 import { CoreValue, Maslow } from '@/lib/types';
 
@@ -13,7 +13,7 @@ import DeleteConfirmModal from '@/components/ui/DeleteModal';
 
 export default function CoreValuesPage() {
   const { token } = useAuth();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   
   const [values, setValues] = useState<CoreValue[]>([]);
   const [maslowLevels, setMaslowLevels] = useState<Maslow[]>([]);
@@ -110,7 +110,7 @@ export default function CoreValuesPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-12 md:py-20 min-h-screen bg-[#FAFAFA]">
-      <ToastContainer />
+      
       
     <header className="mb-8 sm:mb-12 text-center relative">
       <motion.div
@@ -245,7 +245,7 @@ export default function CoreValuesPage() {
                     style={{ background: 'linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)' }}
                   >
                     <span className="relative z-10 flex items-center gap-2">
-                      {submitting ? 'Батжуулж байна...' : (editingId ? 'Шинэчлэх' : 'Цогцлоох')}
+                      {submitting ? 'Батжуулж байна...' : (editingId ? 'Шинэчлэх' : 'Үүсгэх')}
                     </span>
                   </motion.button>
                 </footer>
@@ -325,9 +325,8 @@ export default function CoreValuesPage() {
                             </motion.div>
                           ))
                         ) : (
-                          <div className="py-12 flex flex-col items-center gap-3 opacity-20">
-                            <div className="w-8 h-8 rounded-full border-2 border-dashed border-black/20" />
-                            <span className="text-[8px] font-black uppercase tracking-[0.4em]">Empty</span>
+                          <div className="py-6 flex flex-col items-center justify-center opacity-30">
+                            <p className="text-[8px] font-black uppercase tracking-[0.3em] text-gray-500 italic">Бүртгэлгүй байна</p>
                           </div>
                         )}
                       </div>

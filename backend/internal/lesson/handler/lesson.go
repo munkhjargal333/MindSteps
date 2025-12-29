@@ -6,6 +6,7 @@ package handler
 import (
 	"fmt"
 	"mime/multipart"
+	"mindsteps/internal/auth"
 	"mindsteps/internal/lesson/form"
 	myform "mindsteps/internal/lesson/form"
 	"mindsteps/internal/lesson/service"
@@ -110,13 +111,67 @@ func (h *LessonHandler) deleteFile(fileURL string) error {
 	return cloudflare.DeleteObject(h.bucketName, objectName)
 }
 
-// GET /lessons
+// 1. Бүх хичээлийг авах (Шүүлтүүргүй)
+// GET /lessons?page=1&limit=10
 func (h *LessonHandler) GetAll(c *fiber.Ctx) error {
-	lessons, err := h.service.GetAllLessons()
+	page := c.QueryInt("page", 1)
+	limit := c.QueryInt("limit", 10)
+
+	lessons, count, err := h.service.GetAllLessons(page, limit)
 	if err != nil {
 		return shared.ResponseBadRequest(c, "Хичээл татахад алдаа гарлаа")
 	}
-	return c.JSON(lessons)
+
+	return c.JSON(fiber.Map{
+		"lessons": lessons, // Frontend response.lessons гэж хүлээж авч байгаа
+		"total":   count,
+		"page":    page,
+		"limit":   limit,
+	})
+}
+
+// 2. Үндсэн бүлгээр (Parent) шүүж авах
+// GET /lessons/parent/:id?page=1&limit=10
+func (h *LessonHandler) GetByParent(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		return shared.ResponseBadRequest(c, "Буруу ангиллын ID")
+	}
+
+	page := c.QueryInt("page", 1)
+	limit := c.QueryInt("limit", 10)
+
+	lessons, count, err := h.service.GetLessonsByParent(uint(id), page, limit)
+	if err != nil {
+		return shared.ResponseBadRequest(c, "Хичээл татахад алдаа гарлаа")
+	}
+
+	return c.JSON(fiber.Map{
+		"lessons": lessons,
+		"total":   count,
+	})
+}
+
+// 3. Дэд бүлгээр (Category) шүүж авах
+// GET /lessons/category/:id?page=1&limit=10
+func (h *LessonHandler) GetByCategory(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		return shared.ResponseBadRequest(c, "Буруу ангиллын ID")
+	}
+
+	page := c.QueryInt("page", 1)
+	limit := c.QueryInt("limit", 10)
+
+	lessons, count, err := h.service.GetLessonsByCategory(uint(id), page, limit)
+	if err != nil {
+		return shared.ResponseBadRequest(c, "Хичээл татахад алдаа гарлаа")
+	}
+
+	return c.JSON(fiber.Map{
+		"lessons": lessons,
+		"total":   count,
+	})
 }
 
 // GET /lessons/:id
@@ -142,19 +197,45 @@ func (h *LessonHandler) GetAllCategory(c *fiber.Ctx) error {
 	return c.JSON(categories)
 }
 
-// GET /lessons/category/:categoryID
-func (h *LessonHandler) GetAllLessonsByCategory(c *fiber.Ctx) error {
-	categoryID, err := strconv.Atoi(c.Params("categoryID"))
-	if err != nil {
-		return shared.ResponseBadRequest(c, "Буруу категорийн ID")
+func (h *LessonHandler) CompleteLesson(c *fiber.Ctx) error {
+	var f form.CompleteLessonForm
+
+	if err := c.BodyParser(&f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
 	}
 
-	lessons, err := h.service.GetAllLessonsByCategory(uint(categoryID))
-	if err != nil {
-		return shared.ResponseBadRequest(c, "Хичээл татахад алдаа гарлаа")
+	if err := f.Validate(); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
 	}
-	return c.JSON(lessons)
+
+	tokenInfo := auth.GetTokenInfo(c)
+
+	if tokenInfo == nil {
+		return shared.ResponseUnauthorized(c)
+	}
+
+	if err := h.service.CompleteLesson(tokenInfo.UserID, &f); err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "Хичээл дуусгалаа",
+	})
 }
+
+// GET /lessons/category/:categoryID
+// func (h *LessonHandler) GetAllLessonsByCategory(c *fiber.Ctx) error {
+// 	categoryID, err := strconv.Atoi(c.Params("categoryID"))
+// 	if err != nil {
+// 		return shared.ResponseBadRequest(c, "Буруу категорийн ID")
+// 	}
+
+// 	lessons, err := h.service.GetAllLessonsByCategory(uint(categoryID))
+// 	if err != nil {
+// 		return shared.ResponseBadRequest(c, "Хичээл татахад алдаа гарлаа")
+// 	}
+// 	return c.JSON(lessons)
+// }
 
 // POST /lessons
 func (h *LessonHandler) Create(c *fiber.Ctx) error {

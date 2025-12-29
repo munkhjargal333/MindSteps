@@ -20,7 +20,7 @@ type UserLessonProgress struct {
 	TimeSpent          int       `gorm:"column:time_spent;type:integer" json:"time_spent"`
 	LastAccessed       time.Time `gorm:"column:last_accessed;type:timestamp without time zone" json:"last_accessed"`
 	CompletionDate     time.Time `gorm:"column:completion_date;type:timestamp without time zone" json:"completion_date"`
-	Rating             int       `gorm:"column:rating;type:integer" json:"rating"`
+	Rating             *int      `gorm:"column:rating;type:integer" json:"rating"`
 	ReviewText         string    `gorm:"column:review_text;type:text" json:"review_text"`
 	IsBookmarked       bool      `gorm:"column:is_bookmarked;type:boolean" json:"is_bookmarked"`
 	CreatedAt          time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`

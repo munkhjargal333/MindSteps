@@ -7,13 +7,13 @@ import { apiClient } from '@/lib/api/client';
 import { Goal, CoreValue, Milestone } from '@/lib/types';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
  
 
 // ==================== GOAL DETAIL PAGE ====================
 export default function GoalDetailPage() {
   const { token } = useAuth();
-   const { showToast, ToastContainer } = useToast();
+   const { showToast } = useGlobalToast();
   const [goal, setGoal] = useState<Goal | null>(null);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
