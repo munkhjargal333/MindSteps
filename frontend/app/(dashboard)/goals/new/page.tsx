@@ -76,7 +76,7 @@ export default function NewGoalPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <ToastContainer/>
+      
       <div className="mb-6">
         <Link href="/goals" className="text-blue-600 hover:text-blue-700 font-medium">
           ← Буцах

@@ -87,7 +87,7 @@ export default function GoalsPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <ToastContainer/>
+      
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <h1 className="text-3xl font-bold text-gray-900">🎯 Миний зорилгууд</h1>
