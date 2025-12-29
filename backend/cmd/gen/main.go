@@ -202,44 +202,6 @@ func main() {
 		gen.FieldType("max_score", "int"),
 		gen.FieldType("perks", "datatypes.JSON"),
 	)
-
-	// User achievements
-	userAchievements := g.GenerateModelAs(
-		model("user_achievements"),
-		"UserAchievements",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("points_earned", "int"),
-		gen.FieldType("is_featured", "bool"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// User streaks
-	userStreaks := g.GenerateModelAs(
-		model("user_streaks"),
-		"UserStreaks",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("current_streak", "int"),
-		gen.FieldType("longest_streak", "int"),
-		gen.FieldType("total_activities", "int"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
 	// Scoring history
 	scoringHistory := g.GenerateModelAs(
 		model("scoring_history"),
@@ -256,6 +218,28 @@ func main() {
 				"references": []string{"id"},
 			},
 			JSONTag: tag("User"),
+		}),
+	)
+
+	// User gamification summary
+	userGamification := g.GenerateModelAs(
+		model("user_gamification"),
+		"UserGamification",
+		gen.FieldType("id", "uint"),
+		gen.FieldType("user_id", "uint"),
+		gen.FieldType("current_level_id", "int"),
+		gen.FieldType("total_score", "int"),
+		gen.FieldType("level_progress", "int"),
+		gen.FieldType("current_streak", "int"),
+		gen.FieldType("longest_streak", "int"),
+		gen.FieldType("last_activity_at", "time.Time"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag:       field.GormTag{"foreignKey": []string{"user_id"}},
+		}),
+		gen.FieldRelate(field.BelongsTo, "Level", userLevels, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag:       field.GormTag{"foreignKey": []string{"current_level_id"}},
 		}),
 	)
 
@@ -739,7 +723,7 @@ func main() {
 		gen.FieldType("user_id", "uint"),
 		gen.FieldType("progress_percentage", "int"),
 		gen.FieldType("time_spent", "int"),
-		gen.FieldType("rating", "int"),
+		gen.FieldType("rating", "*int"),
 		gen.FieldType("is_bookmarked", "bool"),
 
 		gen.FieldRelate(field.BelongsTo, "Lesson", lessons, &field.RelateConfig{
@@ -840,288 +824,6 @@ func main() {
 			},
 			JSONTag: tag("Lesson"),
 		}),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// ============================================================================
-	// MEDITATION & MINDFULNESS
-	// ============================================================================
-
-	// Meditation techniques
-	meditationTechniques := g.GenerateModelAs(
-		model("meditation_techniques"),
-		"MeditationTechniques",
-		gen.FieldType("id", "int"),
-		gen.FieldType("recommended_duration", "int"),
-		gen.FieldType("is_guided", "bool"),
-		gen.FieldType("is_active", "bool"),
-	)
-
-	// Meditation sessions
-	meditationSessions := g.GenerateModelAs(
-		model("meditation_sessions"),
-		"MeditationSessions",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("technique_id", "int"),
-		gen.FieldType("duration_planned", "int"),
-		gen.FieldType("duration_actual", "int"),
-		gen.FieldType("quality_rating", "int"),
-		gen.FieldType("focus_level", "int"),
-		gen.FieldType("interruptions", "int"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-		gen.FieldRelate(field.BelongsTo, "Technique", meditationTechniques, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"technique_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("Technique"),
-		}),
-	)
-
-	// ============================================================================
-	// AI ANALYSIS & INSIGHTS
-	// ============================================================================
-
-	// AI scoring criteria
-	aiScoringCriteria := g.GenerateModelAs(
-		model("ai_scoring_criteria"),
-		"AIScoringCriteria",
-		gen.FieldType("id", "int"),
-		gen.FieldType("max_points", "int"),
-		gen.FieldType("is_active", "bool"),
-	)
-
-	// AI journal detailed analysis
-	aiJournalDetailedAnalysis := g.GenerateModelAs(
-		model("ai_journal_detailed_analysis"),
-		"AIJournalDetailedAnalysis",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("journal_id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("emotional_depth_score", "int"),
-		gen.FieldType("self_reflection_score", "int"),
-		gen.FieldType("goal_alignment_score", "int"),
-		gen.FieldType("gratitude_score", "int"),
-		gen.FieldType("problem_solving_score", "int"),
-		gen.FieldType("mindfulness_score", "int"),
-		gen.FieldType("bonus_points", "int"),
-		gen.FieldType("final_points", "int"),
-		gen.FieldType("processing_duration", "int"),
-		gen.FieldType("primary_emotions", "datatypes.JSON"),
-		gen.FieldRelate(field.BelongsTo, "Journal", journals, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"journal_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("Journal"),
-		}),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// AI mood analysis
-	aiMoodAnalysis := g.GenerateModelAs(
-		model("ai_mood_analysis"),
-		"AIMoodAnalysis",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("mood_entry_id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("mood_consistency_score", "int"),
-		gen.FieldType("trigger_pattern_score", "int"),
-		gen.FieldType("coping_effectiveness_score", "int"),
-		gen.FieldType("emotional_intelligence_score", "int"),
-		gen.FieldType("points_earned", "int"),
-		gen.FieldType("detected_patterns", "datatypes.JSON"),
-		gen.FieldRelate(field.BelongsTo, "MoodEntry", moodEntries, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"mood_entry_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("MoodEntry"),
-		}),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// AI weekly mood deep analysis
-	aiWeeklyMoodDeepAnalysis := g.GenerateModelAs(
-		model("ai_weekly_mood_deep_analysis"),
-		"AIWeeklyMoodDeepAnalysis",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("hidden_emotional_patterns", "datatypes.JSON"),
-		gen.FieldType("unconscious_triggers", "datatypes.JSON"),
-		gen.FieldType("values_in_conflict", "datatypes.JSON"),
-		gen.FieldType("values_being_honored", "datatypes.JSON"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// AI progress tracking
-	aiProgressTracking := g.GenerateModelAs(
-		model("ai_progress_tracking"),
-		"AIProgressTracking",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("journal_consistency_score", "int"),
-		gen.FieldType("meditation_regularity_score", "int"),
-		gen.FieldType("consciousness_level_change", "int"),
-		gen.FieldType("period_total_points", "int"),
-		gen.FieldType("improvement_bonus_points", "int"),
-		gen.FieldType("consistency_bonus_points", "int"),
-		gen.FieldType("key_improvements", "datatypes.JSON"),
-		gen.FieldType("areas_needing_attention", "datatypes.JSON"),
-		gen.FieldType("behavioral_changes_detected", "datatypes.JSON"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// Detected patterns
-	detectedPatterns := g.GenerateModelAs(
-		model("detected_patterns"),
-		"DetectedPatterns",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("occurrence_count", "int"),
-		gen.FieldType("emotional_impact_score", "int"),
-		gen.FieldType("is_resolved", "bool"),
-		gen.FieldType("user_acknowledged", "bool"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// ============================================================================
-	// REPORTS & INSIGHTS
-	// ============================================================================
-
-	// User insights
-	userInsights := g.GenerateModelAs(
-		model("user_insights"),
-		"UserInsights",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("is_read", "bool"),
-		gen.FieldType("is_dismissed", "bool"),
-		gen.FieldType("data_points", "datatypes.JSON"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// Progress reports
-	progressReports := g.GenerateModelAs(
-		model("progress_reports"),
-		"ProgressReports",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("overall_wellbeing_score", "int"),
-		gen.FieldType("is_exported", "bool"),
-		gen.FieldType("mood_summary", "datatypes.JSON"),
-		gen.FieldType("journal_insights", "datatypes.JSON"),
-		gen.FieldType("goal_progress", "datatypes.JSON"),
-		gen.FieldType("meditation_summary", "datatypes.JSON"),
-		gen.FieldType("consciousness_progression", "datatypes.JSON"),
-		gen.FieldType("chart_data", "datatypes.JSON"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// ============================================================================
-	// NOTIFICATIONS & REMINDERS
-	// ============================================================================
-
-	// User preferences
-	userPreferences := g.GenerateModelAs(
-		model("user_preferences"),
-		"UserPreferences",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("reminder_journal", "bool"),
-		gen.FieldType("reminder_mood_check", "bool"),
-		gen.FieldType("reminder_meditation", "bool"),
-		gen.FieldType("reminder_goal_review", "bool"),
-		gen.FieldType("notification_email", "bool"),
-		gen.FieldType("notification_push", "bool"),
-		gen.FieldType("notification_insights", "bool"),
-		gen.FieldType("notification_achievements", "bool"),
-		gen.FieldType("data_sharing", "bool"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// Notifications
-	notifications := g.GenerateModelAs(
-		model("notifications"),
-		"Notifications",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("is_read", "bool"),
-		gen.FieldType("metadata", "datatypes.JSON"),
 		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
 			RelatePointer: true,
 			GORMTag: field.GormTag{
@@ -1315,14 +1017,10 @@ func main() {
 		authOTP, userSessions, revokedTokens, encryptionKeys,
 
 		// Gamification System
-		userLevels, userAchievements, userStreaks, scoringHistory,
+		userLevels, scoringHistory, userGamification,
 
 		// Maslow's Hierarchy & Core Values
 		maslowLevels, coreValues, valueReflections,
-
-		// Consciousness Levels
-		// consciousnessLevels,
-		// userConsciousnessTracking,
 
 		// Plutchik's Emotion Wheel
 		plutchikEmotions, plutchikCombinations, userEmotionWheel,
@@ -1339,19 +1037,6 @@ func main() {
 		// Lessons & Learning
 		lessonCategories, lessons, userLessonProgress,
 		lessonRecommendations, lessonComments, lessonReactions,
-
-		// Meditation & Mindfulness
-		meditationTechniques, meditationSessions,
-
-		// AI Analysis & Insights
-		aiScoringCriteria, aiJournalDetailedAnalysis, aiMoodAnalysis,
-		aiWeeklyMoodDeepAnalysis, aiProgressTracking, detectedPatterns,
-
-		// Reports & Insights
-		userInsights, progressReports,
-
-		// Notifications & Reminders
-		userPreferences, notifications,
 
 		// Data Compliance & Privacy
 		dataRetentionPolicies, userDataRequests,

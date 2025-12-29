@@ -2,7 +2,9 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"mindsteps/database/model"
+	gamification "mindsteps/internal/gamification/service"
 	"mindsteps/internal/journal/form"
 	"mindsteps/internal/journal/repository"
 	"time"
@@ -17,11 +19,12 @@ type JournalService interface {
 }
 
 type journalService struct {
-	repo repository.JournalRepository
+	repo         repository.JournalRepository
+	gamification gamification.GamificationService
 }
 
-func NewJournalService(repo repository.JournalRepository) JournalService {
-	return &journalService{repo: repo}
+func NewJournalService(repo repository.JournalRepository, gamification gamification.GamificationService) JournalService {
+	return &journalService{repo: repo, gamification: gamification}
 }
 
 func (s *journalService) Create(f *form.JournalForm) (*model.Journals, error) {
@@ -30,13 +33,25 @@ func (s *journalService) Create(f *form.JournalForm) (*model.Journals, error) {
 	}
 
 	journal := form.NewJournalFromForm(*f)
-
 	journal.CreatedAt = time.Now()
-	//journal.WordCount = journal.
 
 	if err := s.repo.Create(journal); err != nil {
 		return nil, err
 	}
+
+	err := s.gamification.AddXP(
+		journal.UserID,
+		20+journal.WordCount/10,
+		"journal",
+		journal.ID,
+		`{"title": "`+journal.Title+`"}`,
+	)
+
+	if err != nil {
+		// Оноо өгч чадаагүй ч тэмдэглэл хадгалагдсан тул лог бичээд орхиж болно
+		log.Printf("Failed to award XP for user %d: %v", journal.UserID, err)
+	}
+
 	return journal, nil
 }
 

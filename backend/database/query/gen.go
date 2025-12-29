@@ -17,164 +17,125 @@ import (
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                        db,
-		AIJournalDetailedAnalysis: newAIJournalDetailedAnalysis(db, opts...),
-		AIMoodAnalysis:            newAIMoodAnalysis(db, opts...),
-		AIProgressTracking:        newAIProgressTracking(db, opts...),
-		AIScoringCriteria:         newAIScoringCriteria(db, opts...),
-		AIWeeklyMoodDeepAnalysis:  newAIWeeklyMoodDeepAnalysis(db, opts...),
-		AuthOTP:                   newAuthOTP(db, opts...),
-		CoreValues:                newCoreValues(db, opts...),
-		DataRetentionPolicies:     newDataRetentionPolicies(db, opts...),
-		DeletedDataLog:            newDeletedDataLog(db, opts...),
-		DetectedPatterns:          newDetectedPatterns(db, opts...),
-		EncryptionKeys:            newEncryptionKeys(db, opts...),
-		ErrorLogs:                 newErrorLogs(db, opts...),
-		GoalMilestones:            newGoalMilestones(db, opts...),
-		Goals:                     newGoals(db, opts...),
-		Journals:                  newJournals(db, opts...),
-		LessonCategory:            newLessonCategory(db, opts...),
-		LessonComments:            newLessonComments(db, opts...),
-		LessonReactions:           newLessonReactions(db, opts...),
-		LessonRecommendations:     newLessonRecommendations(db, opts...),
-		Lessons:                   newLessons(db, opts...),
-		MaslowLevels:              newMaslowLevels(db, opts...),
-		MeditationSessions:        newMeditationSessions(db, opts...),
-		MeditationTechniques:      newMeditationTechniques(db, opts...),
-		MoodCategories:            newMoodCategories(db, opts...),
-		MoodEntries:               newMoodEntries(db, opts...),
-		MoodUnit:                  newMoodUnit(db, opts...),
-		Notifications:             newNotifications(db, opts...),
-		PlutchikCombinations:      newPlutchikCombinations(db, opts...),
-		PlutchikEmotions:          newPlutchikEmotions(db, opts...),
-		ProgressReports:           newProgressReports(db, opts...),
-		RevokedTokens:             newRevokedTokens(db, opts...),
-		RoleOwners:                newRoleOwners(db, opts...),
-		Roles:                     newRoles(db, opts...),
-		ScoringHistory:            newScoringHistory(db, opts...),
-		SystemAuditLog:            newSystemAuditLog(db, opts...),
-		SystemSettings:            newSystemSettings(db, opts...),
-		UserAchievements:          newUserAchievements(db, opts...),
-		UserDataAccessLog:         newUserDataAccessLog(db, opts...),
-		UserDataRequests:          newUserDataRequests(db, opts...),
-		UserEmotionWheel:          newUserEmotionWheel(db, opts...),
-		UserInsights:              newUserInsights(db, opts...),
-		UserLessonProgress:        newUserLessonProgress(db, opts...),
-		UserLevels:                newUserLevels(db, opts...),
-		UserPreferences:           newUserPreferences(db, opts...),
-		UserSessions:              newUserSessions(db, opts...),
-		UserStreaks:               newUserStreaks(db, opts...),
-		Users:                     newUsers(db, opts...),
-		ValueReflections:          newValueReflections(db, opts...),
+		db:                    db,
+		AuthOTP:               newAuthOTP(db, opts...),
+		CoreValues:            newCoreValues(db, opts...),
+		DataRetentionPolicies: newDataRetentionPolicies(db, opts...),
+		DeletedDataLog:        newDeletedDataLog(db, opts...),
+		EncryptionKeys:        newEncryptionKeys(db, opts...),
+		ErrorLogs:             newErrorLogs(db, opts...),
+		GoalMilestones:        newGoalMilestones(db, opts...),
+		Goals:                 newGoals(db, opts...),
+		Journals:              newJournals(db, opts...),
+		LessonCategory:        newLessonCategory(db, opts...),
+		LessonComments:        newLessonComments(db, opts...),
+		LessonReactions:       newLessonReactions(db, opts...),
+		LessonRecommendations: newLessonRecommendations(db, opts...),
+		Lessons:               newLessons(db, opts...),
+		MaslowLevels:          newMaslowLevels(db, opts...),
+		MoodCategories:        newMoodCategories(db, opts...),
+		MoodEntries:           newMoodEntries(db, opts...),
+		MoodUnit:              newMoodUnit(db, opts...),
+		PlutchikCombinations:  newPlutchikCombinations(db, opts...),
+		PlutchikEmotions:      newPlutchikEmotions(db, opts...),
+		RevokedTokens:         newRevokedTokens(db, opts...),
+		RoleOwners:            newRoleOwners(db, opts...),
+		Roles:                 newRoles(db, opts...),
+		ScoringHistory:        newScoringHistory(db, opts...),
+		SystemAuditLog:        newSystemAuditLog(db, opts...),
+		SystemSettings:        newSystemSettings(db, opts...),
+		UserDataAccessLog:     newUserDataAccessLog(db, opts...),
+		UserDataRequests:      newUserDataRequests(db, opts...),
+		UserEmotionWheel:      newUserEmotionWheel(db, opts...),
+		UserGamification:      newUserGamification(db, opts...),
+		UserLessonProgress:    newUserLessonProgress(db, opts...),
+		UserLevels:            newUserLevels(db, opts...),
+		UserSessions:          newUserSessions(db, opts...),
+		Users:                 newUsers(db, opts...),
+		ValueReflections:      newValueReflections(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	AIJournalDetailedAnalysis aIJournalDetailedAnalysis
-	AIMoodAnalysis            aIMoodAnalysis
-	AIProgressTracking        aIProgressTracking
-	AIScoringCriteria         aIScoringCriteria
-	AIWeeklyMoodDeepAnalysis  aIWeeklyMoodDeepAnalysis
-	AuthOTP                   authOTP
-	CoreValues                coreValues
-	DataRetentionPolicies     dataRetentionPolicies
-	DeletedDataLog            deletedDataLog
-	DetectedPatterns          detectedPatterns
-	EncryptionKeys            encryptionKeys
-	ErrorLogs                 errorLogs
-	GoalMilestones            goalMilestones
-	Goals                     goals
-	Journals                  journals
-	LessonCategory            lessonCategory
-	LessonComments            lessonComments
-	LessonReactions           lessonReactions
-	LessonRecommendations     lessonRecommendations
-	Lessons                   lessons
-	MaslowLevels              maslowLevels
-	MeditationSessions        meditationSessions
-	MeditationTechniques      meditationTechniques
-	MoodCategories            moodCategories
-	MoodEntries               moodEntries
-	MoodUnit                  moodUnit
-	Notifications             notifications
-	PlutchikCombinations      plutchikCombinations
-	PlutchikEmotions          plutchikEmotions
-	ProgressReports           progressReports
-	RevokedTokens             revokedTokens
-	RoleOwners                roleOwners
-	Roles                     roles
-	ScoringHistory            scoringHistory
-	SystemAuditLog            systemAuditLog
-	SystemSettings            systemSettings
-	UserAchievements          userAchievements
-	UserDataAccessLog         userDataAccessLog
-	UserDataRequests          userDataRequests
-	UserEmotionWheel          userEmotionWheel
-	UserInsights              userInsights
-	UserLessonProgress        userLessonProgress
-	UserLevels                userLevels
-	UserPreferences           userPreferences
-	UserSessions              userSessions
-	UserStreaks               userStreaks
-	Users                     users
-	ValueReflections          valueReflections
+	AuthOTP               authOTP
+	CoreValues            coreValues
+	DataRetentionPolicies dataRetentionPolicies
+	DeletedDataLog        deletedDataLog
+	EncryptionKeys        encryptionKeys
+	ErrorLogs             errorLogs
+	GoalMilestones        goalMilestones
+	Goals                 goals
+	Journals              journals
+	LessonCategory        lessonCategory
+	LessonComments        lessonComments
+	LessonReactions       lessonReactions
+	LessonRecommendations lessonRecommendations
+	Lessons               lessons
+	MaslowLevels          maslowLevels
+	MoodCategories        moodCategories
+	MoodEntries           moodEntries
+	MoodUnit              moodUnit
+	PlutchikCombinations  plutchikCombinations
+	PlutchikEmotions      plutchikEmotions
+	RevokedTokens         revokedTokens
+	RoleOwners            roleOwners
+	Roles                 roles
+	ScoringHistory        scoringHistory
+	SystemAuditLog        systemAuditLog
+	SystemSettings        systemSettings
+	UserDataAccessLog     userDataAccessLog
+	UserDataRequests      userDataRequests
+	UserEmotionWheel      userEmotionWheel
+	UserGamification      userGamification
+	UserLessonProgress    userLessonProgress
+	UserLevels            userLevels
+	UserSessions          userSessions
+	Users                 users
+	ValueReflections      valueReflections
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                        db,
-		AIJournalDetailedAnalysis: q.AIJournalDetailedAnalysis.clone(db),
-		AIMoodAnalysis:            q.AIMoodAnalysis.clone(db),
-		AIProgressTracking:        q.AIProgressTracking.clone(db),
-		AIScoringCriteria:         q.AIScoringCriteria.clone(db),
-		AIWeeklyMoodDeepAnalysis:  q.AIWeeklyMoodDeepAnalysis.clone(db),
-		AuthOTP:                   q.AuthOTP.clone(db),
-		CoreValues:                q.CoreValues.clone(db),
-		DataRetentionPolicies:     q.DataRetentionPolicies.clone(db),
-		DeletedDataLog:            q.DeletedDataLog.clone(db),
-		DetectedPatterns:          q.DetectedPatterns.clone(db),
-		EncryptionKeys:            q.EncryptionKeys.clone(db),
-		ErrorLogs:                 q.ErrorLogs.clone(db),
-		GoalMilestones:            q.GoalMilestones.clone(db),
-		Goals:                     q.Goals.clone(db),
-		Journals:                  q.Journals.clone(db),
-		LessonCategory:            q.LessonCategory.clone(db),
-		LessonComments:            q.LessonComments.clone(db),
-		LessonReactions:           q.LessonReactions.clone(db),
-		LessonRecommendations:     q.LessonRecommendations.clone(db),
-		Lessons:                   q.Lessons.clone(db),
-		MaslowLevels:              q.MaslowLevels.clone(db),
-		MeditationSessions:        q.MeditationSessions.clone(db),
-		MeditationTechniques:      q.MeditationTechniques.clone(db),
-		MoodCategories:            q.MoodCategories.clone(db),
-		MoodEntries:               q.MoodEntries.clone(db),
-		MoodUnit:                  q.MoodUnit.clone(db),
-		Notifications:             q.Notifications.clone(db),
-		PlutchikCombinations:      q.PlutchikCombinations.clone(db),
-		PlutchikEmotions:          q.PlutchikEmotions.clone(db),
-		ProgressReports:           q.ProgressReports.clone(db),
-		RevokedTokens:             q.RevokedTokens.clone(db),
-		RoleOwners:                q.RoleOwners.clone(db),
-		Roles:                     q.Roles.clone(db),
-		ScoringHistory:            q.ScoringHistory.clone(db),
-		SystemAuditLog:            q.SystemAuditLog.clone(db),
-		SystemSettings:            q.SystemSettings.clone(db),
-		UserAchievements:          q.UserAchievements.clone(db),
-		UserDataAccessLog:         q.UserDataAccessLog.clone(db),
-		UserDataRequests:          q.UserDataRequests.clone(db),
-		UserEmotionWheel:          q.UserEmotionWheel.clone(db),
-		UserInsights:              q.UserInsights.clone(db),
-		UserLessonProgress:        q.UserLessonProgress.clone(db),
-		UserLevels:                q.UserLevels.clone(db),
-		UserPreferences:           q.UserPreferences.clone(db),
-		UserSessions:              q.UserSessions.clone(db),
-		UserStreaks:               q.UserStreaks.clone(db),
-		Users:                     q.Users.clone(db),
-		ValueReflections:          q.ValueReflections.clone(db),
+		db:                    db,
+		AuthOTP:               q.AuthOTP.clone(db),
+		CoreValues:            q.CoreValues.clone(db),
+		DataRetentionPolicies: q.DataRetentionPolicies.clone(db),
+		DeletedDataLog:        q.DeletedDataLog.clone(db),
+		EncryptionKeys:        q.EncryptionKeys.clone(db),
+		ErrorLogs:             q.ErrorLogs.clone(db),
+		GoalMilestones:        q.GoalMilestones.clone(db),
+		Goals:                 q.Goals.clone(db),
+		Journals:              q.Journals.clone(db),
+		LessonCategory:        q.LessonCategory.clone(db),
+		LessonComments:        q.LessonComments.clone(db),
+		LessonReactions:       q.LessonReactions.clone(db),
+		LessonRecommendations: q.LessonRecommendations.clone(db),
+		Lessons:               q.Lessons.clone(db),
+		MaslowLevels:          q.MaslowLevels.clone(db),
+		MoodCategories:        q.MoodCategories.clone(db),
+		MoodEntries:           q.MoodEntries.clone(db),
+		MoodUnit:              q.MoodUnit.clone(db),
+		PlutchikCombinations:  q.PlutchikCombinations.clone(db),
+		PlutchikEmotions:      q.PlutchikEmotions.clone(db),
+		RevokedTokens:         q.RevokedTokens.clone(db),
+		RoleOwners:            q.RoleOwners.clone(db),
+		Roles:                 q.Roles.clone(db),
+		ScoringHistory:        q.ScoringHistory.clone(db),
+		SystemAuditLog:        q.SystemAuditLog.clone(db),
+		SystemSettings:        q.SystemSettings.clone(db),
+		UserDataAccessLog:     q.UserDataAccessLog.clone(db),
+		UserDataRequests:      q.UserDataRequests.clone(db),
+		UserEmotionWheel:      q.UserEmotionWheel.clone(db),
+		UserGamification:      q.UserGamification.clone(db),
+		UserLessonProgress:    q.UserLessonProgress.clone(db),
+		UserLevels:            q.UserLevels.clone(db),
+		UserSessions:          q.UserSessions.clone(db),
+		Users:                 q.Users.clone(db),
+		ValueReflections:      q.ValueReflections.clone(db),
 	}
 }
 
@@ -188,159 +149,120 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                        db,
-		AIJournalDetailedAnalysis: q.AIJournalDetailedAnalysis.replaceDB(db),
-		AIMoodAnalysis:            q.AIMoodAnalysis.replaceDB(db),
-		AIProgressTracking:        q.AIProgressTracking.replaceDB(db),
-		AIScoringCriteria:         q.AIScoringCriteria.replaceDB(db),
-		AIWeeklyMoodDeepAnalysis:  q.AIWeeklyMoodDeepAnalysis.replaceDB(db),
-		AuthOTP:                   q.AuthOTP.replaceDB(db),
-		CoreValues:                q.CoreValues.replaceDB(db),
-		DataRetentionPolicies:     q.DataRetentionPolicies.replaceDB(db),
-		DeletedDataLog:            q.DeletedDataLog.replaceDB(db),
-		DetectedPatterns:          q.DetectedPatterns.replaceDB(db),
-		EncryptionKeys:            q.EncryptionKeys.replaceDB(db),
-		ErrorLogs:                 q.ErrorLogs.replaceDB(db),
-		GoalMilestones:            q.GoalMilestones.replaceDB(db),
-		Goals:                     q.Goals.replaceDB(db),
-		Journals:                  q.Journals.replaceDB(db),
-		LessonCategory:            q.LessonCategory.replaceDB(db),
-		LessonComments:            q.LessonComments.replaceDB(db),
-		LessonReactions:           q.LessonReactions.replaceDB(db),
-		LessonRecommendations:     q.LessonRecommendations.replaceDB(db),
-		Lessons:                   q.Lessons.replaceDB(db),
-		MaslowLevels:              q.MaslowLevels.replaceDB(db),
-		MeditationSessions:        q.MeditationSessions.replaceDB(db),
-		MeditationTechniques:      q.MeditationTechniques.replaceDB(db),
-		MoodCategories:            q.MoodCategories.replaceDB(db),
-		MoodEntries:               q.MoodEntries.replaceDB(db),
-		MoodUnit:                  q.MoodUnit.replaceDB(db),
-		Notifications:             q.Notifications.replaceDB(db),
-		PlutchikCombinations:      q.PlutchikCombinations.replaceDB(db),
-		PlutchikEmotions:          q.PlutchikEmotions.replaceDB(db),
-		ProgressReports:           q.ProgressReports.replaceDB(db),
-		RevokedTokens:             q.RevokedTokens.replaceDB(db),
-		RoleOwners:                q.RoleOwners.replaceDB(db),
-		Roles:                     q.Roles.replaceDB(db),
-		ScoringHistory:            q.ScoringHistory.replaceDB(db),
-		SystemAuditLog:            q.SystemAuditLog.replaceDB(db),
-		SystemSettings:            q.SystemSettings.replaceDB(db),
-		UserAchievements:          q.UserAchievements.replaceDB(db),
-		UserDataAccessLog:         q.UserDataAccessLog.replaceDB(db),
-		UserDataRequests:          q.UserDataRequests.replaceDB(db),
-		UserEmotionWheel:          q.UserEmotionWheel.replaceDB(db),
-		UserInsights:              q.UserInsights.replaceDB(db),
-		UserLessonProgress:        q.UserLessonProgress.replaceDB(db),
-		UserLevels:                q.UserLevels.replaceDB(db),
-		UserPreferences:           q.UserPreferences.replaceDB(db),
-		UserSessions:              q.UserSessions.replaceDB(db),
-		UserStreaks:               q.UserStreaks.replaceDB(db),
-		Users:                     q.Users.replaceDB(db),
-		ValueReflections:          q.ValueReflections.replaceDB(db),
+		db:                    db,
+		AuthOTP:               q.AuthOTP.replaceDB(db),
+		CoreValues:            q.CoreValues.replaceDB(db),
+		DataRetentionPolicies: q.DataRetentionPolicies.replaceDB(db),
+		DeletedDataLog:        q.DeletedDataLog.replaceDB(db),
+		EncryptionKeys:        q.EncryptionKeys.replaceDB(db),
+		ErrorLogs:             q.ErrorLogs.replaceDB(db),
+		GoalMilestones:        q.GoalMilestones.replaceDB(db),
+		Goals:                 q.Goals.replaceDB(db),
+		Journals:              q.Journals.replaceDB(db),
+		LessonCategory:        q.LessonCategory.replaceDB(db),
+		LessonComments:        q.LessonComments.replaceDB(db),
+		LessonReactions:       q.LessonReactions.replaceDB(db),
+		LessonRecommendations: q.LessonRecommendations.replaceDB(db),
+		Lessons:               q.Lessons.replaceDB(db),
+		MaslowLevels:          q.MaslowLevels.replaceDB(db),
+		MoodCategories:        q.MoodCategories.replaceDB(db),
+		MoodEntries:           q.MoodEntries.replaceDB(db),
+		MoodUnit:              q.MoodUnit.replaceDB(db),
+		PlutchikCombinations:  q.PlutchikCombinations.replaceDB(db),
+		PlutchikEmotions:      q.PlutchikEmotions.replaceDB(db),
+		RevokedTokens:         q.RevokedTokens.replaceDB(db),
+		RoleOwners:            q.RoleOwners.replaceDB(db),
+		Roles:                 q.Roles.replaceDB(db),
+		ScoringHistory:        q.ScoringHistory.replaceDB(db),
+		SystemAuditLog:        q.SystemAuditLog.replaceDB(db),
+		SystemSettings:        q.SystemSettings.replaceDB(db),
+		UserDataAccessLog:     q.UserDataAccessLog.replaceDB(db),
+		UserDataRequests:      q.UserDataRequests.replaceDB(db),
+		UserEmotionWheel:      q.UserEmotionWheel.replaceDB(db),
+		UserGamification:      q.UserGamification.replaceDB(db),
+		UserLessonProgress:    q.UserLessonProgress.replaceDB(db),
+		UserLevels:            q.UserLevels.replaceDB(db),
+		UserSessions:          q.UserSessions.replaceDB(db),
+		Users:                 q.Users.replaceDB(db),
+		ValueReflections:      q.ValueReflections.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	AIJournalDetailedAnalysis *aIJournalDetailedAnalysisDo
-	AIMoodAnalysis            *aIMoodAnalysisDo
-	AIProgressTracking        *aIProgressTrackingDo
-	AIScoringCriteria         *aIScoringCriteriaDo
-	AIWeeklyMoodDeepAnalysis  *aIWeeklyMoodDeepAnalysisDo
-	AuthOTP                   *authOTPDo
-	CoreValues                *coreValuesDo
-	DataRetentionPolicies     *dataRetentionPoliciesDo
-	DeletedDataLog            *deletedDataLogDo
-	DetectedPatterns          *detectedPatternsDo
-	EncryptionKeys            *encryptionKeysDo
-	ErrorLogs                 *errorLogsDo
-	GoalMilestones            *goalMilestonesDo
-	Goals                     *goalsDo
-	Journals                  *journalsDo
-	LessonCategory            *lessonCategoryDo
-	LessonComments            *lessonCommentsDo
-	LessonReactions           *lessonReactionsDo
-	LessonRecommendations     *lessonRecommendationsDo
-	Lessons                   *lessonsDo
-	MaslowLevels              *maslowLevelsDo
-	MeditationSessions        *meditationSessionsDo
-	MeditationTechniques      *meditationTechniquesDo
-	MoodCategories            *moodCategoriesDo
-	MoodEntries               *moodEntriesDo
-	MoodUnit                  *moodUnitDo
-	Notifications             *notificationsDo
-	PlutchikCombinations      *plutchikCombinationsDo
-	PlutchikEmotions          *plutchikEmotionsDo
-	ProgressReports           *progressReportsDo
-	RevokedTokens             *revokedTokensDo
-	RoleOwners                *roleOwnersDo
-	Roles                     *rolesDo
-	ScoringHistory            *scoringHistoryDo
-	SystemAuditLog            *systemAuditLogDo
-	SystemSettings            *systemSettingsDo
-	UserAchievements          *userAchievementsDo
-	UserDataAccessLog         *userDataAccessLogDo
-	UserDataRequests          *userDataRequestsDo
-	UserEmotionWheel          *userEmotionWheelDo
-	UserInsights              *userInsightsDo
-	UserLessonProgress        *userLessonProgressDo
-	UserLevels                *userLevelsDo
-	UserPreferences           *userPreferencesDo
-	UserSessions              *userSessionsDo
-	UserStreaks               *userStreaksDo
-	Users                     *usersDo
-	ValueReflections          *valueReflectionsDo
+	AuthOTP               *authOTPDo
+	CoreValues            *coreValuesDo
+	DataRetentionPolicies *dataRetentionPoliciesDo
+	DeletedDataLog        *deletedDataLogDo
+	EncryptionKeys        *encryptionKeysDo
+	ErrorLogs             *errorLogsDo
+	GoalMilestones        *goalMilestonesDo
+	Goals                 *goalsDo
+	Journals              *journalsDo
+	LessonCategory        *lessonCategoryDo
+	LessonComments        *lessonCommentsDo
+	LessonReactions       *lessonReactionsDo
+	LessonRecommendations *lessonRecommendationsDo
+	Lessons               *lessonsDo
+	MaslowLevels          *maslowLevelsDo
+	MoodCategories        *moodCategoriesDo
+	MoodEntries           *moodEntriesDo
+	MoodUnit              *moodUnitDo
+	PlutchikCombinations  *plutchikCombinationsDo
+	PlutchikEmotions      *plutchikEmotionsDo
+	RevokedTokens         *revokedTokensDo
+	RoleOwners            *roleOwnersDo
+	Roles                 *rolesDo
+	ScoringHistory        *scoringHistoryDo
+	SystemAuditLog        *systemAuditLogDo
+	SystemSettings        *systemSettingsDo
+	UserDataAccessLog     *userDataAccessLogDo
+	UserDataRequests      *userDataRequestsDo
+	UserEmotionWheel      *userEmotionWheelDo
+	UserGamification      *userGamificationDo
+	UserLessonProgress    *userLessonProgressDo
+	UserLevels            *userLevelsDo
+	UserSessions          *userSessionsDo
+	Users                 *usersDo
+	ValueReflections      *valueReflectionsDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		AIJournalDetailedAnalysis: q.AIJournalDetailedAnalysis.WithContext(ctx),
-		AIMoodAnalysis:            q.AIMoodAnalysis.WithContext(ctx),
-		AIProgressTracking:        q.AIProgressTracking.WithContext(ctx),
-		AIScoringCriteria:         q.AIScoringCriteria.WithContext(ctx),
-		AIWeeklyMoodDeepAnalysis:  q.AIWeeklyMoodDeepAnalysis.WithContext(ctx),
-		AuthOTP:                   q.AuthOTP.WithContext(ctx),
-		CoreValues:                q.CoreValues.WithContext(ctx),
-		DataRetentionPolicies:     q.DataRetentionPolicies.WithContext(ctx),
-		DeletedDataLog:            q.DeletedDataLog.WithContext(ctx),
-		DetectedPatterns:          q.DetectedPatterns.WithContext(ctx),
-		EncryptionKeys:            q.EncryptionKeys.WithContext(ctx),
-		ErrorLogs:                 q.ErrorLogs.WithContext(ctx),
-		GoalMilestones:            q.GoalMilestones.WithContext(ctx),
-		Goals:                     q.Goals.WithContext(ctx),
-		Journals:                  q.Journals.WithContext(ctx),
-		LessonCategory:            q.LessonCategory.WithContext(ctx),
-		LessonComments:            q.LessonComments.WithContext(ctx),
-		LessonReactions:           q.LessonReactions.WithContext(ctx),
-		LessonRecommendations:     q.LessonRecommendations.WithContext(ctx),
-		Lessons:                   q.Lessons.WithContext(ctx),
-		MaslowLevels:              q.MaslowLevels.WithContext(ctx),
-		MeditationSessions:        q.MeditationSessions.WithContext(ctx),
-		MeditationTechniques:      q.MeditationTechniques.WithContext(ctx),
-		MoodCategories:            q.MoodCategories.WithContext(ctx),
-		MoodEntries:               q.MoodEntries.WithContext(ctx),
-		MoodUnit:                  q.MoodUnit.WithContext(ctx),
-		Notifications:             q.Notifications.WithContext(ctx),
-		PlutchikCombinations:      q.PlutchikCombinations.WithContext(ctx),
-		PlutchikEmotions:          q.PlutchikEmotions.WithContext(ctx),
-		ProgressReports:           q.ProgressReports.WithContext(ctx),
-		RevokedTokens:             q.RevokedTokens.WithContext(ctx),
-		RoleOwners:                q.RoleOwners.WithContext(ctx),
-		Roles:                     q.Roles.WithContext(ctx),
-		ScoringHistory:            q.ScoringHistory.WithContext(ctx),
-		SystemAuditLog:            q.SystemAuditLog.WithContext(ctx),
-		SystemSettings:            q.SystemSettings.WithContext(ctx),
-		UserAchievements:          q.UserAchievements.WithContext(ctx),
-		UserDataAccessLog:         q.UserDataAccessLog.WithContext(ctx),
-		UserDataRequests:          q.UserDataRequests.WithContext(ctx),
-		UserEmotionWheel:          q.UserEmotionWheel.WithContext(ctx),
-		UserInsights:              q.UserInsights.WithContext(ctx),
-		UserLessonProgress:        q.UserLessonProgress.WithContext(ctx),
-		UserLevels:                q.UserLevels.WithContext(ctx),
-		UserPreferences:           q.UserPreferences.WithContext(ctx),
-		UserSessions:              q.UserSessions.WithContext(ctx),
-		UserStreaks:               q.UserStreaks.WithContext(ctx),
-		Users:                     q.Users.WithContext(ctx),
-		ValueReflections:          q.ValueReflections.WithContext(ctx),
+		AuthOTP:               q.AuthOTP.WithContext(ctx),
+		CoreValues:            q.CoreValues.WithContext(ctx),
+		DataRetentionPolicies: q.DataRetentionPolicies.WithContext(ctx),
+		DeletedDataLog:        q.DeletedDataLog.WithContext(ctx),
+		EncryptionKeys:        q.EncryptionKeys.WithContext(ctx),
+		ErrorLogs:             q.ErrorLogs.WithContext(ctx),
+		GoalMilestones:        q.GoalMilestones.WithContext(ctx),
+		Goals:                 q.Goals.WithContext(ctx),
+		Journals:              q.Journals.WithContext(ctx),
+		LessonCategory:        q.LessonCategory.WithContext(ctx),
+		LessonComments:        q.LessonComments.WithContext(ctx),
+		LessonReactions:       q.LessonReactions.WithContext(ctx),
+		LessonRecommendations: q.LessonRecommendations.WithContext(ctx),
+		Lessons:               q.Lessons.WithContext(ctx),
+		MaslowLevels:          q.MaslowLevels.WithContext(ctx),
+		MoodCategories:        q.MoodCategories.WithContext(ctx),
+		MoodEntries:           q.MoodEntries.WithContext(ctx),
+		MoodUnit:              q.MoodUnit.WithContext(ctx),
+		PlutchikCombinations:  q.PlutchikCombinations.WithContext(ctx),
+		PlutchikEmotions:      q.PlutchikEmotions.WithContext(ctx),
+		RevokedTokens:         q.RevokedTokens.WithContext(ctx),
+		RoleOwners:            q.RoleOwners.WithContext(ctx),
+		Roles:                 q.Roles.WithContext(ctx),
+		ScoringHistory:        q.ScoringHistory.WithContext(ctx),
+		SystemAuditLog:        q.SystemAuditLog.WithContext(ctx),
+		SystemSettings:        q.SystemSettings.WithContext(ctx),
+		UserDataAccessLog:     q.UserDataAccessLog.WithContext(ctx),
+		UserDataRequests:      q.UserDataRequests.WithContext(ctx),
+		UserEmotionWheel:      q.UserEmotionWheel.WithContext(ctx),
+		UserGamification:      q.UserGamification.WithContext(ctx),
+		UserLessonProgress:    q.UserLessonProgress.WithContext(ctx),
+		UserLevels:            q.UserLevels.WithContext(ctx),
+		UserSessions:          q.UserSessions.WithContext(ctx),
+		Users:                 q.Users.WithContext(ctx),
+		ValueReflections:      q.ValueReflections.WithContext(ctx),
 	}
 }
 

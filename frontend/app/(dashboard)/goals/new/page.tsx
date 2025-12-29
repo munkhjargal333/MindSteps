@@ -5,11 +5,11 @@ import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { CoreValue, Milestone } from '@/lib/types';
 import Link from 'next/link';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 
 export default function NewGoalPage() {
   const { token } = useAuth();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [coreValues, setCoreValues] = useState<CoreValue[]>([]);

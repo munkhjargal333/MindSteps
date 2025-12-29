@@ -56,3 +56,30 @@ func (f LessonForm) Validate() error {
 
 	return nil
 }
+
+type CompleteLessonForm struct {
+	LessonID     uint   `json:"lesson_id" validate:"required"`
+	PointsReward int    `json:"points_reward"` // Фронтоос дамжуулж буй оноо
+	TimeSpent    int    `json:"time_spent"`    // Фронт дээр тоолсон секунд
+	Rating       *int   `json:"rating"`        // 1-5 одоор
+	Comment      string `json:"comment"`       // Сэтгэгдэл
+}
+
+func (f CompleteLessonForm) Validate() error {
+	if f.LessonID == 0 {
+		return fmt.Errorf("lesson_id шаардлагатай")
+	}
+	if f.Rating != nil && (*f.Rating < 1 || *f.Rating > 5) {
+		return fmt.Errorf("rating нь 1-5 хооронд байх ёстой")
+	}
+
+	if f.PointsReward < 0 || f.PointsReward > 100 {
+		return fmt.Errorf("points_reward нь 0-100 хооронд байх ёстой")
+	}
+
+	if f.TimeSpent < 0 {
+		return fmt.Errorf("time_spent нь 0-с их байх ёстой")
+	}
+
+	return nil
+}

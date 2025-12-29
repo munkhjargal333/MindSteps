@@ -124,7 +124,6 @@ func (h *JournalHandler) Delete(c *fiber.Ctx) error {
 }
 
 // List journals by user
-
 func (h *JournalHandler) ListByUserID(c *fiber.Ctx) error {
 	tokenInfo := auth.GetTokenInfo(c)
 

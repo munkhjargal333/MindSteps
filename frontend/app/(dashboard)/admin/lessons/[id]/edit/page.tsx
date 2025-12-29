@@ -1,601 +1,341 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import { Lesson, LessonCategory } from '@/lib/types';
+import { LessonCategory } from '@/lib/types';
 import { useRouter, useParams } from 'next/navigation';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 import Link from 'next/link';
+import { 
+  ArrowLeft, Save, Image as ImageIcon, Video, 
+  Music, FileText, Settings, Layers, Hash,
+  Star, Globe, X, UploadCloud, RefreshCw
+} from 'lucide-react';
+
+// Монгол үсгийг латин руу хөрвүүлэх (Slug-д зориулав)
+const transliterate = (text: string) => {
+  const map: { [key: string]: string } = {
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'j', 'з': 'z',
+    'и': 'i', 'й': 'i', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'ө': 'o', 'п': 'p',
+    'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ү': 'u', 'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch',
+    'ш': 'sh', 'щ': 'sh', 'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+  };
+  return text.toLowerCase().split('').map(char => map[char] || char).join('')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+};
 
 export default function EditLessonPage() {
   const { token } = useAuth();
   const router = useRouter();
   const params = useParams();
   const lessonId = Number(params.id);
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   
   const [categories, setCategories] = useState<LessonCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const [title, setTitle] = useState('');
-  const [slug, setSlug] = useState('');
-  const [categoryId, setCategoryId] = useState<number>(0);
-  const [description, setDescription] = useState('');
-  const [content, setContent] = useState('');
-  const [lessonType, setLessonType] = useState('article');
-  const [difficultyLevel, setDifficultyLevel] = useState('beginner');
-  const [requiredLevel, setRequiredLevel] = useState(1);
-  const [estimatedDuration, setEstimatedDuration] = useState(10);
-  const [pointsReward, setPointsReward] = useState(10);
-  const [mediaUrl, setMediaUrl] = useState('');
-  const [thumbnailUrl, setThumbnailUrl] = useState('');
-  const [tags, setTags] = useState('');
-  // const [relatedValueKeywords, setRelatedValueKeywords] = useState({''});
-  // const [relatedEmotionKeywords, setRelatedEmotionKeywords] = useState('');
-  const [isPremium, setIsPremium] = useState(false);
-  const [isPublished, setIsPublished] = useState(false);
-  
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
+  // Form State (CamelCase for internal use)
+  const [formData, setFormData] = useState({
+    title: '',
+    slug: '',
+    categoryId: 0,
+    description: '',
+    content: '',
+    lessonType: 'article',
+    difficultyLevel: 'beginner',
+    requiredLevel: 1,
+    estimatedDuration: 10,
+    pointsReward: 10,
+    mediaUrl: '',
+    thumbnailUrl: '',
+    tags: '',
+    isPremium: false,
+    isPublished: false
+  });
+
+  const [files, setFiles] = useState<{
+    thumbnail: File | null;
+    media: File | null;
+  }>({ thumbnail: null, media: null });
+
+  const [previews, setPreviews] = useState({ thumbnail: '' });
 
   useEffect(() => {
-    if (token && lessonId) {
-      loadData();
-    }
+    if (token && lessonId) loadData();
   }, [token, lessonId]);
 
   const loadData = async () => {
-    if (!token) return;
-
     setLoading(true);
     try {
       const [lessonData, categoriesData] = await Promise.all([
-        apiClient.getLesson(lessonId, token),
-        apiClient.getLessonCategories(token)
+        apiClient.getLesson(lessonId, token!),
+        apiClient.getLessonCategories(token!)
       ]);
       
-      // Load lesson data
-      setTitle(lessonData.title);
-      setSlug(lessonData.slug);
-      setCategoryId(lessonData.category_id);
-      setDescription(lessonData.description || '');
-      setContent(lessonData.content || '');
-      setLessonType(lessonData.lesson_type);
-      setDifficultyLevel(lessonData.difficulty_level);
-      setRequiredLevel(lessonData.required_level);
-      setEstimatedDuration(lessonData.estimated_duration || 10);
-      setPointsReward(lessonData.points_reward);
-      setMediaUrl(lessonData.media_url || '');
-      setThumbnailUrl(lessonData.thumbnail_url || '');
-      setTags(lessonData.tags || '');
-      setIsPremium(lessonData.is_premium);
-      setIsPublished(lessonData.is_published);
-      
-      // Load categories
-      const allCategories: LessonCategory[] = [];
+      // Map API data (snake_case) to State (camelCase)
+      setFormData({
+        title: lessonData.title,
+        slug: lessonData.slug,
+        categoryId: lessonData.category_id,
+        description: lessonData.description || '',
+        content: lessonData.content || '',
+        lessonType: lessonData.lesson_type,
+        difficultyLevel: lessonData.difficulty_level,
+        requiredLevel: lessonData.required_level,
+        estimatedDuration: lessonData.estimated_duration || 10,
+        pointsReward: lessonData.points_reward,
+        mediaUrl: lessonData.media_url || '',
+        thumbnailUrl: lessonData.thumbnail_url || '',
+        tags: Array.isArray(lessonData.tags) ? lessonData.tags.join(', ') : (lessonData.tags || ''),
+        isPremium: lessonData.is_premium,
+        isPublished: lessonData.is_published
+      });
+
+      if (lessonData.thumbnail_url) {
+        setPreviews({ thumbnail: lessonData.thumbnail_url });
+      }
+
+      const flattened: LessonCategory[] = [];
       categoriesData.forEach(parent => {
-        if (!parent.children || parent.children.length === 0) {
-          allCategories.push(parent);
-        }
-        
-        if (parent.children && parent.children.length > 0) {
+        if (parent.children?.length) {
           parent.children.forEach(child => {
-            allCategories.push({
-              ...child,
-              name_mn: `${parent.name_mn} → ${child.name_mn}`
-            });
+            flattened.push({ ...child, name_mn: `${parent.name_mn} → ${child.name_mn}` });
           });
+        } else {
+          flattened.push(parent);
         }
       });
-      setCategories(allCategories);
-    } catch (error) {
-      console.error('Error loading data:', error);
-      showToast('Өгөгдөл татахад алдаа гарлаа', 'error');
+      setCategories(flattened);
+    } catch (err) {
+      showToast('Мэдээлэл татахад алдаа гарлаа', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'thumbnail' | 'media') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      showToast('❌ Зөвхөн зураг upload хийнэ үү', 'error');
-      return;
+    if (type === 'thumbnail') {
+      setFiles(prev => ({ ...prev, thumbnail: file }));
+      setPreviews({ thumbnail: URL.createObjectURL(file) });
+    } else {
+      setFiles(prev => ({ ...prev, media: file }));
+      if (file.type.startsWith('video/')) setFormData(p => ({ ...p, lessonType: 'video' }));
+      if (file.type.startsWith('audio/')) setFormData(p => ({ ...p, lessonType: 'audio' }));
     }
-
-    if (file.size > 10 * 1024 * 1024) {
-      showToast('❌ Зургийн хэмжээ 10MB-аас бага байх ёстой', 'error');
-      return;
-    }
-
-    setThumbnailFile(file);
-    const previewUrl = URL.createObjectURL(file);
-    setThumbnailPreview(previewUrl);
-    
-    showToast('✅ Шинэ зураг сонгогдлоо', 'success');
-  };
-
-  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const isVideo = file.type.startsWith('video/');
-    const isAudio = file.type.startsWith('audio/');
-    
-    if (!isVideo && !isAudio) {
-      showToast('❌ Зөвхөн видео эсвэл аудио файл upload хийнэ үү', 'error');
-      return;
-    }
-
-    if (file.size > 100 * 1024 * 1024) {
-      showToast('❌ Файлын хэмжээ 100MB-аас бага байх ёстой', 'error');
-      return;
-    }
-
-    setMediaFile(file);
-    if (isVideo) setLessonType('video');
-    if (isAudio) setLessonType('audio');
-    
-    showToast(`✅ Шинэ ${isVideo ? 'видео' : 'аудио'} файл сонгогдлоо`, 'success');
-  };
-
-  const clearThumbnail = () => {
-    setThumbnailFile(null);
-    setThumbnailPreview('');
-    setThumbnailUrl('');
-  };
-
-  const clearMedia = () => {
-    setMediaFile(null);
-    setMediaUrl('');
+    showToast(`✅ ${file.name} сонгогдлоо`, 'success');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!title || !categoryId || !content) {
-      showToast('❌ Заавал бөглөх талбаруудыг бөглөнө үү', 'error');
-      return;
+    if (!formData.title || !formData.categoryId || !formData.content) {
+      return showToast('❌ Шаардлагатай талбаруудыг бөглөнө үү', 'error');
     }
 
     setSubmitting(true);
     try {
-      const tagsArray = tags.split(',').map(t => t.trim()).filter(Boolean);
-      
-      const lessonData = {
-        title,
-        slug,
-        category_id: categoryId,
-        description,
-        content,
-        lesson_type: lessonType,
-        difficulty_level: difficultyLevel,
-        required_level: requiredLevel,
-        estimated_duration: estimatedDuration,
-        points_reward: pointsReward,
-        media_url: mediaUrl || undefined,
-        thumbnail_url: thumbnailUrl || undefined,
-        tags: tagsArray,
-        // related_value_keywords: relatedValueKeywords || undefined,
-        // related_emotion_keywords: relatedEmotionKeywords || undefined,
-        is_premium: isPremium,
-        is_published: isPublished,
+      // TypeScript-д зориулж snake_case руу хөрвүүлж бэлдэх
+      const updateData = {
+        title: formData.title,
+        slug: formData.slug,
+        category_id: formData.categoryId,
+        description: formData.description,
+        content: formData.content,
+        lesson_type: formData.lessonType,
+        difficulty_level: formData.difficultyLevel,
+        required_level: formData.requiredLevel,
+        estimated_duration: formData.estimatedDuration,
+        points_reward: formData.pointsReward,
+        thumbnail_url: formData.thumbnailUrl || undefined,
+        media_url: formData.mediaUrl || undefined,
+        tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
+        is_premium: formData.isPremium,
+        is_published: formData.isPublished,
       };
 
-      const files = {
-        thumbnail: thumbnailFile || undefined,
-        media: mediaFile || undefined,
-      };
-
-      await apiClient.updateLesson(lessonId, lessonData, files, token?? undefined);
+      await apiClient.updateLesson(lessonId, updateData, {
+        thumbnail: files.thumbnail || undefined,
+        media: files.media || undefined
+      }, token!);
 
       showToast('✅ Хичээл амжилттай шинэчлэгдлээ!', 'success');
-      
-      setTimeout(() => {
-        router.push('/admin/lessons');
-      }, 1500);
-      
+      setTimeout(() => router.push('/admin/lessons'), 1500);
     } catch (error) {
-      console.error('Error updating lesson:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Хичээл шинэчлэхэд алдаа гарлаа';
-      showToast(`❌ ${errorMessage}`, 'error');
+      showToast('❌ Шинэчлэхэд алдаа гарлаа', 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-white">
+    <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+  </div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <ToastContainer />
+    <div className="min-h-screen bg-[#F8FAFC] pb-24">
       
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mb-8">
-          <Link
-            href="/admin/lessons"
-            className="text-blue-600 hover:text-blue-700 font-medium mb-4 inline-block"
+      
+      {/* Top Bar */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/admin/lessons" className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500">
+              <ArrowLeft size={20} />
+            </Link>
+            <h1 className="text-lg font-black uppercase tracking-tight text-gray-900">Хичээл засах</h1>
+          </div>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-blue-100 disabled:opacity-50"
           >
-            ← Буцах
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">
-            ✏️ Хичээл засах
-          </h1>
+            {submitting ? <RefreshCw size={18} className="animate-spin" /> : <Save size={18} />}
+            Шинэчлэх
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-6 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Main Content Area */}
+        <div className="lg:col-span-2 space-y-6">
+          <section className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-5">
+            <div className="flex items-center gap-2 text-blue-600 mb-2">
+              <FileText size={18} />
+              <h2 className="text-sm font-black uppercase tracking-widest">Үндсэн мэдээлэл</h2>
+            </div>
+            
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Хичээлийн гарчиг..."
+                className="w-full text-2xl font-black bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-200"
+                value={formData.title}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData({...formData, title: val, slug: transliterate(val)});
+                }}
+              />
+              <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg w-fit">
+                <span className="text-[10px] font-black text-gray-400 uppercase">Slug:</span>
+                <input 
+                  className="bg-transparent border-none p-0 text-xs font-mono text-blue-500 focus:ring-0 w-64"
+                  value={formData.slug}
+                  onChange={(e) => setFormData({...formData, slug: e.target.value})}
+                />
+              </div>
+              <textarea
+                placeholder="Товч тайлбар оруулах..."
+                className="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-blue-100"
+                rows={3}
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+              />
+            </div>
+          </section>
+
+          <section className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+            <div className="flex items-center gap-2 text-blue-600 mb-4">
+              <Layers size={18} />
+              <h2 className="text-sm font-black uppercase tracking-widest">Агуулга (Markdown)</h2>
+            </div>
+            <textarea
+              className="w-full min-h-[500px] bg-gray-50 border-none rounded-2xl p-6 text-sm font-mono focus:ring-2 focus:ring-blue-100"
+              value={formData.content}
+              onChange={(e) => setFormData({...formData, content: e.target.value})}
+            />
+          </section>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-white rounded-lg shadow p-6 space-y-4">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Үндсэн мэдээлэл</h2>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Гарчиг <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Хичээлийн гарчиг"
-                required
-              />
+        {/* Sidebar */}
+        <div className="space-y-6">
+          <section className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-gray-400 mb-2">
+              <Globe size={18} />
+              <h2 className="text-sm font-black uppercase tracking-widest">Төлөв</h2>
             </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Slug (URL)
+            <div className="space-y-3">
+              <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer">
+                <span className="text-sm font-bold text-gray-700">Нийтлэх</span>
+                <input type="checkbox" checked={formData.isPublished} onChange={(e) => setFormData({...formData, isPublished: e.target.checked})} className="rounded text-blue-600" />
               </label>
-              <input
-                type="text"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Категори <span className="text-red-500">*</span>
+              <label className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer">
+                <span className="text-sm font-bold text-gray-700">Premium</span>
+                <input type="checkbox" checked={formData.isPremium} onChange={(e) => setFormData({...formData, isPremium: e.target.checked})} className="rounded text-blue-600" />
               </label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value={0}>Сонгох...</option>
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.emoji ? `${cat.emoji} ` : ''}{cat.name_mn}
-                  </option>
-                ))}
-              </select>
             </div>
+          </section>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Товч тайлбар
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Хичээлийн товч тайлбар..."
-              />
+          <section className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-gray-400 mb-2">
+              <ImageIcon size={18} />
+              <h2 className="text-sm font-black uppercase tracking-widest">Медиа</h2>
             </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Агуулга</h2>
             
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Хичээлийн агуулга <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={15}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Markdown дэмжинэ: # гарчиг, **bold**, *italic*
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6 space-y-4">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">📁 Медиа файлууд</h2>
-
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                🖼️ Зургийн файл
-              </label>
-              
-              {thumbnailUrl && !thumbnailFile && !thumbnailPreview ? (
-                <div className="space-y-3">
-                  <img 
-                    src={thumbnailUrl} 
-                    alt="Current" 
-                    className="w-full max-w-xs h-48 object-cover rounded-lg border-2 border-gray-300"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={clearThumbnail}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                    >
-                      🗑️ Устгах
-                    </button>
-                    <label className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition cursor-pointer">
-                      📁 Солих
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleThumbnailUpload}
-                        className="hidden"
-                      />
+            <div className="relative group">
+              {previews.thumbnail ? (
+                <div className="relative aspect-video rounded-xl overflow-hidden border">
+                  <img src={previews.thumbnail} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <label className="p-2 bg-white text-gray-900 rounded-lg cursor-pointer hover:scale-110 transition-transform">
+                      <UploadCloud size={16} />
+                      <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'thumbnail')} />
                     </label>
-                  </div>
-                </div>
-              ) : thumbnailFile || thumbnailPreview ? (
-                <div className="space-y-3">
-                  {thumbnailPreview && (
-                    <img 
-                      src={thumbnailPreview} 
-                      alt="Preview" 
-                      className="w-full max-w-xs h-48 object-cover rounded-lg border-2 border-gray-300"
-                    />
-                  )}
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={clearThumbnail}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                    >
-                      🗑️ Цуцлах
+                    <button onClick={() => {setPreviews({thumbnail: ''}); setFormData({...formData, thumbnailUrl: ''})}} className="p-2 bg-red-500 text-white rounded-lg hover:scale-110 transition-transform">
+                      <X size={16} />
                     </button>
-                    <p className="px-4 py-2 bg-green-100 text-green-700 rounded-lg flex-1">
-                      ✅ {thumbnailFile?.name}
-                    </p>
                   </div>
                 </div>
               ) : (
-                <div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleThumbnailUpload}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    PNG, JPG, WEBP • Максимум 10MB
-                  </p>
-                </div>
+                <label className="aspect-video rounded-xl bg-gray-50 border-2 border-dashed flex flex-col items-center justify-center gap-2 cursor-pointer">
+                  <UploadCloud size={24} className="text-gray-300" />
+                  <span className="text-[10px] font-black text-gray-400 uppercase">Зураг солих</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'thumbnail')} />
+                </label>
               )}
             </div>
 
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                🎬 Медиа файл (Видео/Аудио)
-              </label>
-              
-              {mediaUrl && !mediaFile ? (
-                <div className="space-y-3">
-                  <div className="px-4 py-2 bg-green-100 text-green-700 rounded-lg">
-                    🎬 Медиа файл байгаа: {mediaUrl.substring(mediaUrl.lastIndexOf('/') + 1, mediaUrl.lastIndexOf('/') + 30)}...
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={clearMedia}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                    >
-                      🗑️ Устгах
-                    </button>
-                    <label className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition cursor-pointer">
-                      📁 Солих
-                      <input
-                        type="file"
-                        accept="video/*,audio/*"
-                        onChange={handleMediaUpload}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-                </div>
-              ) : mediaFile ? (
-                <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={clearMedia}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                    >
-                      🗑️ Цуцлах
-                    </button>
-                    <p className="px-4 py-2 bg-green-100 text-green-700 rounded-lg flex-1">
-                      ✅ {mediaFile.name} ({(mediaFile.size / 1024 / 1024).toFixed(2)}MB)
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <input
-                    type="file"
-                    accept="video/*,audio/*"
-                    onChange={handleMediaUpload}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    MP4, WEBM, MP3, WAV • Максимум 100MB
-                  </p>
-                </div>
-              )}
+            <label className={`flex items-center gap-3 p-4 rounded-xl border-2 border-dashed transition-all cursor-pointer ${files.media || formData.mediaUrl ? 'bg-emerald-50 border-emerald-100' : 'bg-gray-50 border-gray-100'}`}>
+              <div className={`p-2 rounded-lg ${files.media || formData.mediaUrl ? 'bg-emerald-500 text-white' : 'bg-white text-gray-400'}`}>
+                {formData.lessonType === 'video' ? <Video size={18} /> : <Music size={18} />}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <p className="text-xs font-black uppercase truncate">{files.media ? files.media.name : (formData.mediaUrl ? 'Файл хавсаргасан' : 'Медиа оруулах')}</p>
+              </div>
+              <input type="file" className="hidden" accept="video/*,audio/*" onChange={(e) => handleFileUpload(e, 'media')} />
+            </label>
+          </section>
+
+          <section className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-gray-400 mb-2">
+              <Settings size={18} />
+              <h2 className="text-sm font-black uppercase tracking-widest">Тохиргоо</h2>
             </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6 space-y-4">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">⚙️ Тохиргоо</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Төрөл</label>
-                <select
-                  value={lessonType}
-                  onChange={(e) => setLessonType(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="article">📝 Нийтлэл</option>
-                  <option value="video">🎥 Видео</option>
-                  <option value="audio">🎧 Аудио</option>
-                  <option value="interactive">🎮 Интерактив</option>
-                  <option value="meditation">🧘 Бясалгал</option>
+                <label className="text-[10px] font-black text-gray-400 uppercase block mb-1.5 ml-1">Категори</label>
+                <select className="w-full bg-gray-50 border-none rounded-xl text-sm font-bold" value={formData.categoryId} onChange={(e) => setFormData({...formData, categoryId: Number(e.target.value)})}>
+                  {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name_mn}</option>)}
                 </select>
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Түвшин</label>
-                <select
-                  value={difficultyLevel}
-                  onChange={(e) => setDifficultyLevel(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="beginner">🟢 Анхан</option>
-                  <option value="intermediate">🟡 Дунд</option>
-                  <option value="advanced">🔴 Ахисан</option>
-                </select>
+              <div className="grid grid-cols-2 gap-3">
+                <input type="number" placeholder="Мин" className="w-full bg-gray-50 border-none rounded-xl text-sm font-bold" value={formData.estimatedDuration} onChange={(e) => setFormData({...formData, estimatedDuration: Number(e.target.value)})} />
+                <input type="number" placeholder="Оноо" className="w-full bg-gray-50 border-none rounded-xl text-sm font-bold" value={formData.pointsReward} onChange={(e) => setFormData({...formData, pointsReward: Number(e.target.value)})} />
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Шаардлагатай түвшин</label>
-                <input
-                  type="number"
-                  value={requiredLevel}
-                  onChange={(e) => setRequiredLevel(Number(e.target.value))}
-                  min={1}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Хугацаа (минут)</label>
-                <input
-                  type="number"
-                  value={estimatedDuration}
-                  onChange={(e) => setEstimatedDuration(Number(e.target.value))}
-                  min={1}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Шагналын оноо</label>
-                <input
-                  type="number"
-                  value={pointsReward}
-                  onChange={(e) => setPointsReward(Number(e.target.value))}
-                  min={0}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+              <div className="relative">
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={14} />
+                <input placeholder="tags..." className="w-full bg-gray-50 border-none rounded-xl text-sm font-bold pl-9" value={formData.tags} onChange={(e) => setFormData({...formData, tags: e.target.value})} />
               </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Шошго</label>
-              <input
-                type="text"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="meditation, mindfulness, relaxation"
-              />
-              <p className="text-xs text-gray-500 mt-1">Таслалаар тусгаарлана</p>
-            </div>
-
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Үнэт зүйлсийн түлхүүр үг</label>
-                <input
-                  type="text"
-                  value={relatedValueKeywords}
-                  onChange={(e) => setRelatedValueKeywords(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="амар амгалан, тайван байдал"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Сэтгэл хөдлөлийн түлхүүр үг</label>
-                <input
-                  type="text"
-                  value={relatedEmotionKeywords}
-                  onChange={(e) => setRelatedEmotionKeywords(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="аюулгүй, тайван"
-                />
-              </div>
-            </div> */}
-
-            <div className="flex flex-wrap gap-6">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isPremium}
-                  onChange={(e) => setIsPremium(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <span className="text-sm font-medium text-gray-700">⭐ Premium хичээл</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isPublished}
-                  onChange={(e) => setIsPublished(e.target.checked)}
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                />
-                <span className="text-sm font-medium text-gray-700">✅ Нийтлэх</span>
-              </label>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg"
-            >
-              {submitting ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Шинэчилж байна...
-                </span>
-              ) : (
-                '✅ Шинэчлэх'
-              )}
-            </button>
-            <Link
-              href="/admin/lessons"
-              className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition text-center"
-            >
-              Цуцлах
-            </Link>
-          </div>
-        </form>
+          </section>
+        </div>
       </div>
     </div>
   );

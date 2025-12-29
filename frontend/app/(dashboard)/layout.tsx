@@ -7,7 +7,7 @@ import { ReactNode, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Compass, BookOpen, Activity, Gem, 
-  Sparkles, Flower2, LogOut, Menu, X, User, 
+  Sparkles, Flower2, LogOut, Menu, X, User,  Sunrise,
   LayoutDashboard
 } from 'lucide-react';
 
@@ -40,7 +40,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-10">
               <Link href="/dashboard" className="flex items-center gap-2.5">
                 <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                  <Flower2 size={24} />
+                  <Sunrise size={24} />
                 </div>
                 <span className="text-2xl font-black text-gray-900 tracking-tight italic">Mindful</span>
               </Link>

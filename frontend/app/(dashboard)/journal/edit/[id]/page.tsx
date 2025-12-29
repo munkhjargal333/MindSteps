@@ -5,13 +5,13 @@ import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import JournalForm from '@/components/journal/JournalForm';
 import { useRouter, useParams } from 'next/navigation';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 import { ChevronLeft, Edit3, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export default function JournalEditPage() {
   const { token } = useAuth();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   const router = useRouter();
   const params = useParams();
   const journalId = Number(params?.id);
@@ -72,7 +72,7 @@ export default function JournalEditPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
-      <ToastContainer />
+      
       
       <div className="max-w-3xl mx-auto px-5 py-8">
         {/* БУЦАХ ТОВЧ */}

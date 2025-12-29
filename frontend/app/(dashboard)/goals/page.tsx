@@ -7,13 +7,13 @@ import { Goal } from '@/lib/types';
 import Link from 'next/link';
 import StatCard from '@/components/goals/StatCard';
 import GoalCard from '@/components/goals/GaolCard';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
   
 
 // ==================== GOALS LIST PAGE ====================
 export default function GoalsPage() {
   const { token } = useAuth();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   const [goals, setGoals] = useState<{ active: Goal[]; completed: Goal[]; paused: Goal[] }>({
     active: [],
     completed: [],

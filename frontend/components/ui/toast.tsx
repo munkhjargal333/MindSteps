@@ -1,17 +1,24 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle, AlertCircle, AlertTriangle, X } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'warning';
 
-// 1. Toast Component (Дизайныг нь Mood стиль рүү оруулав)
-export function Toast({ message, type, onClose }: { message: string; type: ToastType; onClose: () => void }) {
+interface ToastProps {
+  message: string;
+  type: ToastType;
+  duration: number;
+  onClose: () => void;
+}
+
+// 1. Toast UI Component
+export function Toast({ message, type, duration, onClose }: ToastProps) {
   const styles = {
-    success: 'bg-emerald-500 shadow-emerald-100',
-    error: 'bg-rose-500 shadow-rose-100',
-    warning: 'bg-amber-500 shadow-amber-100',
+    success: 'bg-emerald-500 shadow-emerald-200/40',
+    error: 'bg-rose-500 shadow-rose-200/40',
+    warning: 'bg-amber-500 shadow-amber-200/40',
   };
 
   const Icon = {
@@ -22,35 +29,74 @@ export function Toast({ message, type, onClose }: { message: string; type: Toast
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.9, y: 20 }}
-      className={`fixed bottom-8 right-8 flex items-center gap-3 px-6 py-4 rounded-[1.5rem] shadow-2xl text-white font-bold z-[100] ${styles[type]}`}
+      initial={{ opacity: 0, x: 50, scale: 0.9 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 20, scale: 0.9 }}
+      className={`fixed bottom-8 right-4 sm:right-8 flex flex-col min-w-[280px] max-w-[400px] rounded-[1.2rem] shadow-2xl text-white font-bold z-[100] overflow-hidden ${styles[type]}`}
     >
-      <Icon className="w-5 h-5 shrink-0" strokeWidth={3} />
-      <span className="text-sm tracking-tight">{message}</span>
-      <button onClick={onClose} className="ml-2 p-1 hover:bg-white/20 rounded-lg transition-colors">
-        <X size={14} strokeWidth={3} />
-      </button>
+      <div className="flex items-center gap-3 px-6 py-4">
+        <Icon className="w-5 h-5 shrink-0" strokeWidth={3} />
+        <div className="flex-1">
+          <p className="text-[13px] leading-tight tracking-tight pr-2">{message}</p>
+        </div>
+        <button 
+          onClick={onClose} 
+          className="p-1.5 hover:bg-white/20 rounded-full transition-colors shrink-0"
+        >
+          <X size={14} strokeWidth={3} />
+        </button>
+      </div>
+
+      {/* ⏳ PROGRESS TIMER BAR */}
+      <motion.div 
+        initial={{ width: "100%" }}
+        animate={{ width: "0%" }}
+        transition={{ duration: duration / 1000, ease: "linear" }}
+        className="h-1 bg-white/40 origin-left"
+      />
     </motion.div>
   );
 }
 
-// 2. Hook
+// 2. Custom Hook
 export function useToast() {
-  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+  const [toast, setToast] = useState<{ 
+    message: string; 
+    type: ToastType; 
+    duration: number; 
+  } | null>(null);
 
-  // useCallback ашиглах нь reload болохоос сэргийлнэ
-  const showToast = useCallback((message: string, type: ToastType = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+  const showToast = useCallback((
+    message: string, 
+    type: ToastType = 'success', 
+    duration: number = 5000 // Анхны утга 5 секунд
+  ) => {
+    setToast({ message, type, duration });
   }, []);
 
   const hideToast = useCallback(() => setToast(null), []);
 
+  // Timer-ийг удирдах useEffect
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, toast.duration);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  // UI-д дүрслэх контейнер
   const ToastContainer = useCallback(() => (
     <AnimatePresence>
-      {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          duration={toast.duration} 
+          onClose={hideToast} 
+        />
+      )}
     </AnimatePresence>
   ), [toast, hideToast]);
 

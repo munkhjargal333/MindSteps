@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import JournalForm from '@/components/journal/JournalForm';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 import { ChevronLeft, Sparkles, PenTool } from 'lucide-react';
 import Link from 'next/link';
 
 export default function NewJournalPage() {
   const { token } = useAuth();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   const router = useRouter();
   const [saving, setSaving] = useState(false);
 
@@ -41,7 +41,7 @@ export default function NewJournalPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-20">
-      <ToastContainer />
+      
       
       <div className="max-w-3xl mx-auto px-4 py-8">
         {/* БУЦАХ ТОВЧ */}

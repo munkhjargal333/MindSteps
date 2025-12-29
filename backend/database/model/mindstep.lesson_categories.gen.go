@@ -22,8 +22,8 @@ type LessonCategory struct {
 	SortOrder   int              `gorm:"column:sort_order;type:integer" json:"sort_order"`
 	IsActive    bool             `gorm:"column:is_active;type:boolean;default:true" json:"is_active"`
 	CreatedAt   time.Time        `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
-	Children    []LessonCategory `gorm:"foreignKey:parent_id;references:id" json:"children"`
 	Emoji       string           `gorm:"column:emoji;type:character varying(10)" json:"emoji"`
+	Children    []LessonCategory `gorm:"foreignKey:parent_id;references:id" json:"children"`
 }
 
 // TableName LessonCategory's table name

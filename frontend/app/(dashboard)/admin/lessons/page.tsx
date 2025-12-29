@@ -1,17 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { Lesson, LessonCategory } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 import Link from 'next/link';
+import { 
+  Plus, Search, Edit2, Trash2, Eye, 
+  FileText, Video, Headphones, Gamepad2, 
+  Filter, MoreVertical, Image as ImageIcon,
+  CheckCircle2, CircleDashed, Star
+} from 'lucide-react';
 
 export default function AdminLessonsPage() {
   const { token } = useAuth();
-  const router = useRouter();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [categories, setCategories] = useState<LessonCategory[]>([]);
@@ -21,275 +26,231 @@ export default function AdminLessonsPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (token) {
-      loadData();
-    }
+    if (token) loadData();
   }, [token]);
 
   const loadData = async () => {
-    if (!token) return;
-
     setLoading(true);
     try {
       const [lessonsData, categoriesData] = await Promise.all([
-        apiClient.getLessons(token),
-        apiClient.getLessonCategories(token)
+        apiClient.getLessons(1, 100, token!), // Admin дээр ихээр нь татаж байна
+        apiClient.getLessonCategories(token!)
       ]);
-      
-      setLessons(lessonsData);
+      setLessons(lessonsData.lessons || []);
       setCategories(categoriesData);
     } catch (error) {
-      console.error('Error loading data:', error);
       showToast('Өгөгдөл татахад алдаа гарлаа', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: number, title: string) => {
-    if (!confirm(`"${title}" хичээлийг устгах уу?`)) {
-      return;
-    }
+  const filteredLessons = useMemo(() => {
+    return lessons.filter(lesson => {
+      const matchesCategory = selectedCategory === 0 || lesson.category_id === selectedCategory;
+      const matchesSearch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [lessons, selectedCategory, searchQuery]);
 
+  const stats = useMemo(() => ({
+    total: lessons.length,
+    published: lessons.filter(l => l.is_published).length,
+    premium: lessons.filter(l => l.is_premium).length
+  }), [lessons]);
+
+  const handleDelete = async (id: number, title: string) => {
+    if (!confirm(`"${title}" хичээлийг устгах уу?`)) return;
     setDeletingId(id);
     try {
-      await apiClient.deleteLesson(id, token ?? undefined);
-      showToast('✅ Хичээл амжилттай устгагдлаа', 'success');
-      setLessons(lessons.filter(l => l.id !== id));
+      await apiClient.deleteLesson(id, token!);
+      showToast('Амжилттай устгагдлаа', 'success');
+      setLessons(prev => prev.filter(l => l.id !== id));
     } catch (error) {
-      console.error('Error deleting lesson:', error);
-      showToast('❌ Хичээл устгахад алдаа гарлаа', 'error');
+      showToast('Устгахад алдаа гарлаа', 'error');
     } finally {
       setDeletingId(null);
     }
   };
 
-  const handleDeleteThumbnail = async (id: number) => {
-    if (!confirm('Зургийг устгах уу?')) return;
-
-    try {
-      await apiClient.deleteLessonThumbnail(id, token?? undefined);
-      showToast('✅ Зураг устгагдлаа', 'success');
-      loadData();
-    } catch (error) {
-      console.error('Error deleting thumbnail:', error);
-      showToast('❌ Зураг устгахад алдаа гарлаа', 'error');
-    }
-  };
-
-  const handleDeleteMedia = async (id: number) => {
-    if (!confirm('Медиа файлыг устгах уу?')) return;
-
-    try {
-      await apiClient.deleteLessonMedia(id, token ?? undefined );
-      showToast('✅ Медиа файл устгагдлаа', 'success');
-      loadData();
-    } catch (error) {
-      console.error('Error deleting media:', error);
-      showToast('❌ Медиа файл устгахад алдаа гарлаа', 'error');
-    }
-  };
-
-  const filteredLessons = lessons.filter(lesson => {
-    const matchesCategory = selectedCategory === 0 || lesson.category_id === selectedCategory;
-    const matchesSearch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         lesson.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  const getLessonTypeIcon = (type: string) => {
+  const getIcon = (type: string) => {
     switch (type) {
-      case 'article': return '📝';
-      case 'video': return '🎥';
-      case 'audio': return '🎧';
-      case 'interactive': return '🎮';
-      case 'meditation': return '🧘';
-      default: return '📄';
+      case 'video': return <Video size={18} />;
+      case 'audio': return <Headphones size={18} />;
+      case 'interactive': return <Gamepad2 size={18} />;
+      default: return <FileText size={18} />;
     }
   };
 
-  const getDifficultyBadge = (level: string) => {
-    switch (level) {
-      case 'beginner':
-        return <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">🟢 Анхан</span>;
-      case 'intermediate':
-        return <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">🟡 Дунд</span>;
-      case 'advanced':
-        return <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">🔴 Ахисан</span>;
-      default:
-        return null;
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen bg-white">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm font-medium text-gray-500 uppercase tracking-widest">Ачаалж байна...</p>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <ToastContainer />
+    <div className="min-h-screen bg-[#F8FAFC] pb-20">
       
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">📚 Хичээлүүд</h1>
-            <p className="text-gray-600 mt-1">Нийт {filteredLessons.length} хичээл</p>
-          </div>
-          <Link
-            href="/admin/lessons/new"
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-lg"
-          >
-            ➕ Шинэ хичээл
-          </Link>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="🔍 Хайх..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <h1 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Хичээлийн удирдлага</h1>
+              <p className="text-sm text-gray-500 mt-1 font-medium">Системд байгаа бүх контентыг хянах</p>
             </div>
+            <Link
+              href="/admin/lessons/new"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-blue-100 active:scale-95"
+            >
+              <Plus size={20} /> Шинэ хичээл нэмэх
+            </Link>
+          </div>
 
-            <div>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(Number(e.target.value))}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value={0}>📂 Бүх категори</option>
-                {categories.map(cat => (
-                  <optgroup key={cat.id} label={cat.name_mn}>
-                    {cat.children?.map(child => (
-                      <option key={child.id} value={child.id}>
-                        {child.emoji ? `${child.emoji} ` : ''}
-                        {child.name_mn}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
+          {/* Stat Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+            <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl">
+              <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Нийт хичээл</p>
+              <p className="text-2xl font-black text-blue-700">{stats.total}</p>
+            </div>
+            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl">
+              <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Нийтлэгдсэн</p>
+              <p className="text-2xl font-black text-emerald-700">{stats.published}</p>
+            </div>
+            <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl">
+              <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest">Premium</p>
+              <p className="text-2xl font-black text-amber-700">{stats.premium}</p>
             </div>
           </div>
         </div>
+      </div>
 
-        {filteredLessons.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <p className="text-gray-500 text-lg">📭 Хичээл олдсонгүй</p>
+      <div className="max-w-7xl mx-auto px-6 mt-8">
+        {/* Filters */}
+        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="text"
+              placeholder="Гарчиг болон тайлбараас хайх..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 font-medium text-sm"
+            />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4">
-            {filteredLessons.map((lesson) => (
-              <div
-                key={lesson.id}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition p-6"
-              >
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0">
-                    {lesson.thumbnail_url ? (
-                      <div className="relative group">
-                        <img
-                          src={lesson.thumbnail_url}
-                          alt={lesson.title}
-                          className="w-32 h-32 object-cover rounded-lg"
-                        />
-                        <button
-                          onClick={() => handleDeleteThumbnail(lesson.id)}
-                          className="absolute top-1 right-1 bg-red-500 text-white px-2 py-1 text-xs rounded opacity-0 group-hover:opacity-100 transition"
-                          title="Зураг устгах"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center text-4xl">
-                        {getLessonTypeIcon(lesson.lesson_type)}
-                      </div>
-                    )}
-                  </div>
+          <div className="relative min-w-[240px]">
+            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(Number(e.target.value))}
+              className="w-full pl-11 pr-4 py-2.5 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 font-bold text-sm appearance-none"
+            >
+              <option value={0}>Бүх ангилал</option>
+              {categories.map(cat => (
+                <optgroup key={cat.id} label={cat.name_mn} className="font-bold">
+                  {cat.children?.map(child => (
+                    <option key={child.id} value={child.id}>{child.emoji} {child.name_mn}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+        </div>
 
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2 flex-wrap">
-                          <h3 className="text-xl font-bold text-gray-900">
-                            {getLessonTypeIcon(lesson.lesson_type)} {lesson.title}
-                          </h3>
-                          {lesson.is_premium && (
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-semibold">
-                              ⭐ Premium
-                            </span>
-                          )}
-                          {lesson.is_published ? (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold">
-                              ✅ Нийтлэгдсэн
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-semibold">
-                              📝 Ноорог
-                            </span>
-                          )}
-                          {getDifficultyBadge(lesson.difficulty_level)}
-                        </div>
-
-                        {lesson.description && (
-                          <p className="text-gray-600 mb-3 line-clamp-2">
-                            {lesson.description}
-                          </p>
-                        )}
-
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-2">
-                          <span>⏱️ {lesson.estimated_duration} мин</span>
-                          <span>🏆 {lesson.points_reward} оноо</span>
-                          <span>👁️ {lesson.view_count} үзэлт</span>
-                          <span>📅 {new Date(lesson.created_at).toLocaleDateString('mn-MN')}</span>
-                        </div>
-
-                        {lesson.media_url && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <span className="text-green-600">
-                              🎬 Медиа файл хавсаргасан
-                            </span>
-                            <button
-                              onClick={() => handleDeleteMedia(lesson.id)}
-                              className="text-red-600 hover:text-red-700 underline"
-                            >
-                              Устгах
-                            </button>
+        {/* Table List */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50/50 border-b border-gray-100">
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Хичээл</th>
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Төрөл</th>
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Төлөв</th>
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Стат</th>
+                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Үйлдэл</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filteredLessons.map((lesson) => (
+                <tr key={lesson.id} className="hover:bg-gray-50/50 transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-100">
+                        {lesson.thumbnail_url ? (
+                          <img src={lesson.thumbnail_url} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-300">
+                            <ImageIcon size={20} />
                           </div>
                         )}
                       </div>
-
-                      <div className="flex gap-2 ml-4">
-                        <Link
-                          href={`/admin/lessons/${lesson.id}/edit`}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-                        >
-                          ✏️ Засах
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(lesson.id, lesson.title)}
-                          disabled={deletingId === lesson.id}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 text-sm font-medium"
-                        >
-                          {deletingId === lesson.id ? '⏳' : '🗑️'} Устгах
-                        </button>
+                      <div>
+                        <p className="font-bold text-gray-900 line-clamp-1">{lesson.title}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{new Date(lesson.created_at).toLocaleDateString()}</p>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
+                      {getIcon(lesson.lesson_type)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-1.5">
+                      {lesson.is_published ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full w-fit">
+                          <CheckCircle2 size={10} /> НИЙТЛЭГДСЭН
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full w-fit">
+                          <CircleDashed size={10} /> НООРОГ
+                        </span>
+                      )}
+                      {lesson.is_premium && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full w-fit">
+                          <Star size={10} fill="currentColor" /> PREMIUM
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-600">
+                    <div className="flex flex-col">
+                      <span className="flex items-center gap-1"><Eye size={12} className="text-gray-300"/> {lesson.view_count}</span>
+                      <span className="text-[10px] text-gray-400">{lesson.estimated_duration} мин</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-end gap-2">
+                      <Link 
+                        href={`/admin/lessons/${lesson.id}/edit`}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        title="Засах"
+                      >
+                        <Edit2 size={18} />
+                      </Link>
+                      <button 
+                        onClick={() => handleDelete(lesson.id, lesson.title)}
+                        disabled={deletingId === lesson.id}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-30"
+                        title="Устгах"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filteredLessons.length === 0 && (
+            <div className="p-20 text-center">
+              <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">Хичээл олдсонгүй</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

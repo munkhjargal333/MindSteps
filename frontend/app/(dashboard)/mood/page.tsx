@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { MoodEntry } from '@/lib/types';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 import DeleteConfirmModal from '@/components/ui/DeleteModal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -13,7 +13,7 @@ import { Plus, Calendar, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide
 export default function MoodListPage() {
   const { token } = useAuth();
   const router = useRouter();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,7 +105,7 @@ export default function MoodListPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24">
-      <ToastContainer />
+      
       
       {/* Custom Delete Modal */}
       <DeleteConfirmModal 
@@ -140,74 +140,73 @@ export default function MoodListPage() {
             </Link>
           </div>
         ) : (
-// ... бусад хэсэг хэвээрээ
 
-<div className="space-y-3">
-  {moodEntries.map((entry) => (
-    <Link key={entry.id} href={`/mood/${entry.id}`} className="block group">
-      <div 
-        style={{ borderLeftColor: entry.MoodUnit.display_color }}
-        className="bg-white p-3.5 sm:p-4 rounded-[1.5rem] border border-gray-100 border-l-[6px] shadow-sm hover:shadow-md transition-all flex items-center justify-between"
-      >
-        <div className="flex items-center gap-4 min-w-0 flex-1">
-          {/* Mood Emoji хэсэг */}
-          <div 
-            className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-2xl shadow-inner shrink-0"
-            style={{ backgroundColor: `${entry.MoodUnit.display_color}10` }}
-          >
-            {entry.MoodUnit.display_emoji}
+          <div className="space-y-3">
+            {moodEntries.map((entry) => (
+              <Link key={entry.id} href={`/mood/${entry.id}`} className="block group">
+                <div 
+                  style={{ borderLeftColor: entry.MoodUnit.display_color }}
+                  className="bg-white p-3.5 sm:p-4 rounded-[1.5rem] border border-gray-100 border-l-[6px] shadow-sm hover:shadow-md transition-all flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    {/* Mood Emoji хэсэг */}
+                    <div 
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-2xl shadow-inner shrink-0"
+                      style={{ backgroundColor: `${entry.MoodUnit.display_color}10` }}
+                    >
+                      {entry.MoodUnit.display_emoji}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-2">
+                        <h4 className="font-bold text-gray-900 text-sm sm:text-base leading-tight">
+                          {entry.MoodUnit.display_name_mn}
+                        </h4>
+                        <span className="text-[10px] text-gray-300 font-bold shrink-0 uppercase tracking-tighter">
+                          • {new Date(entry.entry_date).toLocaleDateString('mn-MN')}
+                        </span>
+                      </div>
+
+                      {/* ШАЛТГААН (TRIGGER_EVENT) ХЭСЭГ - Жижигхэн бас нэг мөрөнд */}
+                      {entry.trigger_event && (
+                        <p className="text-gray-400 text-[11px] truncate font-medium mt-0.5 pr-4 leading-normal">
+                          {entry.trigger_event}
+                        </p>
+                      )}
+                      
+                      {/* Эрчим болон бусад жижиг мэдээлэл (хэрэв.trigger_event байхгүй бол илүү цэвэрхэн харагдана) */}
+                      {!entry.trigger_event && (
+                        <div className="text-[10px] text-gray-300 font-bold uppercase mt-0.5">
+                          Эрчим: {entry.intensity}/10
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Үйлдлийн товчнууд */}
+                  <div className="flex items-center gap-1 ml-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        router.push(`/mood/edit/${entry.id}`);
+                      }}
+                      className="p-2 text-gray-300 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all sm:opacity-0 group-hover:opacity-100"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => openDeleteModal(e, entry.id, entry.MoodUnit.display_name_mn)}
+                      className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all sm:opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline gap-2">
-              <h4 className="font-bold text-gray-900 text-sm sm:text-base leading-tight">
-                {entry.MoodUnit.display_name_mn}
-              </h4>
-              <span className="text-[10px] text-gray-300 font-bold shrink-0 uppercase tracking-tighter">
-                • {new Date(entry.entry_date).toLocaleDateString('mn-MN')}
-              </span>
-            </div>
-
-            {/* ШАЛТГААН (TRIGGER_EVENT) ХЭСЭГ - Жижигхэн бас нэг мөрөнд */}
-            {entry.trigger_event && (
-              <p className="text-gray-400 text-[11px] truncate font-medium mt-0.5 pr-4 leading-normal">
-                {entry.trigger_event}
-              </p>
-            )}
-            
-            {/* Эрчим болон бусад жижиг мэдээлэл (хэрэв.trigger_event байхгүй бол илүү цэвэрхэн харагдана) */}
-            {!entry.trigger_event && (
-              <div className="text-[10px] text-gray-300 font-bold uppercase mt-0.5">
-                Эрчим: {entry.intensity}/10
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Үйлдлийн товчнууд */}
-        <div className="flex items-center gap-1 ml-2 shrink-0">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault(); e.stopPropagation();
-              router.push(`/mood/edit/${entry.id}`);
-            }}
-            className="p-2 text-gray-300 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all sm:opacity-0 group-hover:opacity-100"
-          >
-            <Edit2 size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={(e) => openDeleteModal(e, entry.id, entry.MoodUnit.display_name_mn)}
-            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all sm:opacity-0 group-hover:opacity-100"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      </div>
-    </Link>
-  ))}
-</div>
         )}
 
         {/* PAGINATION */}

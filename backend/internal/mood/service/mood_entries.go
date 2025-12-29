@@ -1,7 +1,10 @@
 package service
 
 import (
+	"fmt"
+	"log"
 	"mindsteps/database/model"
+	gamification "mindsteps/internal/gamification/service"
 	"mindsteps/internal/mood/form"
 	"mindsteps/internal/mood/repository"
 	"time"
@@ -18,11 +21,12 @@ type MoodEntryService interface {
 }
 
 type moodEntryService struct {
-	repo repository.MoodEntryRepository
+	repo         repository.MoodEntryRepository
+	gamification gamification.GamificationService
 }
 
-func NewMoodEntryService(repo repository.MoodEntryRepository) MoodEntryService {
-	return &moodEntryService{repo: repo}
+func NewMoodEntryService(repo repository.MoodEntryRepository, gamification gamification.GamificationService) MoodEntryService {
+	return &moodEntryService{repo: repo, gamification: gamification}
 }
 
 func (s *moodEntryService) ListByMoodID() ([]model.MoodCategories, error) {
@@ -36,10 +40,40 @@ func (s *moodEntryService) Create(f *form.MoodEntryForm) (*model.MoodEntries, er
 
 	entry := form.NewMoodEntryFromForm(*f)
 	entry.CreatedAt = time.Now()
-	//entry.UpdatedAt = time.Now()
 
 	if err := s.repo.Create(entry); err != nil {
 		return nil, err
+	}
+
+	score := 10
+
+	if f.WhenFelt != "" {
+		score += 10
+	}
+	if f.TriggerEvent != "" {
+		score += 5
+	}
+	if f.CopingStrategy != "" {
+		score += 5
+	}
+	if f.Notes != "" {
+		score += 5
+	}
+
+	//TODO
+	metadata := fmt.Sprintf(`{"emotion": "", "intensity": %d}`, entry.Intensity)
+
+	err := s.gamification.AddXP(
+		entry.UserID,
+		score,
+		"mood_entry",
+		entry.ID,
+		metadata,
+	)
+
+	if err != nil {
+		// Оноо өгч чадаагүй ч тэмдэглэл хадгалагдсан тул лог бичээд орхиж болно
+		log.Printf("Failed to award XP for user %d: %v", entry.UserID, err)
 	}
 
 	return entry, nil

@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/api/client';
 import { MoodEntry } from '@/lib/types';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useToast } from '@/components/ui/toast';
+import { useGlobalToast } from '@/context/ToastContext';
 import DeleteConfirmModal from '@/components/ui/DeleteModal';
 import { ChevronLeft, Edit3, Trash2, Calendar, Clock, MapPin, Cloud, Lightbulb, Zap, MessageSquare } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export default function MoodDetailPage() {
   const { token } = useAuth();
   const params = useParams();
   const router = useRouter();
-  const { showToast, ToastContainer } = useToast();
+  const { showToast } = useGlobalToast();
   const [entry, setEntry] = useState<MoodEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
@@ -99,7 +99,7 @@ export default function MoodDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50/50 pb-20">
-      <ToastContainer />
+      
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmModal

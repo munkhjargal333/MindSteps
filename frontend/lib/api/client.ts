@@ -17,7 +17,8 @@ import {
   Milestone,
   Maslow,
   LessonCategory,
-  PlutchikCombination
+  PlutchikCombination,
+  CompleteLessonPayload
 } from '@/lib/types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
@@ -87,6 +88,11 @@ interface MoodStatistics {
 
 interface CoreValueListResponse {
   core_values: CoreValue[];
+  total: number;
+}
+
+interface LessonListResponse {
+  lessons: Lesson[];
   total: number;
 }
 
@@ -675,9 +681,19 @@ class APIClient {
   }
   
   // Get all lessons
-  async getLessons(token?: string) {
-    const { data } = await this.axiosInstance.get<Lesson[]>(
-      '/lessons',
+  async getLessons(page = 1, limit = 10, token: string, categoryId?: number, isParent?: boolean) {
+    // Хэрэв ID байхгүй бол бүх хичээлийг авдаг үндсэн URL
+    let url = `/lessons?page=${page}&limit=${limit}`;
+
+    // Хэрэв ID байгаа бол төрлөөс нь хамаарч URL-аа өөрчилнө
+    if (categoryId) {
+      url = isParent 
+        ? `/lessons/parent/${categoryId}?page=${page}&limit=${limit}` 
+        : `/lessons/category/${categoryId}?page=${page}&limit=${limit}`;
+    }
+
+    const { data } = await this.axiosInstance.get<LessonListResponse>(
+      url, 
       this.getConfig(token)
     );
     return data;
@@ -916,10 +932,10 @@ class APIClient {
     return data;
   }
 
-  async completeLesson(lessonId: number, token?: string) {
+  async completeLesson(payload: CompleteLessonPayload, token?: string) {
     const { data } = await this.axiosInstance.post(
-      `/lessons/${lessonId}/complete`,
-      {},
+      `/lessons/complete`,
+      payload,
       this.getConfig(token)
     );
     return data;
