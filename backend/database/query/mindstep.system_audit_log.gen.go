@@ -41,6 +41,19 @@ func newSystemAuditLog(db *gorm.DB, opts ...gen.DOOption) systemAuditLog {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_systemAuditLog.fillFieldMap()
@@ -148,6 +161,13 @@ type systemAuditLogBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a systemAuditLogBelongsToUser) Where(conds ...field.Expr) *systemAuditLogBelongsToUser {

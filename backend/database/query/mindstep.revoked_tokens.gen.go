@@ -37,6 +37,19 @@ func newRevokedTokens(db *gorm.DB, opts ...gen.DOOption) revokedTokens {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_revokedTokens.fillFieldMap()
@@ -132,6 +145,13 @@ type revokedTokensBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a revokedTokensBelongsToUser) Where(conds ...field.Expr) *revokedTokensBelongsToUser {

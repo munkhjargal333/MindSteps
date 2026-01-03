@@ -1,7 +1,5 @@
-// ============================================
-// pkg/cache/redis.go - Redis Connection
-// ============================================
-package cache
+// pkg/redis/client.go
+package redis
 
 import (
 	"context"
@@ -10,20 +8,25 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
-	"github.com/redis/go-redis/v9"
+	"github.com/gofiber/storage/redis/v3"
+	goredis "github.com/redis/go-redis/v9"
 )
 
 var (
-	redisClient *redis.Client
-	once        sync.Once
-	ctx         = context.Background()
+	redisClient  *goredis.Client
+	fiberStorage *redis.Storage
+	once         sync.Once
 )
 
-// InitRedis инициализаци хийнэ
-func InitRedis(ctx context.Context) (*redis.Client, error) {
-	var initErr error
+const (
+	maxRetries = 3               // Нийт оролдох тоо
+	retryDelay = 5 * time.Second // Дараагийн оролдолт хүртэлх хугацаа
+)
 
+func InitRedis(ctx context.Context) (*goredis.Client, error) {
+	var initErr error
 	once.Do(func() {
 		redisURL := os.Getenv("REDIS_URL")
 		if redisURL == "" {
@@ -31,130 +34,64 @@ func InitRedis(ctx context.Context) (*redis.Client, error) {
 			return
 		}
 
-		opt, parseErr := redis.ParseURL(redisURL)
+		opt, parseErr := goredis.ParseURL(redisURL)
 		if parseErr != nil {
 			initErr = fmt.Errorf("Redis URL parse хийхэд алдаа: %w", parseErr)
 			return
 		}
 
-		// Cloud Redis (Render, Upstash гэх мэт) TLS шаарддаг бол
 		if opt.TLSConfig == nil && opt.Addr != "" {
-			opt.TLSConfig = &tls.Config{
-				InsecureSkipVerify: true, // туршилтад; production-д бол сертификатыг зөв тохируул
+			opt.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+		}
+
+		// Client үүсгэх
+		client := goredis.NewClient(opt)
+
+		// --- RETRY LOGIC ЭНД ЭХЭЛЖ БАЙНА ---
+		for i := 1; i <= maxRetries; i++ {
+			log.Printf("Redis холболт шалгаж байна... (Оролдолт %d/%d)", i, maxRetries)
+
+			// Ping хийхдээ богино хугацааны Timeout өгөх
+			pingCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+			defer cancel()
+
+			if err := client.Ping(pingCtx).Err(); err == nil {
+				redisClient = client
+				log.Println("✅ Redis амжилттай холбогдлоо")
+
+				// Fiber Storage үүсгэх
+				fiberStorage = redis.New(redis.Config{
+					URL:   redisURL,
+					Reset: false,
+				})
+				return // Амжилттай бол функцээс гарна
+			}
+
+			if i < maxRetries {
+				time.Sleep(retryDelay) // Дараагийн оролдолт хүртэл хүлээх
+			} else {
+				initErr = fmt.Errorf("Redis холболт %d оролдолтын дараа амжилтгүй боллоо", maxRetries)
 			}
 		}
-
-		redisClient = redis.NewClient(opt)
-
-		// Холболт шалгах
-		if pingErr := redisClient.Ping(ctx).Err(); pingErr != nil {
-			initErr = fmt.Errorf("Redis холболт амжилтгүй: %w", pingErr)
-			return
-		}
-
-		log.Println("✅ Redis холбогдлоо:", opt.Addr)
 	})
 
 	return redisClient, initErr
 }
 
-// GetRedis клиент буцаана
-func GetRedis() *redis.Client {
+// GetRedis нь Redis client буцаана
+func GetRedis() *goredis.Client {
 	return redisClient
 }
 
-// CloseRedis холболт хаана
+// GetFiberStorage нь Fiber storage буцаана
+func GetFiberStorage() *redis.Storage {
+	return fiberStorage
+}
+
+// CloseRedis нь Redis холболтыг хааж байна
 func CloseRedis() error {
 	if redisClient != nil {
 		return redisClient.Close()
 	}
 	return nil
 }
-
-// ============================================
-// internal/lesson/service/lesson.go - Updated Service with Cache
-// ============================================
-
-// GetAllCategory кэш ашиглан category жагсаалт авах
-// func (s *lessonService) GetAllCategory() ([]model.LessonCategory, error) {
-// 	cacheKey := "lesson:categories"
-
-// 	// 1. Cache-аас уншиж үзнэ
-// 	if redisClient := cache.GetRedis(); redisClient != nil {
-// 		cached, err := redisClient.Get(ctx, cacheKey).Result()
-// 		if err == nil && cached != "" {
-// 			var categories []model.LessonCategory
-// 			if unmarshalErr := json.Unmarshal([]byte(cached), &categories); unmarshalErr == nil {
-// 				log.Println("✅ Lesson categories cache-аас авлаа")
-// 				return categories, nil
-// 			}
-// 		}
-// 	}
-
-// 	// 2. Cache-д байхгүй бол database-аас татна
-// 	categories, err := s.repo.CategoriesList()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// 3. Cache-д хадгална (30 минут)
-// 	if redisClient := cache.GetRedis(); redisClient != nil {
-// 		data, _ := json.Marshal(categories)
-// 		redisClient.Set(ctx, cacheKey, data, 30*time.Minute)
-// 		log.Println("✅ Lesson categories cache-д хадгалагдлаа")
-// 	}
-
-// 	return categories, nil
-// }
-
-// // InvalidateLessonCategoriesCache - Category өөрчлөгдөх үед кэш устгана
-// func InvalidateLessonCategoriesCache() {
-// 	if redisClient := cache.GetRedis(); redisClient != nil {
-// 		redisClient.Del(ctx, "lesson:categories")
-// 		log.Println("🗑️ Lesson categories cache устгагдлаа")
-// 	}
-// }
-
-// // ============================================
-// // internal/mood/service/mood_entries.go - Updated Service with Cache
-// // ============================================
-
-// // ListByMoodID кэш ашиглан mood categories жагсаалт авах
-// func (s *moodEntryService) ListByMoodID() ([]model.MoodCategories, error) {
-// 	cacheKey := "mood:categories"
-
-// 	// 1. Cache-аас уншиж үзнэ
-// 	if redisClient := cache.GetRedis(); redisClient != nil {
-// 		cached, err := redisClient.Get(ctx, cacheKey).Result()
-// 		if err == nil && cached != "" {
-// 			var categories []model.MoodCategories
-// 			if unmarshalErr := json.Unmarshal([]byte(cached), &categories); unmarshalErr == nil {
-// 				log.Println("✅ Mood categories cache-аас авлаа")
-// 				return categories, nil
-// 			}
-// 		}
-// 	}
-
-// 	// 2. Cache-д байхгүй бол database-аас татна
-// 	categories, err := s.repo.ListByMoodID()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	// 3. Cache-д хадгална (1 цаг)
-// 	if redisClient := cache.GetRedis(); redisClient != nil {
-// 		data, _ := json.Marshal(categories)
-// 		redisClient.Set(ctx, cacheKey, data, 1*time.Hour)
-// 		log.Println("✅ Mood categories cache-д хадгалагдлаа")
-// 	}
-
-// 	return categories, nil
-// }
-
-// // InvalidateMoodCategoriesCache - Mood category өөрчлөгдөх үед кэш устгана
-// func InvalidateMoodCategoriesCache() {
-// 	if redisClient := cache.GetRedis(); redisClient != nil {
-// 		redisClient.Del(ctx, "mood:categories")
-// 		log.Println("🗑️ Mood categories cache устгагдлаа")
-// 	}
-// }

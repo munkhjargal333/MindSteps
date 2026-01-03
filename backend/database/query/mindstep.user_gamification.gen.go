@@ -36,12 +36,6 @@ func newUserGamification(db *gorm.DB, opts ...gen.DOOption) userGamification {
 	_userGamification.LongestStreak = field.NewInt(tableName, "longest_streak")
 	_userGamification.LastActivityAt = field.NewTime(tableName, "last_activity_at")
 	_userGamification.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_userGamification.User = userGamificationBelongsToUser{
-		db: db.Session(&gorm.Session{}),
-
-		RelationField: field.NewRelation("User", "model.Users"),
-	}
-
 	_userGamification.Level = userGamificationBelongsToLevel{
 		db: db.Session(&gorm.Session{}),
 
@@ -66,9 +60,7 @@ type userGamification struct {
 	LongestStreak  field.Int
 	LastActivityAt field.Time
 	UpdatedAt      field.Time
-	User           userGamificationBelongsToUser
-
-	Level userGamificationBelongsToLevel
+	Level          userGamificationBelongsToLevel
 
 	fieldMap map[string]field.Expr
 }
@@ -122,7 +114,7 @@ func (u *userGamification) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (u *userGamification) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 11)
+	u.fieldMap = make(map[string]field.Expr, 10)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["user_id"] = u.UserID
 	u.fieldMap["current_level_id"] = u.CurrentLevelID
@@ -137,8 +129,6 @@ func (u *userGamification) fillFieldMap() {
 
 func (u userGamification) clone(db *gorm.DB) userGamification {
 	u.userGamificationDo.ReplaceConnPool(db.Statement.ConnPool)
-	u.User.db = db.Session(&gorm.Session{Initialized: true})
-	u.User.db.Statement.ConnPool = db.Statement.ConnPool
 	u.Level.db = db.Session(&gorm.Session{Initialized: true})
 	u.Level.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
@@ -146,90 +136,8 @@ func (u userGamification) clone(db *gorm.DB) userGamification {
 
 func (u userGamification) replaceDB(db *gorm.DB) userGamification {
 	u.userGamificationDo.ReplaceDB(db)
-	u.User.db = db.Session(&gorm.Session{})
 	u.Level.db = db.Session(&gorm.Session{})
 	return u
-}
-
-type userGamificationBelongsToUser struct {
-	db *gorm.DB
-
-	field.RelationField
-}
-
-func (a userGamificationBelongsToUser) Where(conds ...field.Expr) *userGamificationBelongsToUser {
-	if len(conds) == 0 {
-		return &a
-	}
-
-	exprs := make([]clause.Expression, 0, len(conds))
-	for _, cond := range conds {
-		exprs = append(exprs, cond.BeCond().(clause.Expression))
-	}
-	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
-	return &a
-}
-
-func (a userGamificationBelongsToUser) WithContext(ctx context.Context) *userGamificationBelongsToUser {
-	a.db = a.db.WithContext(ctx)
-	return &a
-}
-
-func (a userGamificationBelongsToUser) Session(session *gorm.Session) *userGamificationBelongsToUser {
-	a.db = a.db.Session(session)
-	return &a
-}
-
-func (a userGamificationBelongsToUser) Model(m *model.UserGamification) *userGamificationBelongsToUserTx {
-	return &userGamificationBelongsToUserTx{a.db.Model(m).Association(a.Name())}
-}
-
-func (a userGamificationBelongsToUser) Unscoped() *userGamificationBelongsToUser {
-	a.db = a.db.Unscoped()
-	return &a
-}
-
-type userGamificationBelongsToUserTx struct{ tx *gorm.Association }
-
-func (a userGamificationBelongsToUserTx) Find() (result *model.Users, err error) {
-	return result, a.tx.Find(&result)
-}
-
-func (a userGamificationBelongsToUserTx) Append(values ...*model.Users) (err error) {
-	targetValues := make([]interface{}, len(values))
-	for i, v := range values {
-		targetValues[i] = v
-	}
-	return a.tx.Append(targetValues...)
-}
-
-func (a userGamificationBelongsToUserTx) Replace(values ...*model.Users) (err error) {
-	targetValues := make([]interface{}, len(values))
-	for i, v := range values {
-		targetValues[i] = v
-	}
-	return a.tx.Replace(targetValues...)
-}
-
-func (a userGamificationBelongsToUserTx) Delete(values ...*model.Users) (err error) {
-	targetValues := make([]interface{}, len(values))
-	for i, v := range values {
-		targetValues[i] = v
-	}
-	return a.tx.Delete(targetValues...)
-}
-
-func (a userGamificationBelongsToUserTx) Clear() error {
-	return a.tx.Clear()
-}
-
-func (a userGamificationBelongsToUserTx) Count() int64 {
-	return a.tx.Count()
-}
-
-func (a userGamificationBelongsToUserTx) Unscoped() *userGamificationBelongsToUserTx {
-	a.tx = a.tx.Unscoped()
-	return &a
 }
 
 type userGamificationBelongsToLevel struct {

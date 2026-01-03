@@ -42,12 +42,38 @@ func newDeletedDataLog(db *gorm.DB, opts ...gen.DOOption) deletedDataLog {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_deletedDataLog.DeletedBy = deletedDataLogBelongsToDeletedBy{
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("DeletedBy", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("DeletedBy.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("DeletedBy.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_deletedDataLog.fillFieldMap()
@@ -163,6 +189,13 @@ type deletedDataLogBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a deletedDataLogBelongsToUser) Where(conds ...field.Expr) *deletedDataLogBelongsToUser {
@@ -244,6 +277,13 @@ type deletedDataLogBelongsToDeletedBy struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a deletedDataLogBelongsToDeletedBy) Where(conds ...field.Expr) *deletedDataLogBelongsToDeletedBy {

@@ -30,23 +30,7 @@ func (h *UserHandler) GetProfile(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"success": true,
-		"user": fiber.Map{
-			"id":                user.ID,
-			"uuid":              user.UUID,
-			"name":              user.Name,
-			"email":             user.Email,
-			"profile_picture":   user.ProfilePicture,
-			"timezone":          user.Timezone,
-			"language":          user.Language,
-			"total_score":       user.TotalScore,
-			"current_level":     user.CurrentLevel,
-			"level_progress":    user.LevelProgress,
-			"is_email_verified": user.IsEmailVerified,
-			"email_verified_at": user.EmailVerifiedAt,
-			"last_login":        user.LastLogin,
-			"login_count":       user.LoginCount,
-			"created_at":        user.CreatedAt,
-		},
+		"user":    user,
 	})
 }
 

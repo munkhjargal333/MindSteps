@@ -38,6 +38,39 @@ func main() {
 	// CORE USER MANAGEMENT
 	// ============================================================================
 
+	// ============================================================================
+	// GAMIFICATION SYSTEM
+	// ============================================================================
+
+	// User levels
+	userLevels := g.GenerateModelAs(
+		model("user_levels"),
+		"UserLevels",
+		gen.FieldType("id", "int"),
+		gen.FieldType("level_number", "int"),
+		gen.FieldType("min_score", "int"),
+		gen.FieldType("max_score", "int"),
+		gen.FieldType("perks", "datatypes.JSON"),
+	)
+
+	// User gamification summary
+	userGamification := g.GenerateModelAs(
+		model("user_gamification"),
+		"UserGamification",
+		gen.FieldType("id", "uint"),
+		gen.FieldType("user_id", "uint"),
+		gen.FieldType("current_level_id", "int"),
+		gen.FieldType("total_score", "int"),
+		gen.FieldType("level_progress", "int"),
+		gen.FieldType("current_streak", "int"),
+		gen.FieldType("longest_streak", "int"),
+		gen.FieldType("last_activity_at", "time.Time"),
+		gen.FieldRelate(field.BelongsTo, "Level", userLevels, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag:       field.GormTag{"foreignKey": []string{"current_level_id"}},
+		}),
+	)
+
 	// Users table
 	users := g.GenerateModelAs(
 		model("users"),
@@ -52,13 +85,33 @@ func main() {
 		gen.FieldType("login_count", "int"),
 		gen.FieldType("password", "string"),
 		gen.FieldIgnore("deleted_at"),
-		gen.FieldJSONTagWithNS(func(columnName string) string {
-			switch columnName {
-			case "password":
-				return `-`
-			default:
-				return columnName
-			}
+
+		gen.FieldRelate(field.HasOne, "Gamification", userGamification, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"}, // UserGamification хүснэгт дээрх багана
+				"references": []string{"ID"},      // Users хүснэгт дээрх багана
+			},
+			JSONTag: "gamification",
+		}),
+	)
+
+	// Scoring history
+	scoringHistory := g.GenerateModelAs(
+		model("scoring_history"),
+		"ScoringHistory",
+		gen.FieldType("id", "uint"),
+		gen.FieldType("user_id", "uint"),
+		gen.FieldType("source_id", "uint"),
+		gen.FieldType("points_earned", "int"),
+		gen.FieldType("metadata", "datatypes.JSON"),
+		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
+			RelatePointer: true,
+			GORMTag: field.GormTag{
+				"foreignKey": []string{"user_id"},
+				"references": []string{"id"},
+			},
+			JSONTag: tag("User"),
 		}),
 	)
 
@@ -186,61 +239,6 @@ func main() {
 		gen.FieldType("key_version", "int"),
 		gen.FieldType("is_active", "bool"),
 		gen.FieldIgnore("encrypted_key"),
-	)
-
-	// ============================================================================
-	// GAMIFICATION SYSTEM
-	// ============================================================================
-
-	// User levels
-	userLevels := g.GenerateModelAs(
-		model("user_levels"),
-		"UserLevels",
-		gen.FieldType("id", "int"),
-		gen.FieldType("level_number", "int"),
-		gen.FieldType("min_score", "int"),
-		gen.FieldType("max_score", "int"),
-		gen.FieldType("perks", "datatypes.JSON"),
-	)
-	// Scoring history
-	scoringHistory := g.GenerateModelAs(
-		model("scoring_history"),
-		"ScoringHistory",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("source_id", "uint"),
-		gen.FieldType("points_earned", "int"),
-		gen.FieldType("metadata", "datatypes.JSON"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// User gamification summary
-	userGamification := g.GenerateModelAs(
-		model("user_gamification"),
-		"UserGamification",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("current_level_id", "int"),
-		gen.FieldType("total_score", "int"),
-		gen.FieldType("level_progress", "int"),
-		gen.FieldType("current_streak", "int"),
-		gen.FieldType("longest_streak", "int"),
-		gen.FieldType("last_activity_at", "time.Time"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag:       field.GormTag{"foreignKey": []string{"user_id"}},
-		}),
-		gen.FieldRelate(field.BelongsTo, "Level", userLevels, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag:       field.GormTag{"foreignKey": []string{"current_level_id"}},
-		}),
 	)
 
 	// ============================================================================

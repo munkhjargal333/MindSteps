@@ -46,6 +46,19 @@ func newMoodEntries(db *gorm.DB, opts ...gen.DOOption) moodEntries {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_moodEntries.CoreValues = moodEntriesBelongsToCoreValues{
@@ -54,8 +67,27 @@ func newMoodEntries(db *gorm.DB, opts ...gen.DOOption) moodEntries {
 		RelationField: field.NewRelation("CoreValues", "model.CoreValues"),
 		User: struct {
 			field.RelationField
+			Gamification struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}
 		}{
 			RelationField: field.NewRelation("CoreValues.User", "model.Users"),
+			Gamification: struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}{
+				RelationField: field.NewRelation("CoreValues.User.Gamification", "model.UserGamification"),
+				Level: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("CoreValues.User.Gamification.Level", "model.UserLevels"),
+				},
+			},
 		},
 		MaslowLevel: struct {
 			field.RelationField
@@ -229,6 +261,13 @@ type moodEntriesBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a moodEntriesBelongsToUser) Where(conds ...field.Expr) *moodEntriesBelongsToUser {
@@ -313,6 +352,12 @@ type moodEntriesBelongsToCoreValues struct {
 
 	User struct {
 		field.RelationField
+		Gamification struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}
 	}
 	MaslowLevel struct {
 		field.RelationField

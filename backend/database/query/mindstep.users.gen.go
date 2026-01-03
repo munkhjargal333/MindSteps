@@ -45,6 +45,16 @@ func newUsers(db *gorm.DB, opts ...gen.DOOption) users {
 	_users.LoginCount = field.NewInt(tableName, "login_count")
 	_users.CreatedAt = field.NewTime(tableName, "created_at")
 	_users.UpdatedAt = field.NewTime(tableName, "updated_at")
+	_users.Gamification = usersHasOneGamification{
+		db: db.Session(&gorm.Session{}),
+
+		RelationField: field.NewRelation("Gamification", "model.UserGamification"),
+		Level: struct {
+			field.RelationField
+		}{
+			RelationField: field.NewRelation("Gamification.Level", "model.UserLevels"),
+		},
+	}
 
 	_users.fillFieldMap()
 
@@ -73,6 +83,7 @@ type users struct {
 	LoginCount      field.Int
 	CreatedAt       field.Time
 	UpdatedAt       field.Time
+	Gamification    usersHasOneGamification
 
 	fieldMap map[string]field.Expr
 }
@@ -131,7 +142,7 @@ func (u *users) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (u *users) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 18)
+	u.fieldMap = make(map[string]field.Expr, 19)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["uuid"] = u.UUID
 	u.fieldMap["name"] = u.Name
@@ -150,16 +161,105 @@ func (u *users) fillFieldMap() {
 	u.fieldMap["login_count"] = u.LoginCount
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["updated_at"] = u.UpdatedAt
+
 }
 
 func (u users) clone(db *gorm.DB) users {
 	u.usersDo.ReplaceConnPool(db.Statement.ConnPool)
+	u.Gamification.db = db.Session(&gorm.Session{Initialized: true})
+	u.Gamification.db.Statement.ConnPool = db.Statement.ConnPool
 	return u
 }
 
 func (u users) replaceDB(db *gorm.DB) users {
 	u.usersDo.ReplaceDB(db)
+	u.Gamification.db = db.Session(&gorm.Session{})
 	return u
+}
+
+type usersHasOneGamification struct {
+	db *gorm.DB
+
+	field.RelationField
+
+	Level struct {
+		field.RelationField
+	}
+}
+
+func (a usersHasOneGamification) Where(conds ...field.Expr) *usersHasOneGamification {
+	if len(conds) == 0 {
+		return &a
+	}
+
+	exprs := make([]clause.Expression, 0, len(conds))
+	for _, cond := range conds {
+		exprs = append(exprs, cond.BeCond().(clause.Expression))
+	}
+	a.db = a.db.Clauses(clause.Where{Exprs: exprs})
+	return &a
+}
+
+func (a usersHasOneGamification) WithContext(ctx context.Context) *usersHasOneGamification {
+	a.db = a.db.WithContext(ctx)
+	return &a
+}
+
+func (a usersHasOneGamification) Session(session *gorm.Session) *usersHasOneGamification {
+	a.db = a.db.Session(session)
+	return &a
+}
+
+func (a usersHasOneGamification) Model(m *model.Users) *usersHasOneGamificationTx {
+	return &usersHasOneGamificationTx{a.db.Model(m).Association(a.Name())}
+}
+
+func (a usersHasOneGamification) Unscoped() *usersHasOneGamification {
+	a.db = a.db.Unscoped()
+	return &a
+}
+
+type usersHasOneGamificationTx struct{ tx *gorm.Association }
+
+func (a usersHasOneGamificationTx) Find() (result *model.UserGamification, err error) {
+	return result, a.tx.Find(&result)
+}
+
+func (a usersHasOneGamificationTx) Append(values ...*model.UserGamification) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Append(targetValues...)
+}
+
+func (a usersHasOneGamificationTx) Replace(values ...*model.UserGamification) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Replace(targetValues...)
+}
+
+func (a usersHasOneGamificationTx) Delete(values ...*model.UserGamification) (err error) {
+	targetValues := make([]interface{}, len(values))
+	for i, v := range values {
+		targetValues[i] = v
+	}
+	return a.tx.Delete(targetValues...)
+}
+
+func (a usersHasOneGamificationTx) Clear() error {
+	return a.tx.Clear()
+}
+
+func (a usersHasOneGamificationTx) Count() int64 {
+	return a.tx.Count()
+}
+
+func (a usersHasOneGamificationTx) Unscoped() *usersHasOneGamificationTx {
+	a.tx = a.tx.Unscoped()
+	return &a
 }
 
 type usersDo struct{ gen.DO }

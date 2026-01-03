@@ -21,7 +21,6 @@ type UserGamification struct {
 	LongestStreak  int         `gorm:"column:longest_streak;type:integer" json:"longest_streak"`
 	LastActivityAt time.Time   `gorm:"column:last_activity_at;type:timestamp without time zone" json:"last_activity_at"`
 	UpdatedAt      time.Time   `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
-	User           *Users      `gorm:"foreignKey:user_id" json:"user"`
 	Level          *UserLevels `gorm:"foreignKey:current_level_id" json:"level"`
 }
 

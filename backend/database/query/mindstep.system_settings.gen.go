@@ -41,6 +41,19 @@ func newSystemSettings(db *gorm.DB, opts ...gen.DOOption) systemSettings {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("UpdatedBy", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("UpdatedBy.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("UpdatedBy.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_systemSettings.fillFieldMap()
@@ -148,6 +161,13 @@ type systemSettingsBelongsToUpdatedBy struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a systemSettingsBelongsToUpdatedBy) Where(conds ...field.Expr) *systemSettingsBelongsToUpdatedBy {

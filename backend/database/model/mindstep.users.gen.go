@@ -12,24 +12,25 @@ const TableNameUsers = "mindstep.users"
 
 // Users mapped from table <mindstep.users>
 type Users struct {
-	ID              uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UUID            string    `gorm:"column:uuid;type:uuid;not null;default:mindstep.uuid_generate_v4()" json:"uuid"`
-	Name            string    `gorm:"column:name;type:character varying(100);not null" json:"name"`
-	Email           string    `gorm:"column:email;type:character varying(255);not null" json:"email"`
-	Password        string    `gorm:"column:password;type:character varying(255);not null" json:"-"`
-	TotalScore      int       `gorm:"column:total_score;type:integer" json:"total_score"`
-	CurrentLevel    int       `gorm:"column:current_level;type:integer;default:1" json:"current_level"`
-	LevelProgress   int       `gorm:"column:level_progress;type:integer" json:"level_progress"`
-	ProfilePicture  string    `gorm:"column:profile_picture;type:character varying(255)" json:"profile_picture"`
-	Timezone        string    `gorm:"column:timezone;type:character varying(50);default:UTC" json:"timezone"`
-	Language        string    `gorm:"column:language;type:character varying(5);default:mn" json:"language"`
-	IsActive        bool      `gorm:"column:is_active;type:boolean;default:true" json:"is_active"`
-	IsEmailVerified bool      `gorm:"column:is_email_verified;type:boolean" json:"is_email_verified"`
-	EmailVerifiedAt time.Time `gorm:"column:email_verified_at;type:timestamp without time zone" json:"email_verified_at"`
-	LastLogin       time.Time `gorm:"column:last_login;type:timestamp without time zone" json:"last_login"`
-	LoginCount      int       `gorm:"column:login_count;type:integer" json:"login_count"`
-	CreatedAt       time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
-	UpdatedAt       time.Time `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	ID              uint              `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	UUID            string            `gorm:"column:uuid;type:uuid;not null;default:mindstep.uuid_generate_v4()" json:"uuid"`
+	Name            string            `gorm:"column:name;type:character varying(100);not null" json:"name"`
+	Email           string            `gorm:"column:email;type:character varying(255);not null" json:"email"`
+	Password        string            `gorm:"column:password;type:character varying(255);not null" json:"password"`
+	TotalScore      int               `gorm:"column:total_score;type:integer" json:"total_score"`
+	CurrentLevel    int               `gorm:"column:current_level;type:integer;default:1" json:"current_level"`
+	LevelProgress   int               `gorm:"column:level_progress;type:integer" json:"level_progress"`
+	ProfilePicture  string            `gorm:"column:profile_picture;type:character varying(255)" json:"profile_picture"`
+	Timezone        string            `gorm:"column:timezone;type:character varying(50);default:UTC" json:"timezone"`
+	Language        string            `gorm:"column:language;type:character varying(5);default:mn" json:"language"`
+	IsActive        bool              `gorm:"column:is_active;type:boolean;default:true" json:"is_active"`
+	IsEmailVerified bool              `gorm:"column:is_email_verified;type:boolean" json:"is_email_verified"`
+	EmailVerifiedAt time.Time         `gorm:"column:email_verified_at;type:timestamp without time zone" json:"email_verified_at"`
+	LastLogin       time.Time         `gorm:"column:last_login;type:timestamp without time zone" json:"last_login"`
+	LoginCount      int               `gorm:"column:login_count;type:integer" json:"login_count"`
+	CreatedAt       time.Time         `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
+	UpdatedAt       time.Time         `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
+	Gamification    *UserGamification `gorm:"foreignKey:user_id;references:ID" json:"gamification"`
 }
 
 // TableName Users's table name

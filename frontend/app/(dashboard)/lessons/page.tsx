@@ -1,15 +1,13 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { Lesson, LessonCategory } from '@/lib/types';
 import Link from 'next/link';
 import { useGlobalToast } from '@/context/ToastContext';
-
-
 import { 
-  BookOpen, Clock, Award, Lock, ChevronDown, 
+  BookOpen, Clock, Lock, ChevronDown, 
   Check, ChevronLeft, ChevronRight 
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -31,25 +29,41 @@ export default function LessonsListPage() {
   const [isParentOpen, setIsParentOpen] = useState(false);
   const [isChildOpen, setIsChildOpen] = useState(false);
 
-  // Ангилал ачаалах
+  // 1. Ангилал ачаалах - Backend: Preload("Children") ирж байгаа
   const loadCategories = useCallback(async () => {
     if (!token) return;
     try {
       const data = await apiClient.getLessonCategories(token);
-      setCategories(data);
+      // Backend-ээс data.lessons эсвэл шууд массив ирж байгаа эсэхийг шалгах
+      setCategories(data.lessons || data || []);
     } catch (err) {
       showToast('Ангилал авахад алдаа гарлаа', 'error');
     }
   }, [token, showToast]);
 
+  // 2. Дэд болон Үндсэн бүлгүүдийг салгах (Nested Logic)
+  const parentCategories = categories; // Угаасаа Backend зөвхөн parent-уудыг явуулж байгаа
+
+  const childCategories = useMemo(() => {
+    if (!selectedParent) return [];
+    const parent = categories.find(c => c.id === selectedParent);
+    // Backend-ийн Go struct Preload("Children") нь JSON дээр 'Children' эсвэл 'children' гэж ирдэг
+    return parent?.children || (parent as any)?.children || [];
+  }, [categories, selectedParent]);
+
+  const selectedParentObj = useMemo(() => 
+    categories.find(c => c.id === selectedParent), [categories, selectedParent]
+  );
+
+  const selectedChildObj = useMemo(() => 
+    childCategories.find((c: any) => c.id === selectedCategory), [childCategories, selectedCategory]
+  );
+
   const loadLessons = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     try {
-      // Дэд бүлэг байвал түүнийг ашиглана, байхгүй бол Үндсэн бүлгийг ашиглана
       const categoryId = selectedCategory || selectedParent || undefined;
-      
-      // Хэрэв Үндсэн бүлэг сонгогдсон БӨГӨӨД Дэд бүлэг сонгогдоогүй бол isParent = true
       const isParent = !!(selectedParent && !selectedCategory);
 
       const response = await apiClient.getLessons(
@@ -67,13 +81,11 @@ export default function LessonsListPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, currentPage, selectedCategory, selectedParent]);
+  }, [token, currentPage, selectedCategory, selectedParent, showToast]);
 
   useEffect(() => { loadCategories(); }, [loadCategories]);
   useEffect(() => { loadLessons(); }, [loadLessons]);
 
-  const selectedParentObj = categories.find(c => c.id === selectedParent);
-  const selectedChildObj = selectedParentObj?.children?.find(c => c.id === selectedCategory);
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const handlePageChange = (newPage: number) => {

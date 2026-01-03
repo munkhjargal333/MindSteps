@@ -1,5 +1,5 @@
 // app/(marketing)/layout.tsx
-import '../globals.css'; // Гадна байгаа globals.css рүү заах зам
+import '@/app/globals.css'; // Гадна байгаа globals.css рүү заах зам
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (

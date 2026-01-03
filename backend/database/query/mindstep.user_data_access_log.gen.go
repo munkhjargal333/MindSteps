@@ -42,12 +42,38 @@ func newUserDataAccessLog(db *gorm.DB, opts ...gen.DOOption) userDataAccessLog {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_userDataAccessLog.AccessedBy = userDataAccessLogBelongsToAccessedBy{
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("AccessedBy", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("AccessedBy.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("AccessedBy.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_userDataAccessLog.Session = userDataAccessLogBelongsToSession{
@@ -56,8 +82,27 @@ func newUserDataAccessLog(db *gorm.DB, opts ...gen.DOOption) userDataAccessLog {
 		RelationField: field.NewRelation("Session", "model.UserSessions"),
 		User: struct {
 			field.RelationField
+			Gamification struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}
 		}{
 			RelationField: field.NewRelation("Session.User", "model.Users"),
+			Gamification: struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}{
+				RelationField: field.NewRelation("Session.User.Gamification", "model.UserGamification"),
+				Level: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("Session.User.Gamification.Level", "model.UserLevels"),
+				},
+			},
 		},
 	}
 
@@ -179,6 +224,13 @@ type userDataAccessLogBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a userDataAccessLogBelongsToUser) Where(conds ...field.Expr) *userDataAccessLogBelongsToUser {
@@ -260,6 +312,13 @@ type userDataAccessLogBelongsToAccessedBy struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a userDataAccessLogBelongsToAccessedBy) Where(conds ...field.Expr) *userDataAccessLogBelongsToAccessedBy {
@@ -344,6 +403,12 @@ type userDataAccessLogBelongsToSession struct {
 
 	User struct {
 		field.RelationField
+		Gamification struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}
 	}
 }
 

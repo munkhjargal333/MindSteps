@@ -43,23 +43,13 @@ export const viewport: Viewport = {
   userScalable: false, // Mobile дээр дизайн эвдрэхээс хамгаална
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="mn"
-      suppressHydrationWarning
-      className={`${jakarta.variable} selection:bg-blue-100 selection:text-blue-900`}
-    >
+    <html lang="mn" suppressHydrationWarning className={`${jakarta.variable}`}>
       <body className={`${jakarta.className} antialiased min-h-screen bg-theme-gradient`}>
         <Providers>
           <ToastProvider>
-            <main className="relative flex flex-col min-h-screen">
-              {children}
-            </main>
+            {children}  {/* ← main-ийг энд шууд оруулах */}
             <PWARegister />
           </ToastProvider>
         </Providers>

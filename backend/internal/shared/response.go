@@ -1,3 +1,4 @@
+// pkg/shared/response.go
 package shared
 
 import (
@@ -5,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 )
 
-// Success буцаагч - httpStatusCode 200
+// Response буцаагч - httpStatusCode 200
 //
 // Жишээ1: Response(c) гэж дуудвал {"message": "Амжилттай"}
 //
@@ -13,7 +14,6 @@ import (
 //
 // Жишээ3: Response(c, anyJson) гэж дуудвал anyJson буцаана
 func Response(c *fiber.Ctx, responseDetails ...interface{}) error {
-
 	if len(responseDetails) == 0 {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Амжилттай"})
 	}
@@ -29,7 +29,7 @@ func Response(c *fiber.Ctx, responseDetails ...interface{}) error {
 	return c.Status(fiber.StatusOK).JSON(res)
 }
 
-// Forbidden хариу буцаагч - httpStatusCode 403
+// ResponseForbidden хариу буцаагч - httpStatusCode 403
 // {"message": "Хандах эрхгүй"}
 func ResponseForbidden(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
@@ -37,7 +37,7 @@ func ResponseForbidden(c *fiber.Ctx) error {
 	})
 }
 
-// Unauthorized хариу буцаагч - httpStatusCode 401
+// ResponseUnauthorized хариу буцаагч - httpStatusCode 401
 // {"message": "Токен хугацаа дууссан эсвэл буруу байна"}
 func ResponseUnauthorized(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -45,18 +45,18 @@ func ResponseUnauthorized(c *fiber.Ctx) error {
 	})
 }
 
-// BadRequest хариу буцаагч - httpStatusCode 400
+// ResponseBadRequest хариу буцаагч - httpStatusCode 400
 func ResponseBadRequest(c *fiber.Ctx, message string) error {
 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": message})
 }
 
-// NotFound хариу буцаагч - httpStatusCode 404
+// ResponseNotFound хариу буцаагч - httpStatusCode 404
 // {"message": "Мэдээлэл олдсонгүй"}
 func ResponseNotFound(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "Мэдээлэл олдсонгүй"})
 }
 
-// InternalServerError хариу буцаагч - httpStatusCode 500
+// ResponseErr хариу буцаагч - httpStatusCode 500
 func ResponseErr(c *fiber.Ctx, message string) error {
 	log.Errorf("path: %s | message: %s", c.Path(), message)
 

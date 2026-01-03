@@ -145,27 +145,56 @@ export default function JournalListPage() {
             </Link>
           ))}
         </div>
-
-        {/* PAGINATION */}
+        
+        {/* PAGINATION SECTION */}
         {total > 10 && (
-          <div className="mt-16 flex justify-center items-center gap-5">
-            <button 
-              disabled={page === 1} 
-              onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="w-12 h-12 flex items-center justify-center bg-white rounded-[1.2rem] shadow-sm border border-gray-100 disabled:opacity-20 hover:text-blue-600 transition-all"
-            >
-              <ChevronLeft size={24} strokeWidth={3} />
-            </button>
-            <span className="text-lg font-black text-gray-900">
-              {page} <span className="text-gray-200 mx-1">/</span> {Math.ceil(total / 10)}
-            </span>
-            <button 
-              disabled={page >= Math.ceil(total / 10)} 
-              onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className="w-12 h-12 flex items-center justify-center bg-white rounded-[1.2rem] shadow-sm border border-gray-100 disabled:opacity-20 hover:text-blue-600 transition-all"
-            >
-              <ChevronRight size={24} strokeWidth={3} />
-            </button>
+          <div className="mt-16 flex flex-col items-center gap-4">
+            <div className="flex items-center gap-2">
+              {/* Өмнөх хуудас */}
+              <button 
+                disabled={page === 1} 
+                onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 disabled:opacity-30 disabled:cursor-not-allowed hover:border-blue-500 hover:text-blue-600 transition-all text-gray-500"
+              >
+                <ChevronLeft size={20} strokeWidth={2.5} />
+              </button>
+
+              {/* Хуудасны дугаарууд */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.ceil(total / 10) }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === Math.ceil(total / 10) || Math.abs(p - page) <= 1)
+                  .map((p, index, array) => (
+                    <div key={p} className="flex items-center gap-1">
+                      {index > 0 && array[index - 1] !== p - 1 && (
+                        <span className="text-gray-300 px-1">...</span>
+                      )}
+                      <button
+                        onClick={() => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className={`w-10 h-10 rounded-xl font-bold transition-all ${
+                          page === p 
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' 
+                            : 'bg-white text-gray-500 hover:bg-blue-50 hover:text-blue-600 border border-gray-100'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+
+              {/* Дараах хуудас */}
+              <button 
+                disabled={page >= Math.ceil(total / 10)} 
+                onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 disabled:opacity-30 disabled:cursor-not-allowed hover:border-blue-500 hover:text-blue-600 transition-all text-gray-500"
+              >
+                <ChevronRight size={20} strokeWidth={2.5} />
+              </button>
+            </div>
+            
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+              Хуудас {page} / {Math.ceil(total / 10)}
+            </p>
           </div>
         )}
       </div>

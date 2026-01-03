@@ -4,6 +4,7 @@ import type { AxiosInstance, AxiosRequestConfig } from 'axios';
 import {
   Journal,
   User,
+  UserGamification,
   UserStreak,
   MoodCategory,
   MoodUnit,
@@ -94,9 +95,10 @@ interface CoreValueListResponse {
 interface LessonListResponse {
   lessons: Lesson[];
   total: number;
+  page: number;
+  limit: number;
 }
 
-// Lesson interfaces
 interface CreateLessonData {
   title: string;
   slug?: string;
@@ -117,6 +119,11 @@ interface CreateLessonData {
   is_published?: boolean;
   sort_order?: number;
 }
+  export interface CategoriesList{
+    lessons: LessonCategory[];
+    total: number;
+  }
+
 
 interface UpdateLessonData extends Partial<CreateLessonData> {}
 
@@ -148,7 +155,7 @@ class APIClient {
           config.headers.Authorization = `Bearer ${this.token}`;
         }
         
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === 'production') {
           console.log('🔵 API Request:', config.method?.toUpperCase(), config.url);
         }
         
@@ -163,7 +170,7 @@ class APIClient {
     // Response interceptor
     this.axiosInstance.interceptors.response.use(
       (response) => {
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === 'production') {
           console.log('✅ API Response:', response.config.url, response.status);
         }
         return response;
@@ -671,9 +678,10 @@ class APIClient {
 
   // ==================== LESSONS ====================
 
+
   // Get all lesson categories
   async getLessonCategories(token?: string) {
-    const { data } = await this.axiosInstance.get<LessonCategory[]>(
+    const { data } = await this.axiosInstance.get<CategoriesList>(
       '/lessons/category',
       this.getConfig(token)
     );
@@ -1030,61 +1038,6 @@ class APIClient {
   async deletePlutchikCombination(id: number, token: string) {
     const { data } = await this.axiosInstance.delete(
       `/plutchik-combinations/${id}`,
-      this.getConfig(token)
-    );
-    return data;
-  }
-
-  // ==================== MEDITATION ====================
-  
-  async getMeditationTechniques(token?: string) {
-    const { data } = await this.axiosInstance.get(
-      '/meditation/techniques',
-      this.getConfig(token)
-    );
-    return data;
-  }
-
-  async createMeditationSession(sessionData: {
-    meditation_id?: number;
-    duration_seconds?: number;
-    notes?: string;
-  }, token?: string) {
-    const { data } = await this.axiosInstance.post<MeditationSession>(
-      '/meditation/sessions',
-      sessionData,
-      this.getConfig(token)
-    );
-    return data;
-  }
-
-  async getMeditationSessions(startDate?: string, endDate?: string, token?: string) {
-    const { data } = await this.axiosInstance.get<MeditationSession[]>(
-      '/meditation/sessions',
-      {
-        ...this.getConfig(token),
-        params: { start_date: startDate, end_date: endDate }
-      }
-    );
-    return data;
-  }
-
-  async getMeditationSession(id: number, token?: string) {
-    const { data } = await this.axiosInstance.get<MeditationSession>(
-      `/meditation/sessions/${id}`,
-      this.getConfig(token)
-    );
-    return data;
-  }
-
-  async completeMeditationSession(id: number, sessionData: {
-    duration_seconds: number;
-    completed_percentage: number;
-    notes?: string;
-  }, token?: string) {
-    const { data } = await this.axiosInstance.post(
-      `/meditation/sessions/${id}/complete`,
-      sessionData,
       this.getConfig(token)
     );
     return data;

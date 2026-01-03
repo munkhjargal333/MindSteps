@@ -32,7 +32,7 @@ func (r *userRepo) Create(user *model.Users) error {
 
 func (r *userRepo) FindByID(id uint) (*model.Users, error) {
 	var user model.Users
-	if err := r.db.Where("id = ? AND deleted_at IS NULL", id).First(&user).Error; err != nil {
+	if err := r.db.Where("id = ? AND deleted_at IS NULL", id).Preload("Gamification").Preload("Gamification.Level").First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

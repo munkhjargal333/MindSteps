@@ -40,6 +40,19 @@ func newValueReflections(db *gorm.DB, opts ...gen.DOOption) valueReflections {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_valueReflections.Value = valueReflectionsBelongsToValue{
@@ -48,8 +61,27 @@ func newValueReflections(db *gorm.DB, opts ...gen.DOOption) valueReflections {
 		RelationField: field.NewRelation("Value", "model.CoreValues"),
 		User: struct {
 			field.RelationField
+			Gamification struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}
 		}{
 			RelationField: field.NewRelation("Value.User", "model.Users"),
+			Gamification: struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}{
+				RelationField: field.NewRelation("Value.User.Gamification", "model.UserGamification"),
+				Level: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("Value.User.Gamification.Level", "model.UserLevels"),
+				},
+			},
 		},
 		MaslowLevel: struct {
 			field.RelationField
@@ -165,6 +197,13 @@ type valueReflectionsBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a valueReflectionsBelongsToUser) Where(conds ...field.Expr) *valueReflectionsBelongsToUser {
@@ -249,6 +288,12 @@ type valueReflectionsBelongsToValue struct {
 
 	User struct {
 		field.RelationField
+		Gamification struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}
 	}
 	MaslowLevel struct {
 		field.RelationField
