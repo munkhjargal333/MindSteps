@@ -149,6 +149,8 @@ func (h *LessonHandler) GetByParent(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"lessons": lessons,
 		"total":   count,
+		"page":    page,
+		"limit":   limit,
 	})
 }
 
@@ -171,6 +173,8 @@ func (h *LessonHandler) GetByCategory(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"lessons": lessons,
 		"total":   count,
+		"page":    page,
+		"limit":   limit,
 	})
 }
 

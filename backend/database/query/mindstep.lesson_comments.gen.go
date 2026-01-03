@@ -59,6 +59,19 @@ func newLessonComments(db *gorm.DB, opts ...gen.DOOption) lessonComments {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_lessonComments.fillFieldMap()
@@ -256,6 +269,13 @@ type lessonCommentsBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a lessonCommentsBelongsToUser) Where(conds ...field.Expr) *lessonCommentsBelongsToUser {

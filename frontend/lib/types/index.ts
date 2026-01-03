@@ -31,6 +31,19 @@ export interface UserLevel {
   perks?: string; // JSON format
   created_at: string;
 }
+export interface UserGamification {
+	ID :            number        
+	UserID:          number       
+	CurrentLevelID: number        
+	TotalScore:     number         
+	LevelProgress:  number         
+	CurrentStreak:  number        
+	LongestStreak:  number         
+	LastActivityAt: string   
+	UpdatedAt:      string   
+	UserData:       User   
+	Level:          UserLevel
+}
 
 export interface UserStreak {
   id: number;

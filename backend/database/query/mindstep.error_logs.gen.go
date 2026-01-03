@@ -46,12 +46,38 @@ func newErrorLogs(db *gorm.DB, opts ...gen.DOOption) errorLogs {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_errorLogs.ResolvedBy = errorLogsBelongsToResolvedBy{
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("ResolvedBy", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("ResolvedBy.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("ResolvedBy.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_errorLogs.fillFieldMap()
@@ -177,6 +203,13 @@ type errorLogsBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a errorLogsBelongsToUser) Where(conds ...field.Expr) *errorLogsBelongsToUser {
@@ -258,6 +291,13 @@ type errorLogsBelongsToResolvedBy struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a errorLogsBelongsToResolvedBy) Where(conds ...field.Expr) *errorLogsBelongsToResolvedBy {

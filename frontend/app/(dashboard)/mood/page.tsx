@@ -42,7 +42,7 @@ export default function MoodListPage() {
     
     async function fetchData() {
       try {
-        const data = await apiClient.getMoodEntries(page, 20, token ?? undefined);
+        const data = await apiClient.getMoodEntries(page, 10, token ?? undefined);
         if (isMounted) {
           setMoodEntries(data.entries);
           setTotal(data.total);
@@ -106,7 +106,6 @@ export default function MoodListPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24">
       
-      
       {/* Custom Delete Modal */}
       <DeleteConfirmModal 
         isOpen={deleteModal.open}
@@ -117,15 +116,25 @@ export default function MoodListPage() {
       />
 
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-black text-gray-900">
-            Миний <span className="text-purple-600">Түүх</span>
-          </h1>
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-black text-gray-900">
+              Миний <span className="text-purple-600">Түүх</span>
+            </h1>
+            {/* Нийт тоог энд харуулав */}
+            {!loading && (
+              <p className="text-gray-400 font-bold mt-1 ml-0.5 tracking-widest text-[10px] uppercase flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                Нийт {total} бичлэг
+              </p>
+            )}
+          </div>
+          
           <Link 
             href="/mood/new" 
-            className="flex items-center gap-2 px-5 py-3 bg-purple-600 text-white font-bold rounded-2xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-100"
+            className="flex items-center gap-2 px-5 py-3 bg-purple-600 text-white font-bold rounded-2xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-100 active:scale-95"
           >
-            <Plus size={20} /> <span>Шинэ</span>
+            <Plus size={20} strokeWidth={3} /> <span className="hidden sm:inline">Шинэ</span>
           </Link>
         </div>
 

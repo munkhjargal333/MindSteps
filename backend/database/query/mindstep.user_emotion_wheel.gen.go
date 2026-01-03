@@ -40,6 +40,19 @@ func newUserEmotionWheel(db *gorm.DB, opts ...gen.DOOption) userEmotionWheel {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_userEmotionWheel.MoodEntry = userEmotionWheelBelongsToMoodEntry{
@@ -48,13 +61,38 @@ func newUserEmotionWheel(db *gorm.DB, opts ...gen.DOOption) userEmotionWheel {
 		RelationField: field.NewRelation("MoodEntry", "model.MoodEntries"),
 		User: struct {
 			field.RelationField
+			Gamification struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}
 		}{
 			RelationField: field.NewRelation("MoodEntry.User", "model.Users"),
+			Gamification: struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}{
+				RelationField: field.NewRelation("MoodEntry.User.Gamification", "model.UserGamification"),
+				Level: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("MoodEntry.User.Gamification.Level", "model.UserLevels"),
+				},
+			},
 		},
 		CoreValues: struct {
 			field.RelationField
 			User struct {
 				field.RelationField
+				Gamification struct {
+					field.RelationField
+					Level struct {
+						field.RelationField
+					}
+				}
 			}
 			MaslowLevel struct {
 				field.RelationField
@@ -63,8 +101,27 @@ func newUserEmotionWheel(db *gorm.DB, opts ...gen.DOOption) userEmotionWheel {
 			RelationField: field.NewRelation("MoodEntry.CoreValues", "model.CoreValues"),
 			User: struct {
 				field.RelationField
+				Gamification struct {
+					field.RelationField
+					Level struct {
+						field.RelationField
+					}
+				}
 			}{
 				RelationField: field.NewRelation("MoodEntry.CoreValues.User", "model.Users"),
+				Gamification: struct {
+					field.RelationField
+					Level struct {
+						field.RelationField
+					}
+				}{
+					RelationField: field.NewRelation("MoodEntry.CoreValues.User.Gamification", "model.UserGamification"),
+					Level: struct {
+						field.RelationField
+					}{
+						RelationField: field.NewRelation("MoodEntry.CoreValues.User.Gamification.Level", "model.UserLevels"),
+					},
+				},
 			},
 			MaslowLevel: struct {
 				field.RelationField
@@ -131,8 +188,27 @@ func newUserEmotionWheel(db *gorm.DB, opts ...gen.DOOption) userEmotionWheel {
 		RelationField: field.NewRelation("Journal", "model.Journals"),
 		User: struct {
 			field.RelationField
+			Gamification struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}
 		}{
 			RelationField: field.NewRelation("Journal.User", "model.Users"),
+			Gamification: struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}{
+				RelationField: field.NewRelation("Journal.User.Gamification", "model.UserGamification"),
+				Level: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("Journal.User.Gamification.Level", "model.UserLevels"),
+				},
+			},
 		},
 	}
 
@@ -280,6 +356,13 @@ type userEmotionWheelBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a userEmotionWheelBelongsToUser) Where(conds ...field.Expr) *userEmotionWheelBelongsToUser {
@@ -364,11 +447,23 @@ type userEmotionWheelBelongsToMoodEntry struct {
 
 	User struct {
 		field.RelationField
+		Gamification struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}
 	}
 	CoreValues struct {
 		field.RelationField
 		User struct {
 			field.RelationField
+			Gamification struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}
 		}
 		MaslowLevel struct {
 			field.RelationField
@@ -476,6 +571,12 @@ type userEmotionWheelBelongsToJournal struct {
 
 	User struct {
 		field.RelationField
+		Gamification struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}
 	}
 }
 

@@ -11,12 +11,11 @@ import (
 )
 
 func RegistergamificationRoutes(api fiber.Router) {
-
 	repo := repository.NewGamificationRepository(database.DB)
 	svc := service.NewGamificationService(repo)
 	handler := handler.NewGamificationHandler(svc)
 
-	gamification := api.Group("/gamifications", auth.TokenMiddleware)
+	gamification := api.Group("/gamification", auth.TokenMiddleware)
 
 	gamification.Get("/me", handler.GetUserGamification)
 }

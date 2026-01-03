@@ -29,4 +29,6 @@ func RegisterRoutes(app *fiber.App) {
 	RegisterLessonRoutes(api) // admin
 	RegisterMoodRoutes(api)
 	RegisterGoalRoutes(api)
+	RegistergamificationRoutes(api)
+	RegisterCacheRoutes(api)
 }

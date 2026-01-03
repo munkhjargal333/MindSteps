@@ -25,7 +25,9 @@ func (r *gamificationRepo) GetByUserID(userID uint) (*model.UserGamification, er
 	var stats model.UserGamification
 
 	// 1. Хэрэглэгчийн статистикийг хайна, байхгүй бол анхны утгатайгаар үүсгэнэ
-	err := r.db.Preload("Level").
+	err := r.db.
+		Preload("Level").
+		Preload("User").
 		Where(model.UserGamification{UserID: userID}).
 		Attrs(model.UserGamification{
 			TotalScore:     0,

@@ -28,7 +28,7 @@ func main() {
 	// 	println(err.Error())
 	// }
 	if _, err := cache.InitRedis(context.Background()); err != nil {
-		fmt.Println("⚠️ Redis холбогдохгүй байна: %v", err)
+		fmt.Printf("Redis холбогдохгүй байна: %v\n", err)
 	}
 	defer cache.CloseRedis()
 
@@ -70,10 +70,10 @@ func main() {
 	auth.MustInitGjwt()
 	router.RegisterRoutes(app)
 
-	err = app.Listen(fmt.Sprintf(`:8080`))
+	err = app.Listen(`:8080`)
 	if err != nil {
 		log.Errorf("server stopped: %v", err)
 	}
 
-	log.Fatal(app.Listen(fmt.Sprintf(`:8080`)))
+	log.Fatal(app.Listen(`:8080`))
 }

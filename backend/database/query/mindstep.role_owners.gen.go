@@ -40,13 +40,51 @@ func newRoleOwners(db *gorm.DB, opts ...gen.DOOption) roleOwners {
 		RelationField: field.NewRelation("Role", "model.Roles"),
 		CreatedBy: struct {
 			field.RelationField
+			Gamification struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}
 		}{
 			RelationField: field.NewRelation("Role.CreatedBy", "model.Users"),
+			Gamification: struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}{
+				RelationField: field.NewRelation("Role.CreatedBy.Gamification", "model.UserGamification"),
+				Level: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("Role.CreatedBy.Gamification.Level", "model.UserLevels"),
+				},
+			},
 		},
 		UpdatedBy: struct {
 			field.RelationField
+			Gamification struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}
 		}{
 			RelationField: field.NewRelation("Role.UpdatedBy", "model.Users"),
+			Gamification: struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}{
+				RelationField: field.NewRelation("Role.UpdatedBy.Gamification", "model.UserGamification"),
+				Level: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("Role.UpdatedBy.Gamification.Level", "model.UserLevels"),
+				},
+			},
 		},
 	}
 
@@ -54,12 +92,38 @@ func newRoleOwners(db *gorm.DB, opts ...gen.DOOption) roleOwners {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("Owner", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("Owner.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("Owner.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_roleOwners.AssignedBy = roleOwnersBelongsToAssignedBy{
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("AssignedBy", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("AssignedBy.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("AssignedBy.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_roleOwners.fillFieldMap()
@@ -169,9 +233,21 @@ type roleOwnersBelongsToRole struct {
 
 	CreatedBy struct {
 		field.RelationField
+		Gamification struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}
 	}
 	UpdatedBy struct {
 		field.RelationField
+		Gamification struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}
 	}
 }
 
@@ -254,6 +330,13 @@ type roleOwnersBelongsToOwner struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a roleOwnersBelongsToOwner) Where(conds ...field.Expr) *roleOwnersBelongsToOwner {
@@ -335,6 +418,13 @@ type roleOwnersBelongsToAssignedBy struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a roleOwnersBelongsToAssignedBy) Where(conds ...field.Expr) *roleOwnersBelongsToAssignedBy {

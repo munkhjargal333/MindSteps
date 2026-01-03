@@ -40,12 +40,38 @@ func newRoles(db *gorm.DB, opts ...gen.DOOption) roles {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("CreatedBy", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("CreatedBy.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("CreatedBy.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_roles.UpdatedBy = rolesBelongsToUpdatedBy{
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("UpdatedBy", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("UpdatedBy.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("UpdatedBy.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_roles.fillFieldMap()
@@ -151,6 +177,13 @@ type rolesBelongsToCreatedBy struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a rolesBelongsToCreatedBy) Where(conds ...field.Expr) *rolesBelongsToCreatedBy {
@@ -232,6 +265,13 @@ type rolesBelongsToUpdatedBy struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a rolesBelongsToUpdatedBy) Where(conds ...field.Expr) *rolesBelongsToUpdatedBy {

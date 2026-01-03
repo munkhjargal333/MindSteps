@@ -51,12 +51,38 @@ func newUserDataRequests(db *gorm.DB, opts ...gen.DOOption) userDataRequests {
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_userDataRequests.ProcessedBy = userDataRequestsBelongsToProcessedBy{
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("ProcessedBy", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("ProcessedBy.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("ProcessedBy.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_userDataRequests.fillFieldMap()
@@ -199,6 +225,13 @@ type userDataRequestsBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a userDataRequestsBelongsToUser) Where(conds ...field.Expr) *userDataRequestsBelongsToUser {
@@ -280,6 +313,13 @@ type userDataRequestsBelongsToProcessedBy struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a userDataRequestsBelongsToProcessedBy) Where(conds ...field.Expr) *userDataRequestsBelongsToProcessedBy {

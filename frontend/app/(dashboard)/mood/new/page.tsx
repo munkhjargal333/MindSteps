@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/api/client';
 import { MoodCategory, MoodUnit, CoreValue } from '@/lib/types';
 import Link from 'next/link';
 import { useGlobalToast } from '@/context/ToastContext';
-import { ChevronLeft, Save, Sparkles, Clock, Target, Lightbulb, PencilLine, AlertCircle, Gem } from 'lucide-react';
+import { ChevronLeft, Save, Sparkles, Clock, Target, Lightbulb, PencilLine, AlertCircle, Gem, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function NewMoodPage() {
@@ -14,14 +14,12 @@ export default function NewMoodPage() {
   const { showToast } = useGlobalToast();
   const router = useRouter();
 
-  // States
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<MoodCategory[]>([]);
   const [values, setValues] = useState<CoreValue[]>([]);
   const [moods, setMoods] = useState<MoodUnit[]>([]);
 
-  // Selection states
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedMood, setSelectedMood] = useState<MoodUnit | null>(null);
   const [selectedCoreValue, setSelectedCoreValue] = useState<number | null>(null);
@@ -46,7 +44,6 @@ export default function NewMoodPage() {
       setCategories(categoriesData);
       setValues(coreValuesData);
     } catch (error) {
-      console.error(error);
       showToast('Өгөгдөл ачаалахад алдаа гарлаа', 'error');
     } finally {
       setLoading(false);
@@ -61,10 +58,9 @@ export default function NewMoodPage() {
 
   const handleSubmit = async () => {
     if (!token || !selectedMood) return;
-
-    // Үнэт зүйлс байхгүй бол анхааруулга
-    if (values.length === 0) {
-      showToast('Эхлээд "Үнэт зүйл" хэсэгт очиж өөрийн үнэт зүйлсийг тохируулна уу', 'error');
+    if (selectedCoreValue === null) {
+      showToast('Эхлээд үнэт зүйлээ тохируулна уу', 'error');
+      console.log('No core values set');
       return;
     }
 
@@ -81,7 +77,7 @@ export default function NewMoodPage() {
       }, token);
       
       showToast('Амжилттай хадгалагдлаа', 'success');
-      setTimeout(() => router.push('/mood'), 1000);
+      setTimeout(() => router.push('/mood'), 800);
     } catch (error) {
       showToast('Алдаа гарлаа', 'error');
     } finally {
@@ -91,22 +87,21 @@ export default function NewMoodPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[70vh]">
-        <div className="w-12 h-12 border-4 border-purple-100 border-t-purple-600 rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-10 h-10 border-4 border-purple-100 border-t-purple-600 rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  return (
+return (
     <div className="min-h-screen bg-gray-50/50 pb-24">
-      
       
       {/* HEADER */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/mood" className="p-2 hover:bg-gray-100 rounded-full transition-colors group">
+          <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors group">
             <ChevronLeft size={24} className="text-gray-500 group-hover:text-black" />
-          </Link>
+          </button>
           <h1 className="font-black text-gray-900">Шинэ тэмдэглэл</h1>
           <div className="w-10"></div>
         </div>
@@ -130,14 +125,20 @@ export default function NewMoodPage() {
                     setSelectedCategory(cat.id); 
                     setSelectedMood(null); 
                   }}
-                  className={`p-4 rounded-3xl border-2 transition-all duration-200 text-center ${
-                    selectedCategory === cat.id
-                      ? 'border-purple-600 bg-purple-50 shadow-md'
-                      : 'border-white bg-white hover:border-purple-200 shadow-sm'
-                  }`}
+                  style={{
+                    background: `radial-gradient(circle at center, ${cat.color || '#9333ea'} 0%, ${cat.color || '#9333ea'}dd 50%, ${cat.color || '#9333ea'}99 100%)`,
+                    borderColor: cat.color || '#9333ea',
+                    opacity: selectedCategory === cat.id ? 1 : 0.6,
+                    transform: selectedCategory === cat.id ? 'scale(1.05)' : 'scale(1)',
+                    boxShadow: selectedCategory === cat.id ? '0 8px 20px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.08)'
+                  }}
+                  className="p-2.5 rounded-3xl border-2 transition-all duration-200 text-center active:scale-95"
                 >
-                  <div className="text-3xl mb-2">{cat.emoji || '💭'}</div>
-                  <div className="text-xs font-bold text-gray-700">{cat.name_mn}</div>
+                  <div className="text-2xl mb-1 drop-shadow-md">{cat.emoji || '💭'}</div>
+                  {/* Текстийг илүү тод, уншигдахуйц болгох үүднээс font-black болон shadow нэмсэн */}
+                  <div className="text-[10px] font-black leading-tight text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] uppercase">
+                    {cat.name_mn}
+                  </div>
                 </button>
               ))}
             </div>
@@ -156,13 +157,19 @@ export default function NewMoodPage() {
                     key={mood.id}
                     type="button"
                     onClick={() => setSelectedMood(mood)}
-                    style={{ borderColor: selectedMood?.id === mood.id ? mood.display_color : 'white' }}
-                    className={`p-4 rounded-3xl border-2 transition-all shadow-sm ${
-                      selectedMood?.id === mood.id ? 'bg-white shadow-md scale-[1.02]' : 'bg-white hover:bg-gray-50'
-                    }`}
+                    style={{ 
+                      background: `radial-gradient(circle at center, ${mood.display_color} 0%, ${mood.display_color}dd 50%, ${mood.display_color}99 100%)`,
+                      borderColor: mood.display_color,
+                      opacity: selectedMood?.id === mood.id ? 1 : 0.6,
+                      transform: selectedMood?.id === mood.id ? 'scale(1.05)' : 'scale(1)',
+                      boxShadow: selectedMood?.id === mood.id ? '0 8px 20px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.08)'
+                    }}
+                    className="p-2.5 rounded-3xl border-2 transition-all active:scale-95"
                   >
-                    <div className="text-3xl mb-2">{mood.display_emoji}</div>
-                    <div className="text-sm font-bold text-gray-800">{mood.display_name_mn}</div>
+                    <div className="text-2xl mb-1 drop-shadow-md">{mood.display_emoji}</div>
+                    <div className="text-[11px] font-black leading-tight text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
+                      {mood.display_name_mn}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -177,7 +184,7 @@ export default function NewMoodPage() {
               <section className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
                 <div className="flex justify-between items-end mb-6">
                   <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">Эрчим хүч</h2>
-                  <span className="text-4xl font-black" style={{ color: selectedMood.display_color }}>{intensity}</span>
+                  <span className="text-4xl font-black transition-all" style={{ color: selectedMood.display_color }}>{intensity}</span>
                 </div>
                 <input
                   type="range" 
@@ -214,14 +221,14 @@ export default function NewMoodPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                  <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar px-1">
                     <button
                       type="button"
                       onClick={() => setSelectedCoreValue(null)}
-                      className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-bold text-sm ${
+                      className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-black text-xs ${
                         selectedCoreValue === null 
-                          ? 'bg-gray-100 text-gray-700 border-gray-200' 
-                          : 'bg-white border-white text-gray-400 shadow-sm hover:border-gray-100'
+                          ? 'bg-gray-900 text-white border-gray-900 shadow-md' 
+                          : 'bg-white border-gray-100 text-gray-400'
                       }`}
                     >
                       Сонгохгүй
@@ -231,10 +238,10 @@ export default function NewMoodPage() {
                         key={v.id}
                         type="button"
                         onClick={() => setSelectedCoreValue(v.id)}
-                        className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-bold text-sm ${
+                        className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-black text-xs ${
                           selectedCoreValue === v.id 
-                            ? 'bg-gray-900 text-white border-gray-900' 
-                            : 'bg-white border-white text-gray-500 shadow-sm'
+                            ? 'bg-purple-600 text-white border-purple-600 shadow-md' 
+                            : 'bg-white border-gray-100 text-gray-600 hover:border-purple-100'
                         }`}
                       >
                         {v.MaslowLevel?.icon} {v.name}
@@ -260,13 +267,6 @@ export default function NewMoodPage() {
                   value={triggerEvent} 
                   onChange={setTriggerEvent} 
                 />
-                <InputGroup 
-                  icon={<Target size={16} />} 
-                  label="Авсан арга хэмжээ" 
-                  placeholder="Жишээ: Гүйлтийн амьсгалах..." 
-                  value={copingStrategy} 
-                  onChange={setCopingStrategy} 
-                />
                 <div className="md:col-span-2">
                   <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-2">
                     <PencilLine size={14} /> Нэмэлт тэмдэглэл
@@ -275,7 +275,7 @@ export default function NewMoodPage() {
                     rows={4}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full p-5 bg-white border-none rounded-[2rem] shadow-sm focus:ring-2 focus:ring-purple-500 outline-none text-gray-700 transition-all"
+                    className="w-full p-5 bg-white border border-gray-100 rounded-[2rem] shadow-sm focus:ring-2 focus:ring-purple-500 outline-none text-gray-700 transition-all placeholder:text-gray-300"
                     placeholder="Өнөөдөр ямар юу болов?..."
                   />
                 </div>
@@ -287,7 +287,7 @@ export default function NewMoodPage() {
                 onClick={handleSubmit}
                 disabled={submitting}
                 style={{ backgroundColor: selectedMood.display_color }}
-                className="w-full py-5 text-white font-black text-lg rounded-[2rem] shadow-xl hover:brightness-90 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+                className="w-full py-5 text-white font-black text-lg rounded-[2rem] shadow-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
               >
                 {submitting ? 'Түр хүлээнэ үү...' : <><Save size={20} /> Хадгалах</>}
               </button>
@@ -299,20 +299,8 @@ export default function NewMoodPage() {
   );
 }
 
-// Reusable Input Component
-function InputGroup({ 
-  icon, 
-  label, 
-  placeholder, 
-  value, 
-  onChange 
-}: {
-  icon: React.ReactNode;
-  label: string;
-  placeholder: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
+// InputGroup Function
+function InputGroup({ icon, label, placeholder, value, onChange }: any) {
   return (
     <div className="flex flex-col">
       <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-2">
@@ -322,7 +310,7 @@ function InputGroup({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-5 py-4 bg-white border-none rounded-2xl shadow-sm focus:ring-2 focus:ring-purple-500 outline-none text-sm transition-all text-gray-700"
+        className="w-full px-5 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-2 focus:ring-purple-500 outline-none text-sm transition-all text-gray-800 placeholder:text-gray-300 font-bold"
         placeholder={placeholder}
       />
     </div>

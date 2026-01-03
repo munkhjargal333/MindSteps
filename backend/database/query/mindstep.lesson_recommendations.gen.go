@@ -42,6 +42,19 @@ func newLessonRecommendations(db *gorm.DB, opts ...gen.DOOption) lessonRecommend
 		db: db.Session(&gorm.Session{}),
 
 		RelationField: field.NewRelation("User", "model.Users"),
+		Gamification: struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}{
+			RelationField: field.NewRelation("User.Gamification", "model.UserGamification"),
+			Level: struct {
+				field.RelationField
+			}{
+				RelationField: field.NewRelation("User.Gamification.Level", "model.UserLevels"),
+			},
+		},
 	}
 
 	_lessonRecommendations.Lesson = lessonRecommendationsBelongsToLesson{
@@ -69,8 +82,27 @@ func newLessonRecommendations(db *gorm.DB, opts ...gen.DOOption) lessonRecommend
 		RelationField: field.NewRelation("RelatedValue", "model.CoreValues"),
 		User: struct {
 			field.RelationField
+			Gamification struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}
 		}{
 			RelationField: field.NewRelation("RelatedValue.User", "model.Users"),
+			Gamification: struct {
+				field.RelationField
+				Level struct {
+					field.RelationField
+				}
+			}{
+				RelationField: field.NewRelation("RelatedValue.User.Gamification", "model.UserGamification"),
+				Level: struct {
+					field.RelationField
+				}{
+					RelationField: field.NewRelation("RelatedValue.User.Gamification.Level", "model.UserLevels"),
+				},
+			},
 		},
 		MaslowLevel: struct {
 			field.RelationField
@@ -197,6 +229,13 @@ type lessonRecommendationsBelongsToUser struct {
 	db *gorm.DB
 
 	field.RelationField
+
+	Gamification struct {
+		field.RelationField
+		Level struct {
+			field.RelationField
+		}
+	}
 }
 
 func (a lessonRecommendationsBelongsToUser) Where(conds ...field.Expr) *lessonRecommendationsBelongsToUser {
@@ -369,6 +408,12 @@ type lessonRecommendationsBelongsToRelatedValue struct {
 
 	User struct {
 		field.RelationField
+		Gamification struct {
+			field.RelationField
+			Level struct {
+				field.RelationField
+			}
+		}
 	}
 	MaslowLevel struct {
 		field.RelationField
