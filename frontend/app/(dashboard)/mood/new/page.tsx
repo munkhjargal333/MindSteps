@@ -3,22 +3,26 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import { MoodCategory, MoodUnit, CoreValue } from '@/lib/types';
-import Link from 'next/link';
+import { MoodCategory, MoodUnit, CoreValue, MoodEntry } from '@/lib/types';
 import { useGlobalToast } from '@/context/ToastContext';
-import { ChevronLeft, Save, Sparkles, Clock, Target, Lightbulb, PencilLine, AlertCircle, Gem, Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { ChevronLeft, Save, Sparkles, Clock, Target, Lightbulb, PencilLine, AlertCircle, Gem, Trash2 } from 'lucide-react';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 
-export default function NewMoodPage() {
+export default function EditMoodPage() {
   const { token } = useAuth(); 
   const { showToast } = useGlobalToast();
   const router = useRouter();
+  const params = useParams();
+  const entryId = params.id as string;
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [categories, setCategories] = useState<MoodCategory[]>([]);
   const [values, setValues] = useState<CoreValue[]>([]);
   const [moods, setMoods] = useState<MoodUnit[]>([]);
+  const [entry, setEntry] = useState<MoodEntry | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedMood, setSelectedMood] = useState<MoodUnit | null>(null);
@@ -31,20 +35,35 @@ export default function NewMoodPage() {
 
   useEffect(() => {
     loadData();
-  }, [token]);
+  }, [token, entryId]);
 
   const loadData = async () => {
-    if (!token) return;
+    if (!token || !entryId) return;
     setLoading(true);
     try {
-      const [categoriesData, coreValuesData] = await Promise.all([
+      const [categoriesData, coreValuesData, entryData] = await Promise.all([
         apiClient.getMoodCategories(token),
         apiClient.getCoreValues(token),
+        apiClient.getMoodEntry(Number(entryId), token),
       ]);
+      
       setCategories(categoriesData);
       setValues(coreValuesData);
+      setEntry(entryData);
+      
+      // Set form values from entry
+      setSelectedCategory(entryData.MoodUnit.category_id);
+      setSelectedMood(entryData.MoodUnit);
+      setIntensity(entryData.intensity);
+      setWhenFelt(entryData.when_felt || '');
+      setTriggerEvent(entryData.trigger_event || '');
+      setCopingStrategy(entryData.coping_strategy || '');
+      setNotes(entryData.notes || '');
+      setSelectedCoreValue(entryData.core_value_id || null);
+      
     } catch (error) {
       showToast('Өгөгдөл ачаалахад алдаа гарлаа', 'error');
+      router.push('/mood');
     } finally {
       setLoading(false);
     }
@@ -57,16 +76,11 @@ export default function NewMoodPage() {
   }, [selectedCategory, token]);
 
   const handleSubmit = async () => {
-    if (!token || !selectedMood) return;
-    if (selectedCoreValue === null) {
-      showToast('Эхлээд үнэт зүйлээ тохируулна уу', 'error');
-      console.log('No core values set');
-      return;
-    }
+    if (!token || !selectedMood || !entryId) return;
 
     setSubmitting(true);
     try {
-      await apiClient.createMoodEntry({
+      await apiClient.updateMoodEntry(Number(entryId), {
         mood_unit_id: selectedMood.id,
         intensity,
         when_felt: whenFelt || undefined,
@@ -76,12 +90,29 @@ export default function NewMoodPage() {
         core_value_id: selectedCoreValue || undefined,
       }, token);
       
-      showToast('Амжилттай хадгалагдлаа', 'success');
-      setTimeout(() => router.push('/mood'), 800);
+      showToast('Амжилттай шинэчлэгдлээ', 'success');
+      setTimeout(() => router.push(`/mood/${entryId}`), 800);
     } catch (error) {
       showToast('Алдаа гарлаа', 'error');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!token || !entryId) return;
+    
+    if (!confirm('Энэ тэмдэглэлийг устгахдаа итгэлтэй байна уу?')) return;
+
+    setDeleting(true);
+    try {
+      await apiClient.deleteMoodEntry(Number(entryId), token);
+      showToast('Амжилттай устгагдлаа', 'success');
+      setTimeout(() => router.push('/mood'), 800);
+    } catch (error) {
+      showToast('Алдаа гарлаа', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -93,7 +124,7 @@ export default function NewMoodPage() {
     );
   }
 
-return (
+  return (
     <div className="min-h-screen bg-gray-50/50 pb-24">
       
       {/* HEADER */}
@@ -102,8 +133,14 @@ return (
           <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors group">
             <ChevronLeft size={24} className="text-gray-500 group-hover:text-black" />
           </button>
-          <h1 className="font-black text-gray-900">Шинэ тэмдэглэл</h1>
-          <div className="w-10"></div>
+          <h1 className="font-black text-gray-900">Тэмдэглэл засах</h1>
+          <button 
+            onClick={handleDelete}
+            disabled={deleting}
+            className="p-2 hover:bg-red-50 rounded-full transition-colors group"
+          >
+            <Trash2 size={20} className="text-red-500 group-hover:text-red-600" />
+          </button>
         </div>
       </div>
 
@@ -135,7 +172,6 @@ return (
                   className="p-2.5 rounded-3xl border-2 transition-all duration-200 text-center active:scale-95"
                 >
                   <div className="text-2xl mb-1 drop-shadow-md">{cat.emoji || '💭'}</div>
-                  {/* Текстийг илүү тод, уншигдахуйц болгох үүднээс font-black болон shadow нэмсэн */}
                   <div className="text-[10px] font-black leading-tight text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] uppercase">
                     {cat.name_mn}
                   </div>
