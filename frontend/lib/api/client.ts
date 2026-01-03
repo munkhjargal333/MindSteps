@@ -155,7 +155,7 @@ class APIClient {
           config.headers.Authorization = `Bearer ${this.token}`;
         }
         
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === 'development') {
           console.log('🔵 API Request:', config.method?.toUpperCase(), config.url);
         }
         
@@ -170,7 +170,7 @@ class APIClient {
     // Response interceptor
     this.axiosInstance.interceptors.response.use(
       (response) => {
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === 'development') {
           console.log('✅ API Response:', response.config.url, response.status);
         }
         return response;
