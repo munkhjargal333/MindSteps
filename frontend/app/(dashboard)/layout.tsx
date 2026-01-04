@@ -29,13 +29,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return pathname?.startsWith(href);
   };
 
-  const currentLevel = user?.gamification?.Level?.level_number || 1;
+  const currentLevel = user?.gamification?.level?.level_number || 1;
   const totalScore = user?.gamification?.total_score || 0;
-  const levelName = user?.gamification?.Level?.level_name || 'Шинэ';
-  const levelIcon = user?.gamification?.Level?.icon || '🌱';
-  const levelColor = user?.gamification?.Level?.color || '#3b82f6';
-
-  console.log('User Level:', user?.gamification);
+  const levelName = user?.gamification?.level?.level_name || 'Шинэ';
+  const levelIcon = user?.gamification?.level?.icon || '🌱';
+  const levelColor = user?.gamification?.level?.color || '#3b82f6';
 
   return (
     <div className="min-h-screen bg-[#FAFBFC] flex flex-col">
