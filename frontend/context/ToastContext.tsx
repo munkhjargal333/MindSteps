@@ -8,7 +8,6 @@ import { createPortal } from 'react-dom';
 type ToastType = 'success' | 'error' | 'warning';
 
 interface ToastContextType {
-  // type болон duration-ийг заавал биш (optional) болголоо
   showToast: (message: string, type?: ToastType, duration?: number) => void;
 }
 
@@ -22,13 +21,24 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Default утгуудыг энд зааж өгсөн: type = 'success', duration = 4000
-  const showToast = useCallback((message: string, type: ToastType = 'success', duration: number = 1000) => {
+  // --- ТОСТЫГ АВТОМАТААР ХААХ ЛОГИК ---
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, toast.duration);
+
+      // Шинэ тост ирэх эсвэл компонент устхад хуучин таймерыг цэвэрлэнэ
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const showToast = useCallback((message: string, type: ToastType = 'success', duration: number = 3000) => {
+    // Өмнөх тостыг шууд хаагаад шинийг гаргах (Reset)
     setToast(null);
-    // Маш богино хугацааны дараа шинээр гарч ирэх нь анимейшн гацахгүй байх нөхцөл болдог
     setTimeout(() => {
       setToast({ message, type, duration });
-    }, 5);
+    }, 10);
   }, []);
 
   const hideToast = useCallback(() => setToast(null), []);
@@ -45,11 +55,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 key={toast.message}
                 initial={{ opacity: 0, y: 30, x: "-50%" }}
                 animate={{ opacity: 1, y: 0, x: "-50%" }}
-                exit={{ opacity: 0, scale: 0.95, x: "-50%", transition: { duration: 0.15 } }}
+                exit={{ opacity: 0, scale: 0.95, y: 20, x: "-50%", transition: { duration: 0.2 } }}
                 transition={{ 
                   type: "spring",
                   damping: 25,
-                  stiffness: 300,
+                  stiffness: 350,
                 }}
                 style={{
                   position: 'fixed',
@@ -57,13 +67,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   bottom: '60px',
                   width: 'min(420px, 92%)',
                   pointerEvents: 'auto',
-                  transition: 'none', 
                 }}
                 className={`
-                  flex flex-col rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)]
+                  flex flex-col rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)]
                   border border-black/5 overflow-hidden
                   ${
-                    toast.type === 'success' ? 'bg-[#f0fdf4]' : 
+                    toast.type === 'success' ? 'bg-white' : 
                     toast.type === 'error' ? 'bg-[#fef2f2]' : 
                     'bg-[#fffbeb]'
                   }
@@ -71,27 +80,39 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               >
                 <div className="flex items-center gap-4 px-5 py-4">
                   <div className="shrink-0">
-                    {toast.type === 'success' && <CheckCircle size={26} className="text-emerald-600" />}
-                    {toast.type === 'error' && <AlertCircle size={26} className="text-rose-600" />}
-                    {toast.type === 'warning' && <AlertTriangle size={26} className="text-amber-600" />}
+                    {toast.type === 'success' && (
+                      <div className="bg-emerald-100 p-1.5 rounded-full">
+                        <CheckCircle size={22} className="text-emerald-600" strokeWidth={3} />
+                      </div>
+                    )}
+                    {toast.type === 'error' && (
+                      <div className="bg-rose-100 p-1.5 rounded-full">
+                        <AlertCircle size={22} className="text-rose-600" strokeWidth={3} />
+                      </div>
+                    )}
+                    {toast.type === 'warning' && (
+                      <div className="bg-amber-100 p-1.5 rounded-full">
+                        <AlertTriangle size={22} className="text-amber-600" strokeWidth={3} />
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-bold text-black leading-snug">
+                    <p className="text-[14px] font-bold text-slate-900 leading-snug">
                       {toast.message}
                     </p>
                   </div>
 
                   <button 
                     onClick={hideToast}
-                    className="p-2 -mr-1 hover:bg-black/5 active:bg-black/10 rounded-full transition-colors text-black/40"
+                    className="p-1.5 hover:bg-black/5 active:bg-black/10 rounded-full transition-colors text-black/30"
                   >
-                    <X size={20} strokeWidth={2.5} />
+                    <X size={18} strokeWidth={3} />
                   </button>
                 </div>
 
-                {/* Progress Bar - Доод талын анимейшн зураас */}
-                <div className="h-[4px] w-full bg-black/[0.03]">
+                {/* Progress Bar Animation */}
+                <div className="h-[3px] w-full bg-black/[0.05]">
                   <motion.div 
                     initial={{ scaleX: 1 }}
                     animate={{ scaleX: 0 }}

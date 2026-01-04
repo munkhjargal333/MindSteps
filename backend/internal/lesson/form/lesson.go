@@ -83,3 +83,12 @@ func (f CompleteLessonForm) Validate() error {
 
 	return nil
 }
+
+type CategoryProgress struct {
+	CategoryID       int     `gorm:"column:category_id" json:"category_id"`
+	CategoryName     string  `gorm:"column:category_name" json:"category_name"`
+	Emoji            string  `gorm:"column:emoji" json:"emoji"`
+	TotalLessons     int     `gorm:"column:total_lessons" json:"total_lessons"`
+	CompletedLessons int     `gorm:"column:completed_lessons" json:"completed_lessons"`
+	ProgressPercent  float64 `gorm:"column:progress_percent" json:"progress_percent"`
+}

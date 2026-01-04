@@ -32,3 +32,19 @@ func (h *GamificationHandler) GetUserGamification(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(stats)
 }
+
+func (h *GamificationHandler) GetDashboard(c *fiber.Ctx) error {
+	tokenInfo := auth.GetTokenInfo(c)
+
+	if tokenInfo == nil {
+		return shared.ResponseUnauthorized(c)
+	}
+
+	userID := tokenInfo.UserID
+
+	stats, err := h.service.GetFullDashboardData(userID)
+	if err != nil {
+		return shared.ResponseBadRequest(c, err.Error())
+	}
+	return c.Status(fiber.StatusOK).JSON(stats)
+}
