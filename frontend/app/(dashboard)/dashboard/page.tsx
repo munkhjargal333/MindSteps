@@ -16,6 +16,7 @@ export default function DashboardPage() {
     if (!token) return;
     try {
       const response = await apiClient.getUserStats(token);
+      
       setData(response);
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -115,90 +116,90 @@ export default function DashboardPage() {
         <EmotionWheel data={data.plutchik_wheel} />
       </div> */}
 
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-<div className="bg-white rounded-[2.5rem] p-7 shadow-xl shadow-gray-200/40 border border-gray-50">
-    <div className="flex items-center justify-between mb-8">
-      <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Миний идэвх</span>
-      <TrendingUp className="w-4 h-4 text-green-500" />
-    </div>
-    
-    <div className="space-y-6">
-      {/* Тэмдэглэлийн хэсэг */}
-      <div className="flex items-center gap-4">
-        <div className="bg-blue-50 p-3 rounded-2xl shadow-sm">
-          <BookOpen className="w-6 h-6 text-blue-600" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-2xl font-black text-gray-900 leading-none">
-            {data?.stats.total_journals || 0}
-          </span>
-          <span className="text-[11px] font-bold text-gray-400 uppercase mt-1">Нийт тэмдэглэл</span>
-        </div>
-      </div>
-
-      {/* Хуваагч зураас (маш бүдэг) */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-100 to-transparent"></div>
-
-      {/* Сэтгэл санааны хэсэг */}
-      <div className="flex items-center gap-4">
-        <div className="bg-rose-50 p-3 rounded-2xl shadow-sm">
-          <Activity className="w-6 h-6 text-rose-500" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-2xl font-black text-gray-900 leading-none">
-            {data?.stats.total_moods || 0}
-          </span>
-          <span className="text-[11px] font-bold text-gray-400 uppercase mt-1">Сэтгэл санаа</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {/* 2. Хичээлийн явц - BookOpen Image & Progress */}
-  <div className="bg-white rounded-[2rem] p-7 shadow-xl shadow-gray-200/40 border border-gray-50 md:col-span-2">
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <div className="absolute inset-0 bg-purple-200 blur-lg opacity-40 rounded-full"></div>
-          <div className="relative bg-purple-600 p-3.5 rounded-2xl shadow-lg shadow-purple-200">
-            <BookOpen className="w-6 h-6 text-white" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="bg-white rounded-[2.5rem] p-7 shadow-xl shadow-gray-200/40 border border-gray-50">
+          <div className="flex items-center justify-between mb-8">
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Миний идэвх</span>
+            <TrendingUp className="w-4 h-4 text-green-500" />
           </div>
-        </div>
-        <div>
-          <h3 className="text-lg font-black text-gray-900 leading-none">Хичээлийн явц</h3>
-          <p className="text-xs font-bold text-gray-400 mt-1.5 flex items-center gap-1.5">
-            <TrendingUp className="w-3.5 h-3.5 text-green-500" />
-            Нийт {data?.stats.total_lessons_completed} хичээл дуусгасан
-          </p>
-        </div>
-      </div>
-    </div>
-    
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
-      {data?.category_progress.map(cat => (
-        <div key={cat.category_id} className="group">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2.5">
-              <span className="text-xl leading-none filter drop-shadow-sm">{cat.emoji}</span>
-              <span className="text-[13px] font-bold text-gray-700 group-hover:text-purple-600 transition-colors">
-                {cat.category_name}
-              </span>
+          
+          <div className="space-y-6">
+            {/* Тэмдэглэлийн хэсэг */}
+            <div className="flex items-center gap-4">
+              <div className="bg-blue-50 p-3 rounded-2xl shadow-sm">
+                <BookOpen className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-2xl font-black text-gray-900 leading-none">
+                  {data?.stats.total_journals || 0}
+                </span>
+                <span className="text-[11px] font-bold text-gray-400 uppercase mt-1">Нийт тэмдэглэл</span>
+              </div>
             </div>
-            <span className="text-[11px] font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">
-              {Math.round(cat.progress_percent)}%
-            </span>
-          </div>
-          <div className="relative h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-            <div 
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-1000 ease-out"
-              style={{ width: `${cat.progress_percent}%` }}
-            />
+
+            {/* Хуваагч зураас (маш бүдэг) */}
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-100 to-transparent"></div>
+
+            {/* Сэтгэл санааны хэсэг */}
+            <div className="flex items-center gap-4">
+              <div className="bg-rose-50 p-3 rounded-2xl shadow-sm">
+                <Activity className="w-6 h-6 text-rose-500" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-2xl font-black text-gray-900 leading-none">
+                  {data?.stats.total_moods || 0}
+                </span>
+                <span className="text-[11px] font-bold text-gray-400 uppercase mt-1">Сэтгэл санаа</span>
+              </div>
+            </div>
           </div>
         </div>
-      ))}
-    </div>
-  </div>
-</div>
+
+        {/* 2. Хичээлийн явц - BookOpen Image & Progress */}
+        <div className="bg-white rounded-[2rem] p-7 shadow-xl shadow-gray-200/40 border border-gray-50 md:col-span-2">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-purple-200 blur-lg opacity-40 rounded-full"></div>
+                <div className="relative bg-purple-600 p-3.5 rounded-2xl shadow-lg shadow-purple-200">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-gray-900 leading-none">Хичээлийн явц</h3>
+                <p className="text-xs font-bold text-gray-400 mt-1.5 flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+                  Нийт {data?.stats.total_lessons_completed} хичээл дуусгасан
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+            {data?.category_progress.map(cat => (
+              <div key={cat.category_id} className="group">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl leading-none filter drop-shadow-sm">{cat.emoji}</span>
+                    <span className="text-[13px] font-bold text-gray-700 group-hover:text-purple-600 transition-colors">
+                      {cat.category_name}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-black text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md">
+                    {Math.round(cat.progress_percent)}%
+                  </span>
+                </div>
+                <div className="relative h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div 
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${cat.progress_percent}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

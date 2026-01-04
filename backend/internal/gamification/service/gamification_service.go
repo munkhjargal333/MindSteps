@@ -134,7 +134,7 @@ func (s *gamificationService) GetFullDashboardData(userID uint) (*form.UserDashb
 	// }()
 
 	// Бүх процесс дуусахыг хүлээх (Timeout эсвэл Error check)
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 2; i++ {
 		if err := <-errChan; err != nil {
 			return nil, err
 		}
