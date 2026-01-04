@@ -54,7 +54,7 @@ export default function DashboardPage() {
                 <Sparkles className="w-9 h-9 text-yellow-300 drop-shadow-glow" />
                 {/* Жижиг Badge - Level Number */}
                 <div className="absolute -bottom-2 -right-2 bg-white text-indigo-600 text-[10px] font-black w-6 h-6 rounded-lg flex items-center justify-center shadow-lg border border-indigo-50">
-                  {user?.gamification?.Level?.level_number || 1}
+                  {user?.gamification?.level?.level_number || 1}
                 </div>
               </div>
             </div>
@@ -67,7 +67,7 @@ export default function DashboardPage() {
               <div className="inline-flex items-center gap-1.5 mt-1 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
                 <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
                 <span className="text-[11px] font-black uppercase tracking-widest text-cyan-300">
-                  {user?.gamification?.Level?.level_name || 'Legendary'}
+                  {user?.gamification?.level?.level_name || 'Legendary'}
                 </span>
               </div>
             </div>

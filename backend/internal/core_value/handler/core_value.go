@@ -132,6 +132,8 @@ func (h *CoreValueHandler) ListByUserID(c *fiber.Ctx) error {
 }
 
 func (r *CoreValueHandler) MaslowLevelList(c *fiber.Ctx) error {
+	// fmt.Println("--- Database-ээс өгөгдөл уншиж байна ---")
+
 	levels, err := r.service.MaslowLevelList()
 	if err != nil {
 		return shared.ResponseBadRequest(c, err.Error())

@@ -63,7 +63,7 @@ export interface UserGamification {
 	last_activity_at: string   
 	updated_at:      string   
 	// UserData:       User   
-	Level:          UserLevel
+	level:          UserLevel
 }
 
 export interface UserStreak {
