@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User } from "../lib/types";
 import { apiClient } from '../lib/api/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
@@ -18,12 +18,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Public paths that don't require authentication
+const PUBLIC_PATHS = ['/login', '/register', '/'];
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   // Initialize auth on mount
   useEffect(() => {
@@ -53,6 +57,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initAuth();
   }, []);
+
+  // Auto redirect based on auth state
+  useEffect(() => {
+    // Wait for initial loading to complete
+    if (loading) return;
+
+    const isPublicPath = PUBLIC_PATHS.includes(pathname);
+
+    // Redirect to login if not authenticated and trying to access protected route
+    if (!token && !user && !isPublicPath) {
+      console.warn('🚫 Unauthorized access, redirecting to login');
+      router.push('/login');
+      return;
+    }
+
+    // Redirect to dashboard if authenticated and trying to access login/register
+    if (token && user && (pathname === '/login' || pathname === '/register')) {
+      console.log('✅ Already authenticated, redirecting to dashboard');
+      router.push('/dashboard');
+      return;
+    }
+  }, [token, user, loading, pathname, router]);
 
   // Listen for unauthorized events (from API client)
   useEffect(() => {
@@ -191,20 +217,12 @@ export function useAuth() {
   return context;
 }
 
-// Protected route HOC
+// Protected route HOC (optional, now handled by AuthProvider)
 export function withAuth<P extends object>(
   Component: React.ComponentType<P>
 ) {
   return function ProtectedRoute(props: P) {
     const { user, loading } = useAuth();
-    const router = useRouter();
-
-    useEffect(() => {
-      if (!loading && !user) {
-        console.warn('🚫 Unauthorized access, redirecting to login');
-        router.push('/login');
-      }
-    }, [user, loading, router]);
 
     if (loading) {
       return (
@@ -215,6 +233,7 @@ export function withAuth<P extends object>(
     }
 
     if (!user) {
+      // AuthProvider will handle redirect
       return null;
     }
 
