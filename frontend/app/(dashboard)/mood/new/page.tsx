@@ -183,7 +183,7 @@ return (
               {/* INTENSITY RANGE */}
               <section className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
                 <div className="flex justify-between items-end mb-6">
-                  <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">Эрчим хүч</h2>
+                  <h2 className="text-3xl font-black text-gray-900 uppercase tracking-widest">Эрчим</h2>
                   <span className="text-4xl font-black transition-all" style={{ color: selectedMood.display_color }}>{intensity}</span>
                 </div>
                 <input
@@ -222,31 +222,35 @@ return (
                   </div>
                 ) : (
                   <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar px-1">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCoreValue(null)}
-                      className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-black text-xs ${
-                        selectedCoreValue === null 
-                          ? 'bg-gray-900 text-white border-gray-900 shadow-md' 
-                          : 'bg-white border-gray-100 text-gray-400'
-                      }`}
-                    >
-                      Сонгохгүй
-                    </button>
-                    {values.map((v) => (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setSelectedCoreValue(v.id)}
-                        className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-black text-xs ${
-                          selectedCoreValue === v.id 
-                            ? 'bg-purple-600 text-white border-purple-600 shadow-md' 
-                            : 'bg-white border-gray-100 text-gray-600 hover:border-purple-100'
-                        }`}
-                      >
-                        {v.MaslowLevel?.icon} {v.name}
-                      </button>
-                    ))}
+                    {values.map((v) => {
+                      const isActive = selectedCoreValue === v.id;
+                      
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setSelectedCoreValue(v.id)}
+                          style={{
+                            backgroundColor: isActive ? v.color : 'white',
+                            borderColor: isActive ? v.color : '#f3f4f6',
+                            color: isActive ? 'white' : '#4b5563',
+                          }}
+                          className={`
+                            px-6 py-3 rounded-2xl border-2 whitespace-nowrap 
+                            transition-all duration-200 font-black text-xs
+                            ${isActive ? 'shadow-lg scale-105' : 'hover:border-gray-200 shadow-sm'}
+                          `}
+                        >
+                          <span className="flex items-center gap-2.5">
+                            {/* Айконы хэмжээг энд text-lg эсвэл text-xl-ээр томсгов */}
+                            <span className="text-lg leading-none">
+                              {v.MaslowLevel?.icon}
+                            </span>
+                            <span>{v.name}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </section>

@@ -19,7 +19,9 @@ import {
   Maslow,
   LessonCategory,
   PlutchikCombination,
-  CompleteLessonPayload
+  CompleteLessonPayload,
+  DashboardStats
+
 } from '@/lib/types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
@@ -155,7 +157,7 @@ class APIClient {
           config.headers.Authorization = `Bearer ${this.token}`;
         }
         
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === 'development') {
           console.log('🔵 API Request:', config.method?.toUpperCase(), config.url);
         }
         
@@ -170,7 +172,7 @@ class APIClient {
     // Response interceptor
     this.axiosInstance.interceptors.response.use(
       (response) => {
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === 'development') {
           console.log('✅ API Response:', response.config.url, response.status);
         }
         return response;
@@ -473,7 +475,7 @@ class APIClient {
 
   async getMoodsByCategory(categoryId: number, token?: string) {
     const { data } = await this.axiosInstance.get<MoodUnit[]>(
-      `/moods/types/categories/${categoryId}`,
+      `/mood-units/category/${categoryId}`,
       this.getConfig(token)
     );
     return data;
@@ -1046,13 +1048,7 @@ class APIClient {
   // ==================== USER STATS ====================
   
   async getUserStats(token?: string) {
-    const { data } = await this.axiosInstance.get<{
-      level: UserLevel;
-      streaks: UserStreak[];
-      total_journals: number;
-      total_mood_entries: number;
-      total_meditation_minutes: number;
-    }>('/users/stats', this.getConfig(token));
+    const { data } = await this.axiosInstance.get<DashboardStats>('/gamification/dashboard', this.getConfig(token));
     return data;
   }
 

@@ -91,6 +91,7 @@
     "data-view-buffer": "^1.0.2",
     "data-view-byte-length": "^1.0.2",
     "data-view-byte-offset": "^1.0.1",
+    "date-fns": "^4.1.0",
     "debug": "^4.4.3",
     "decimal.js": "^10.6.0",
     "dedent": "^1.7.0",
@@ -365,6 +366,7 @@
     "react-is": "^16.13.1",
     "read-cache": "^1.0.0",
     "readdirp": "^3.6.0",
+    "recharts": "^3.6.0",
     "redent": "^3.0.0",
     "reflect.getprototypeof": "^1.0.10",
     "regexp.prototype.flags": "^1.5.4",
@@ -425,6 +427,7 @@
     "test-exclude": "^6.0.0",
     "thenify": "^3.3.1",
     "thenify-all": "^1.6.0",
+    "three": "^0.182.0",
     "tinyglobby": "^0.2.15",
     "tldts": "^6.1.86",
     "tldts-core": "^6.1.86",
@@ -491,6 +494,7 @@
     "@types/jest": "^30.0.0",
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.3"
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.182.0"
   }
 }

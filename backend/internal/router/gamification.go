@@ -18,4 +18,5 @@ func RegistergamificationRoutes(api fiber.Router) {
 	gamification := api.Group("/gamification", auth.TokenMiddleware)
 
 	gamification.Get("/me", handler.GetUserGamification)
+	gamification.Get("/dashboard", handler.GetDashboard)
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"mindsteps/database/model"
+	"mindsteps/internal/gamification/form"
 	"mindsteps/internal/gamification/repository"
 	"time"
 )
@@ -9,6 +10,8 @@ import (
 type GamificationService interface {
 	GetUserGamification(userID uint) (*model.UserGamification, error)
 	AddXP(userID uint, points int, source_type string, sourceID uint, metadata string) error
+
+	GetFullDashboardData(userID uint) (*form.UserDashboardResponse, error)
 }
 
 type gamificationService struct {
@@ -89,4 +92,53 @@ func (s *gamificationService) AddXP(userID uint, points int, source_type string,
 		return err
 	}
 	return s.repo.UpdateProgress(stats)
+}
+
+func (s *gamificationService) GetFullDashboardData(userID uint) (*form.UserDashboardResponse, error) {
+	var (
+		dashboard = &form.UserDashboardResponse{}
+		errChan   = make(chan error, 3) // 3 өөр параллель процесс ажиллуулна
+	)
+
+	// 1. Ерөнхий статистик (Journals, Moods Count)
+	go func() {
+		stats, err := s.repo.GetUserActivityStats(userID)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		dashboard.Stats = *stats
+		errChan <- nil
+	}()
+
+	// 2. Хичээлийн явц (Parent Categories)
+	go func() {
+		lessons, err := s.repo.GetUserProgressByParentCategories(userID)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		dashboard.CategoryProgress = lessons
+		errChan <- nil
+	}()
+
+	// 3. Плутчикийн нарийн статистик (Advanced Wheel Logic)
+	// go func() {
+	// 	plutchik, err := s.repo.GetPlutchikDashboardData(userID)
+	// 	if err != nil {
+	// 		errChan <- err
+	// 		return
+	// 	}
+	// 	dashboard.PlutchikWheel = plutchik
+	// 	errChan <- nil
+	// }()
+
+	// Бүх процесс дуусахыг хүлээх (Timeout эсвэл Error check)
+	for i := 0; i < 3; i++ {
+		if err := <-errChan; err != nil {
+			return nil, err
+		}
+	}
+
+	return dashboard, nil
 }
