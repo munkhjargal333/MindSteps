@@ -114,6 +114,7 @@ func (h *LessonHandler) deleteFile(fileURL string) error {
 // 1. Бүх хичээлийг авах (Шүүлтүүргүй)
 // GET /lessons?page=1&limit=10
 func (h *LessonHandler) GetAll(c *fiber.Ctx) error {
+
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 
@@ -133,6 +134,7 @@ func (h *LessonHandler) GetAll(c *fiber.Ctx) error {
 // 2. Үндсэн бүлгээр (Parent) шүүж авах
 // GET /lessons/parent/:id?page=1&limit=10
 func (h *LessonHandler) GetByParent(c *fiber.Ctx) error {
+
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		return shared.ResponseBadRequest(c, "Буруу ангиллын ID")
@@ -157,6 +159,7 @@ func (h *LessonHandler) GetByParent(c *fiber.Ctx) error {
 // 3. Дэд бүлгээр (Category) шүүж авах
 // GET /lessons/category/:id?page=1&limit=10
 func (h *LessonHandler) GetByCategory(c *fiber.Ctx) error {
+
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		return shared.ResponseBadRequest(c, "Буруу ангиллын ID")
@@ -180,6 +183,7 @@ func (h *LessonHandler) GetByCategory(c *fiber.Ctx) error {
 
 // GET /lessons/:id
 func (h *LessonHandler) GetByID(c *fiber.Ctx) error {
+
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
 		return shared.ResponseBadRequest(c, "Буруу ID")

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
 import { LessonCategory } from '@/lib/types';
@@ -13,7 +13,6 @@ import {
   Star, Globe, X, UploadCloud, RefreshCw
 } from 'lucide-react';
 
-// Монгол үсгийг латин руу хөрвүүлэх (Slug-д зориулав)
 const transliterate = (text: string) => {
   const map: { [key: string]: string } = {
     'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'j', 'з': 'z',
@@ -29,7 +28,7 @@ const transliterate = (text: string) => {
 };
 
 export default function EditLessonPage() {
-  const { token } = useAuth();
+  const { token, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const lessonId = Number(params.id);
@@ -39,7 +38,6 @@ export default function EditLessonPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form State (CamelCase for internal use)
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -77,7 +75,6 @@ export default function EditLessonPage() {
         apiClient.getLessonCategories(token!)
       ]);
       
-      // Map API data (snake_case) to State (camelCase)
       setFormData({
         title: lessonData.title,
         slug: lessonData.slug,
@@ -101,7 +98,7 @@ export default function EditLessonPage() {
       }
 
       const flattened: LessonCategory[] = [];
-      categoriesData.forEach(parent => {
+      categoriesData.lessons?.forEach(parent => {
         if (parent.children?.length) {
           parent.children.forEach(child => {
             flattened.push({ ...child, name_mn: `${parent.name_mn} → ${child.name_mn}` });
@@ -141,7 +138,6 @@ export default function EditLessonPage() {
 
     setSubmitting(true);
     try {
-      // TypeScript-д зориулж snake_case руу хөрвүүлж бэлдэх
       const updateData = {
         title: formData.title,
         slug: formData.slug,
@@ -174,15 +170,16 @@ export default function EditLessonPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-white">
-    <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-  </div>;
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24">
-      
-      
-      {/* Top Bar */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -203,8 +200,6 @@ export default function EditLessonPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-6 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Main Content Area */}
         <div className="lg:col-span-2 space-y-6">
           <section className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-5">
             <div className="flex items-center gap-2 text-blue-600 mb-2">
@@ -254,7 +249,6 @@ export default function EditLessonPage() {
           </section>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-6">
           <section className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm space-y-4">
             <div className="flex items-center gap-2 text-gray-400 mb-2">

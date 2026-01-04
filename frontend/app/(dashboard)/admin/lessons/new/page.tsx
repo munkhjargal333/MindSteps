@@ -71,7 +71,7 @@ export default function NewLessonPage() {
     try {
       const data = await apiClient.getLessonCategories(token!);
       const flattened: LessonCategory[] = [];
-      data.forEach(parent => {
+      data.lessons?.forEach(parent => {
         if (parent.children?.length) {
           parent.children.forEach(child => {
             flattened.push({ ...child, name_mn: `${parent.name_mn} → ${child.name_mn}` });
