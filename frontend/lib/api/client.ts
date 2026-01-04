@@ -473,7 +473,7 @@ class APIClient {
 
   async getMoodsByCategory(categoryId: number, token?: string) {
     const { data } = await this.axiosInstance.get<MoodUnit[]>(
-      `/moods/types/categories/${categoryId}`,
+      `/mood-units/category/${categoryId}`,
       this.getConfig(token)
     );
     return data;

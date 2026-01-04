@@ -437,23 +437,6 @@ func main() {
 		gen.FieldType("sort_order", "int"),
 	)
 
-	// Moods
-	// moods := g.GenerateModelAs(
-	// 	model("moods"),
-	// 	"Moods",
-	// 	gen.FieldType("id", "int"),
-	// 	gen.FieldType("category_id", "int"),
-	// 	gen.FieldType("intensity_level", "int"),
-	// 	gen.FieldRelate(field.BelongsTo, "Category", moodCategories, &field.RelateConfig{
-	// 		RelatePointer: true,
-	// 		GORMTag: field.GormTag{
-	// 			"foreignKey": []string{"category_id"},
-	// 			"references": []string{"id"},
-	// 		},
-	// 		JSONTag: tag("Category"),
-	// 	}),
-	// )
-
 	// Mood unit
 	MoodUnit := g.GenerateModelAs(
 		model("mood_unit"),

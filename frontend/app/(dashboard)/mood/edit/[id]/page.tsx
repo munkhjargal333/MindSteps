@@ -1,69 +1,66 @@
-// ================== EDIT PAGE (app/mood/edit/[id]/page.tsx) ==================
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import { MoodCategory, MoodUnit, CoreValue } from '@/lib/types';
-import { useParams, useRouter } from 'next/navigation';
+import { MoodCategory, MoodUnit, CoreValue, MoodEntry } from '@/lib/types';
 import { useGlobalToast } from '@/context/ToastContext';
 import { ChevronLeft, Save, Sparkles, Clock, Target, Lightbulb, PencilLine, AlertCircle, Gem } from 'lucide-react';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 
 export default function EditMoodPage() {
-  const { token } = useAuth();
-  const params = useParams();
-  const router = useRouter();
+  const { token } = useAuth(); 
   const { showToast } = useGlobalToast();
-
-  const id = params?.id as string;
+  const router = useRouter();
+  const params = useParams();
+  const entryId = params?.id ? Number(params.id) : null;
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<MoodCategory[]>([]);
   const [values, setValues] = useState<CoreValue[]>([]);
   const [moods, setMoods] = useState<MoodUnit[]>([]);
-  
+  const [entry, setEntry] = useState<MoodEntry | null>(null);
+
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const [selectedMood, setSelectedMood] = useState<MoodUnit | null>(null);
+  const [selectedCoreValue, setSelectedCoreValue] = useState<number | null>(null);
   const [intensity, setIntensity] = useState(5);
   const [whenFelt, setWhenFelt] = useState('');
   const [triggerEvent, setTriggerEvent] = useState('');
   const [copingStrategy, setCopingStrategy] = useState('');
   const [notes, setNotes] = useState('');
-  const [selectedCoreValue, setSelectedCoreValue] = useState<number | null>(null);
 
   useEffect(() => {
-    if (token && id) {
-      loadData();
-    }
-  }, [token, id]);
+    if (!token || !entryId) return;
+    loadData();
+  }, [token, entryId]);
 
   const loadData = async () => {
-    if (!token || !id) return;
-
+    if (!token || !entryId) return;
     setLoading(true);
     try {
-      const [entry, categoriesData, coreValuesData] = await Promise.all([
-        apiClient.getMoodEntry(Number(id), token),
+      const [categoriesData, coreValuesData, entryData] = await Promise.all([
         apiClient.getMoodCategories(token),
         apiClient.getCoreValues(token),
+        apiClient.getMoodEntry(entryId, token),
       ]);
-
+      
       setCategories(categoriesData);
       setValues(coreValuesData);
-      setSelectedCategory(entry.MoodUnit?.category_id || null);
-      setSelectedMood(entry.mood_unit_id);
-      setIntensity(entry.intensity);
-      setWhenFelt(entry.when_felt || '');
-      setTriggerEvent(entry.trigger_event || '');
-      setCopingStrategy(entry.coping_strategy || '');
-      setNotes(entry.notes || '');
-      setSelectedCoreValue(entry.core_value_id || null);
-
-      if (entry.MoodUnit?.category_id) {
-        const moodsData = await apiClient.getMoodsByCategory(entry.MoodUnit.category_id, token);
-        setMoods(moodsData);
-      }
+      setEntry(entryData);
+      
+      // Утгуудыг тохируулах
+      setSelectedCategory(entryData.MoodUnit.category_id);
+      setSelectedMood(entryData.MoodUnit);
+      setSelectedCoreValue(entryData.core_value_id || null);
+      setIntensity(entryData.intensity);
+      setWhenFelt(entryData.when_felt || '');
+      setTriggerEvent(entryData.trigger_event || '');
+      setCopingStrategy(entryData.coping_strategy || '');
+      setNotes(entryData.notes || '');
+      
     } catch (error) {
       showToast('Өгөгдөл ачаалахад алдаа гарлаа', 'error');
       router.push('/mood');
@@ -74,17 +71,23 @@ export default function EditMoodPage() {
 
   useEffect(() => {
     if (selectedCategory && token) {
-      apiClient.getMoodsByCategory(selectedCategory, token).then(setMoods).catch(console.error);
+      apiClient.getMoodsByCategory(selectedCategory, token)
+        .then(setMoods)
+        .catch(console.error);
     }
   }, [selectedCategory, token]);
 
   const handleSubmit = async () => {
-    if (!token || !selectedMood || !id) return;
+    if (!token || !selectedMood || !entryId) return;
+    if (selectedCoreValue === null) {
+      showToast('Эхлээд үнэт зүйлээ тохируулна уу', 'error');
+      return;
+    }
 
     setSubmitting(true);
     try {
-      await apiClient.updateMoodEntry(Number(id), {
-        mood_unit_id: selectedMood,
+      await apiClient.updateMoodEntry(entryId, {
+        mood_unit_id: selectedMood.id,
         intensity,
         when_felt: whenFelt || undefined,
         trigger_event: triggerEvent || undefined,
@@ -92,9 +95,9 @@ export default function EditMoodPage() {
         notes: notes || undefined,
         core_value_id: selectedCoreValue || undefined,
       }, token);
-
-      showToast('Амжилттай шинэчлэгдлээ', 'success');
-      setTimeout(() => router.push(`/mood/${id}`), 800);
+      
+      showToast('Амжилттай хадгалагдлаа', 'success');
+      setTimeout(() => router.push(`/mood/${entryId}`), 800);
     } catch (error) {
       showToast('Алдаа гарлаа', 'error');
     } finally {
@@ -110,7 +113,9 @@ export default function EditMoodPage() {
     );
   }
 
-  const currentMood = moods.find(m => m.id === selectedMood);
+  if (!entry) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/50 pb-24">
@@ -174,13 +179,13 @@ export default function EditMoodPage() {
                   <button
                     key={mood.id}
                     type="button"
-                    onClick={() => setSelectedMood(mood.id)}
+                    onClick={() => setSelectedMood(mood)}
                     style={{ 
                       background: `radial-gradient(circle at center, ${mood.display_color} 0%, ${mood.display_color}dd 50%, ${mood.display_color}99 100%)`,
                       borderColor: mood.display_color,
-                      opacity: selectedMood === mood.id ? 1 : 0.6,
-                      transform: selectedMood === mood.id ? 'scale(1.05)' : 'scale(1)',
-                      boxShadow: selectedMood === mood.id ? '0 8px 20px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.08)'
+                      opacity: selectedMood?.id === mood.id ? 1 : 0.6,
+                      transform: selectedMood?.id === mood.id ? 'scale(1.05)' : 'scale(1)',
+                      boxShadow: selectedMood?.id === mood.id ? '0 8px 20px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.08)'
                     }}
                     className="p-2.5 rounded-3xl border-2 transition-all active:scale-95"
                   >
@@ -195,14 +200,14 @@ export default function EditMoodPage() {
           )}
 
           {/* ADDITIONAL DETAILS */}
-          {selectedMood && currentMood && (
+          {selectedMood && (
             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
               
               {/* INTENSITY RANGE */}
               <section className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
                 <div className="flex justify-between items-end mb-6">
-                  <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">Эрчим хүч</h2>
-                  <span className="text-4xl font-black transition-all" style={{ color: currentMood.display_color }}>{intensity}</span>
+                  <h2 className="text-3xl font-black text-gray-900 uppercase tracking-widest">Эрчим</h2>
+                  <span className="text-4xl font-black transition-all" style={{ color: selectedMood.display_color }}>{intensity}</span>
                 </div>
                 <input
                   type="range" 
@@ -210,7 +215,7 @@ export default function EditMoodPage() {
                   max="10"
                   value={intensity}
                   onChange={(e) => setIntensity(Number(e.target.value))}
-                  style={{ accentColor: currentMood.display_color }}
+                  style={{ accentColor: selectedMood.display_color }}
                   className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer"
                 />
               </section>
@@ -230,41 +235,44 @@ export default function EditMoodPage() {
                       <p className="text-sm text-amber-700 mb-4">
                         Эхлээд өөрийн үнэт зүйлсийг тохируулснаар сэтгэл санааны тэмдэглэлтэй холбож чадна.
                       </p>
-                      <button 
-                        onClick={() => router.push('/core-values')}
+                      <Link 
+                        href="/core-values"
                         className="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 text-white font-black rounded-2xl hover:bg-amber-700 transition-colors"
                       >
                         <Gem size={16} /> Үнэт зүйл тохируулах
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ) : (
                   <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar px-1">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCoreValue(null)}
-                      className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-black text-xs ${
-                        selectedCoreValue === null 
-                          ? 'bg-gray-900 text-white border-gray-900 shadow-md' 
-                          : 'bg-white border-gray-100 text-gray-400'
-                      }`}
-                    >
-                      Сонгохгүй
-                    </button>
-                    {values.map((v) => (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setSelectedCoreValue(v.id)}
-                        className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-black text-xs ${
-                          selectedCoreValue === v.id 
-                            ? 'bg-purple-600 text-white border-purple-600 shadow-md' 
-                            : 'bg-white border-gray-100 text-gray-600 hover:border-purple-100'
-                        }`}
-                      >
-                        {v.MaslowLevel?.icon} {v.name}
-                      </button>
-                    ))}
+                    {values.map((v) => {
+                      const isActive = selectedCoreValue === v.id;
+                      
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setSelectedCoreValue(v.id)}
+                          style={{
+                            backgroundColor: isActive ? v.color : 'white',
+                            borderColor: isActive ? v.color : '#f3f4f6',
+                            color: isActive ? 'white' : '#4b5563',
+                          }}
+                          className={`
+                            px-6 py-3 rounded-2xl border-2 whitespace-nowrap 
+                            transition-all duration-200 font-black text-xs
+                            ${isActive ? 'shadow-lg scale-105' : 'hover:border-gray-200 shadow-sm'}
+                          `}
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <span className="text-lg leading-none">
+                              {v.MaslowLevel?.icon}
+                            </span>
+                            <span>{v.name}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </section>
@@ -285,13 +293,6 @@ export default function EditMoodPage() {
                   value={triggerEvent} 
                   onChange={setTriggerEvent} 
                 />
-                <InputGroup 
-                  icon={<Lightbulb size={16} />} 
-                  label="Авсан арга" 
-                  placeholder="Жишээ: Амарч авсан..." 
-                  value={copingStrategy} 
-                  onChange={setCopingStrategy} 
-                />
                 <div className="md:col-span-2">
                   <label className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-2">
                     <PencilLine size={14} /> Нэмэлт тэмдэглэл
@@ -311,7 +312,7 @@ export default function EditMoodPage() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                style={{ backgroundColor: currentMood.display_color }}
+                style={{ backgroundColor: selectedMood.display_color }}
                 className="w-full py-5 text-white font-black text-lg rounded-[2rem] shadow-xl hover:brightness-95 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
               >
                 {submitting ? 'Түр хүлээнэ үү...' : <><Save size={20} /> Хадгалах</>}

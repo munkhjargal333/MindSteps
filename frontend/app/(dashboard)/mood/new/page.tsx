@@ -3,26 +3,22 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api/client';
-import { MoodCategory, MoodUnit, CoreValue, MoodEntry } from '@/lib/types';
-import { useGlobalToast } from '@/context/ToastContext';
-import { ChevronLeft, Save, Sparkles, Clock, Target, Lightbulb, PencilLine, AlertCircle, Gem, Trash2 } from 'lucide-react';
-import { useRouter, useParams } from 'next/navigation';
+import { MoodCategory, MoodUnit, CoreValue } from '@/lib/types';
 import Link from 'next/link';
+import { useGlobalToast } from '@/context/ToastContext';
+import { ChevronLeft, Save, Sparkles, Clock, Target, Lightbulb, PencilLine, AlertCircle, Gem, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-export default function EditMoodPage() {
+export default function NewMoodPage() {
   const { token } = useAuth(); 
   const { showToast } = useGlobalToast();
   const router = useRouter();
-  const params = useParams();
-  const entryId = params.id as string;
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [deleting, setDeleting] = useState(false);
   const [categories, setCategories] = useState<MoodCategory[]>([]);
   const [values, setValues] = useState<CoreValue[]>([]);
   const [moods, setMoods] = useState<MoodUnit[]>([]);
-  const [entry, setEntry] = useState<MoodEntry | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedMood, setSelectedMood] = useState<MoodUnit | null>(null);
@@ -35,35 +31,20 @@ export default function EditMoodPage() {
 
   useEffect(() => {
     loadData();
-  }, [token, entryId]);
+  }, [token]);
 
   const loadData = async () => {
-    if (!token || !entryId) return;
+    if (!token) return;
     setLoading(true);
     try {
-      const [categoriesData, coreValuesData, entryData] = await Promise.all([
+      const [categoriesData, coreValuesData] = await Promise.all([
         apiClient.getMoodCategories(token),
         apiClient.getCoreValues(token),
-        apiClient.getMoodEntry(Number(entryId), token),
       ]);
-      
       setCategories(categoriesData);
       setValues(coreValuesData);
-      setEntry(entryData);
-      
-      // Set form values from entry
-      setSelectedCategory(entryData.MoodUnit.category_id);
-      setSelectedMood(entryData.MoodUnit);
-      setIntensity(entryData.intensity);
-      setWhenFelt(entryData.when_felt || '');
-      setTriggerEvent(entryData.trigger_event || '');
-      setCopingStrategy(entryData.coping_strategy || '');
-      setNotes(entryData.notes || '');
-      setSelectedCoreValue(entryData.core_value_id || null);
-      
     } catch (error) {
       showToast('Өгөгдөл ачаалахад алдаа гарлаа', 'error');
-      router.push('/mood');
     } finally {
       setLoading(false);
     }
@@ -76,11 +57,16 @@ export default function EditMoodPage() {
   }, [selectedCategory, token]);
 
   const handleSubmit = async () => {
-    if (!token || !selectedMood || !entryId) return;
+    if (!token || !selectedMood) return;
+    if (selectedCoreValue === null) {
+      showToast('Эхлээд үнэт зүйлээ тохируулна уу', 'error');
+      console.log('No core values set');
+      return;
+    }
 
     setSubmitting(true);
     try {
-      await apiClient.updateMoodEntry(Number(entryId), {
+      await apiClient.createMoodEntry({
         mood_unit_id: selectedMood.id,
         intensity,
         when_felt: whenFelt || undefined,
@@ -90,29 +76,12 @@ export default function EditMoodPage() {
         core_value_id: selectedCoreValue || undefined,
       }, token);
       
-      showToast('Амжилттай шинэчлэгдлээ', 'success');
-      setTimeout(() => router.push(`/mood/${entryId}`), 800);
-    } catch (error) {
-      showToast('Алдаа гарлаа', 'error');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!token || !entryId) return;
-    
-    if (!confirm('Энэ тэмдэглэлийг устгахдаа итгэлтэй байна уу?')) return;
-
-    setDeleting(true);
-    try {
-      await apiClient.deleteMoodEntry(Number(entryId), token);
-      showToast('Амжилттай устгагдлаа', 'success');
+      showToast('Амжилттай хадгалагдлаа', 'success');
       setTimeout(() => router.push('/mood'), 800);
     } catch (error) {
       showToast('Алдаа гарлаа', 'error');
     } finally {
-      setDeleting(false);
+      setSubmitting(false);
     }
   };
 
@@ -124,7 +93,7 @@ export default function EditMoodPage() {
     );
   }
 
-  return (
+return (
     <div className="min-h-screen bg-gray-50/50 pb-24">
       
       {/* HEADER */}
@@ -133,14 +102,8 @@ export default function EditMoodPage() {
           <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors group">
             <ChevronLeft size={24} className="text-gray-500 group-hover:text-black" />
           </button>
-          <h1 className="font-black text-gray-900">Тэмдэглэл засах</h1>
-          <button 
-            onClick={handleDelete}
-            disabled={deleting}
-            className="p-2 hover:bg-red-50 rounded-full transition-colors group"
-          >
-            <Trash2 size={20} className="text-red-500 group-hover:text-red-600" />
-          </button>
+          <h1 className="font-black text-gray-900">Шинэ тэмдэглэл</h1>
+          <div className="w-10"></div>
         </div>
       </div>
 
@@ -172,6 +135,7 @@ export default function EditMoodPage() {
                   className="p-2.5 rounded-3xl border-2 transition-all duration-200 text-center active:scale-95"
                 >
                   <div className="text-2xl mb-1 drop-shadow-md">{cat.emoji || '💭'}</div>
+                  {/* Текстийг илүү тод, уншигдахуйц болгох үүднээс font-black болон shadow нэмсэн */}
                   <div className="text-[10px] font-black leading-tight text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] uppercase">
                     {cat.name_mn}
                   </div>
@@ -219,7 +183,7 @@ export default function EditMoodPage() {
               {/* INTENSITY RANGE */}
               <section className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
                 <div className="flex justify-between items-end mb-6">
-                  <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">Эрчим хүч</h2>
+                  <h2 className="text-3xl font-black text-gray-900 uppercase tracking-widest">Эрчим</h2>
                   <span className="text-4xl font-black transition-all" style={{ color: selectedMood.display_color }}>{intensity}</span>
                 </div>
                 <input
@@ -258,31 +222,35 @@ export default function EditMoodPage() {
                   </div>
                 ) : (
                   <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar px-1">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCoreValue(null)}
-                      className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-black text-xs ${
-                        selectedCoreValue === null 
-                          ? 'bg-gray-900 text-white border-gray-900 shadow-md' 
-                          : 'bg-white border-gray-100 text-gray-400'
-                      }`}
-                    >
-                      Сонгохгүй
-                    </button>
-                    {values.map((v) => (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setSelectedCoreValue(v.id)}
-                        className={`px-6 py-3 rounded-2xl border-2 whitespace-nowrap transition-all font-black text-xs ${
-                          selectedCoreValue === v.id 
-                            ? 'bg-purple-600 text-white border-purple-600 shadow-md' 
-                            : 'bg-white border-gray-100 text-gray-600 hover:border-purple-100'
-                        }`}
-                      >
-                        {v.MaslowLevel?.icon} {v.name}
-                      </button>
-                    ))}
+                    {values.map((v) => {
+                      const isActive = selectedCoreValue === v.id;
+                      
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setSelectedCoreValue(v.id)}
+                          style={{
+                            backgroundColor: isActive ? v.color : 'white',
+                            borderColor: isActive ? v.color : '#f3f4f6',
+                            color: isActive ? 'white' : '#4b5563',
+                          }}
+                          className={`
+                            px-6 py-3 rounded-2xl border-2 whitespace-nowrap 
+                            transition-all duration-200 font-black text-xs
+                            ${isActive ? 'shadow-lg scale-105' : 'hover:border-gray-200 shadow-sm'}
+                          `}
+                        >
+                          <span className="flex items-center gap-2.5">
+                            {/* Айконы хэмжээг энд text-lg эсвэл text-xl-ээр томсгов */}
+                            <span className="text-lg leading-none">
+                              {v.MaslowLevel?.icon}
+                            </span>
+                            <span>{v.name}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </section>

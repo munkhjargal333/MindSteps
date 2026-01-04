@@ -23,7 +23,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Default утгуудыг энд зааж өгсөн: type = 'success', duration = 4000
-  const showToast = useCallback((message: string, type: ToastType = 'success', duration: number = 4000) => {
+  const showToast = useCallback((message: string, type: ToastType = 'success', duration: number = 1000) => {
     setToast(null);
     // Маш богино хугацааны дараа шинээр гарч ирэх нь анимейшн гацахгүй байх нөхцөл болдог
     setTimeout(() => {

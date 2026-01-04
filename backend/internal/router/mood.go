@@ -17,10 +17,6 @@ func RegisterMoodRoutes(api fiber.Router) {
 	gamificationRepo := gamificationRepo.NewGamificationRepository(database.DB)
 	gamificationService := gamificationService.NewGamificationService(gamificationRepo)
 
-	moodRepo := repository.NewMoodRepository(database.DB)
-	moodService := service.NewMoodService(moodRepo)
-	moodHandler := handler.NewMoodHandler(moodService)
-
 	entryRepo := repository.NewMoodEntryRepository(database.DB)
 	entryService := service.NewMoodEntryService(entryRepo, gamificationService)
 	entryHandler := handler.NewMoodEntryHandler(entryService)
@@ -38,7 +34,7 @@ func RegisterMoodRoutes(api fiber.Router) {
 
 	moods := api.Group("/moods/types", auth.TokenMiddleware)
 	moods.Get("/categories", entryHandler.MoodCategories)
-	moods.Get("/categories/:id", moodHandler.ListByCategoryID)
+	// moods.Get("/categories/:id", moodHandler.ListByCategoryID)
 
 	entries := api.Group("/mood-entries", auth.TokenMiddleware)
 	entries.Get("/me", entryHandler.ListByUserID)
