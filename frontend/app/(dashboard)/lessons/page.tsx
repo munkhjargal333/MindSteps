@@ -176,7 +176,7 @@ export default function LessonsListPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {lessons.map((lesson) => {
-                const isLocked = user && lesson.required_level > user.current_level;
+                const isLocked = user && lesson.required_level > user.gamification.level.level_number;
                 return (
                   <Link key={lesson.id} href={isLocked ? '#' : `/lessons/${lesson.id}`} className={`group bg-white rounded-[2rem] border border-gray-100 shadow-sm flex md:flex-col overflow-hidden transition-all ${isLocked ? 'opacity-60 cursor-not-allowed' : 'active:scale-95 hover:shadow-xl hover:shadow-blue-100/30'}`}>
                     <div className="relative w-24 h-24 sm:w-full sm:h-48 shrink-0 overflow-hidden m-2 sm:m-0 rounded-xl sm:rounded-none">
