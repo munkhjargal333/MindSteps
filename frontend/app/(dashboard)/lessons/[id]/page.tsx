@@ -119,7 +119,7 @@ export default function LessonDetailPage() {
 
   if (!lesson) return null;
 
-  const isLocked = user && lesson.required_level > user.current_level;
+  const isLocked = user && lesson.required_level > user.gamification.level.level_number;
 
 return (
     <div className="min-h-screen bg-[#FDFDFD] pb-10">
