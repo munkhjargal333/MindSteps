@@ -4,35 +4,42 @@ import { useEffect } from 'react';
 export default function PWARegister() {
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => {
-          console.log('SW registered with scope:', registration.scope);
+      
+      const registerSW = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('SW registered:', registration.scope);
 
-          // Шинэ хувилбар (update) байгаа эсэхийг шалгах
+          // 1. Deployment болгоны дараа шинэчлэлийг шалгах (5 минут тутамд)
+          const interval = setInterval(() => {
+            registration.update();
+          }, 1000 * 60 * 5);
+
+          // 2. Шинэ хувилбар суулгахад бэлэн болсон үед
           registration.onupdatefound = () => {
             const installingWorker = registration.installing;
-            if (installingWorker == null) return;
+            if (!installingWorker) return;
 
             installingWorker.onstatechange = () => {
               if (installingWorker.state === 'installed') {
                 if (navigator.serviceWorker.controller) {
-                  // Шинэ контент (CSS, JS) бэлэн болсон тул хуудсыг шинэчилнэ
-                  console.log('Шинэ хувилбар олдлоо. Хуудсыг дахин ачаалж байна...');
+                  // Шинэ хувилбар бэлэн болсон тул reload хийнэ
+                  // Хэрэглэгчид мэдэгдэл гаргаж байгаад reload хийвэл илүү гоё UX
                   window.location.reload();
-                } else {
-                  // Анх удаа сууж байгаа үед
-                  console.log('Контент кэшлэгдлээ. Офлайн горимд ажиллах боломжтой.');
                 }
               }
             };
           };
-        })
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error);
-        });
 
-      // Хэрэв Service Worker өөрөө өөрийгөө шинэчилсэн бол хуудсыг reload хийх
+          return () => clearInterval(interval);
+        } catch (error) {
+          console.error('SW registration failed:', error);
+        }
+      };
+
+      registerSW();
+
+      // Service Worker солигдох үед хуудсыг нэг л удаа reload хийх
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
