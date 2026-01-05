@@ -156,15 +156,6 @@ export default function Page() {
         </motion.div>
       </main>
 
-      {/* MOBILE BOTTOM TAB BAR - Improved padding and Blur */}
-      <div className="fixed bottom-0 w-full z-[100] px-4 pb-6">
-        <div className="max-w-md mx-auto bg-white/80 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] shadow-2xl shadow-black/5 h-20 flex items-center justify-around px-4">
-          <TabItem icon={<Home size={24} />} active label="Нүүр" />
-          <TabItem icon={<Compass size={24} />} label="Хайх" />
-          <TabItem icon={<Layers size={24} />} label="Түүх" />
-          <TabItem icon={<User size={24} />} label="Профайл" />
-        </div>
-      </div>
     </div>
   );
 }

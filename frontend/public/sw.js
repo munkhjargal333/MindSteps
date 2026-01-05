@@ -29,26 +29,27 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// СУПЕР САЙЖРУУЛАЛТ: Stale-While-Revalidate стратеги
 self.addEventListener('fetch', (event) => {
-  // Зөвхөн GET хүсэлтийг кэшлэнэ (API post-уудыг кэшлэхгүй)
+  // 1. Зөвхөн GET хүсэлтийг кэшлэнэ
   if (event.request.method !== 'GET') return;
+
+  // 2. chrome-extension гэх мэт дэмжигдээгүй протоколуудыг алгасах (ЭНЭ ХЭСЭГ АЛДААГ ЗАСНА)
+  const url = new URL(event.request.url);
+  if (!url.protocol.startsWith('http')) return;
 
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.match(event.request).then((cachedResponse) => {
         const fetchedResponse = fetch(event.request).then((networkResponse) => {
-          // Хэрэв сүлжээний хариу амжилттай бол кэшийг шинэчилнэ
+          // Хэрэв хариу зөв (status 200) байвал кэшлэх
           if (networkResponse && networkResponse.status === 200) {
             cache.put(event.request, networkResponse.clone());
           }
           return networkResponse;
         }).catch(() => {
-          // Сүлжээгүй үед кэшээс хайх (Fallback)
           return cachedResponse;
         });
 
-        // Кэшид байгаа бол шууд үзүүлнэ, үгүй бол сүлжээг хүлээнэ
         return cachedResponse || fetchedResponse;
       });
     })
