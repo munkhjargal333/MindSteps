@@ -33,7 +33,7 @@ func (r *gamificationRepo) GetByUserID(userID uint) (*model.UserGamification, er
 	// 1. Хэрэглэгчийн статистикийг хайна, байхгүй бол анхны утгатайгаар үүсгэнэ
 	err := r.db.
 		Preload("Level").
-		Preload("User").
+		// Preload("User").
 		Where(model.UserGamification{UserID: userID}).
 		Attrs(model.UserGamification{
 			TotalScore:     0,
@@ -52,7 +52,7 @@ func (r *gamificationRepo) GetLevelByScore(score int) (*model.UserLevels, error)
 }
 
 func (r *gamificationRepo) UpdateProgress(stats *model.UserGamification) error {
-	return r.db.Save(stats).Error
+	return r.db.Omit("Level").Save(stats).Error
 }
 
 func (r *gamificationRepo) CreateScoreHistory(history *model.ScoringHistory) error {

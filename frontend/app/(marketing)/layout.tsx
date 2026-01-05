@@ -1,10 +1,13 @@
-// app/(marketing)/layout.tsx
-import '@/app/globals.css'; // Гадна байгаа globals.css рүү заах зам
+import "../globals.css"; // CSS-ээ энд дуудах шаардлагатай
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <section className="marketing-wrapper">
-      {children}
-    </section>
+    <html lang="mn">
+      <body>
+        <section className="marketing-wrapper">
+          {children}
+        </section>
+      </body>
+    </html>
   );
 }

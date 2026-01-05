@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from './../../../context/AuthContext';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, Zap, Flower2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Sunrise} from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -49,9 +49,9 @@ export default function LoginPage() {
         {/* Logo хэсэг */}
         <div className="text-center mb-10">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-200">
-              <Flower2 size={28} />
-            </div>
+              <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:shadow-xl transition-all">
+                  <Sunrise size={24} />
+              </div>
             <span className="text-3xl font-black text-gray-900 italic tracking-tighter">Mindful</span>
           </Link>
           <h1 className="text-2xl font-black text-gray-900 italic mb-2">Тавтай морил</h1>

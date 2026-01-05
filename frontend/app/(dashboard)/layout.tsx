@@ -74,7 +74,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
             {/* User Info & Actions */}
             <div className="flex items-center gap-4">
-              
               {/* Gamification Badge - Level color ашигласан */}
               <div 
                 className="flex items-center gap-3 px-4 py-2 rounded-2xl border-2 shadow-sm"

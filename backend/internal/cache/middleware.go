@@ -1,4 +1,4 @@
-// router/cache_middleware.go
+// cache/middleware.go
 package cache
 
 import (
