@@ -3,6 +3,7 @@ package form
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -13,7 +14,8 @@ type RegisterForm struct {
 	ConfirmPassword string `json:"confirm_password" validate:"required,eqfield=Password"`
 }
 
-func (f RegisterForm) Validate() error {
+// Pointer receiver (*) ашигласан тул Validate() дуудагдахад Email өөрчлөгдөнө
+func (f *RegisterForm) Validate() error {
 	if f.Name == "" {
 		return fmt.Errorf("name хоосон байна")
 	}
@@ -23,6 +25,9 @@ func (f RegisterForm) Validate() error {
 	if f.Email == "" {
 		return fmt.Errorf("email хоосон байна")
 	}
+	// Email‑ийг жижиг үсэг болгож, оройн болон эхний хоосон зайг арилгана
+	f.Email = strings.ToLower(strings.TrimSpace(f.Email))
+
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	if !emailRegex.MatchString(f.Email) {
 		return fmt.Errorf("email буруу форматтай байна")
@@ -44,10 +49,12 @@ type LoginForm struct {
 	Password string `json:"password" validate:"required"`
 }
 
-func (f LoginForm) Validate() error {
+func (f *LoginForm) Validate() error {
 	if f.Email == "" {
 		return fmt.Errorf("email хоосон байна")
 	}
+	f.Email = strings.ToLower(strings.TrimSpace(f.Email))
+
 	if f.Password == "" {
 		return fmt.Errorf("password хоосон байна")
 	}
@@ -89,10 +96,11 @@ type ForgotPasswordForm struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
-func (f ForgotPasswordForm) Validate() error {
+func (f *ForgotPasswordForm) Validate() error {
 	if f.Email == "" {
 		return fmt.Errorf("email хоосон байна")
 	}
+	f.Email = strings.ToLower(strings.TrimSpace(f.Email))
 	return nil
 }
 
@@ -103,7 +111,7 @@ type ResetPasswordForm struct {
 	ConfirmPassword string `json:"confirm_password" validate:"required,eqfield=NewPassword"`
 }
 
-func (f ResetPasswordForm) Validate() error {
+func (f *ResetPasswordForm) Validate() error {
 	if f.Email == "" {
 		return fmt.Errorf("email хоосон байна")
 	}
@@ -122,6 +130,7 @@ func (f ResetPasswordForm) Validate() error {
 	if f.NewPassword != f.ConfirmPassword {
 		return fmt.Errorf("new_password ба confirm_password таарахгүй байна")
 	}
+	f.Email = strings.ToLower(strings.TrimSpace(f.Email))
 	return nil
 }
 
@@ -130,7 +139,7 @@ type VerifyOTPForm struct {
 	OTPCode string `json:"otp_code" validate:"required,len=6"`
 }
 
-func (f VerifyOTPForm) Validate() error {
+func (f *VerifyOTPForm) Validate() error {
 	if f.Email == "" {
 		return fmt.Errorf("email хоосон байна")
 	}
@@ -140,5 +149,6 @@ func (f VerifyOTPForm) Validate() error {
 	if len(f.OTPCode) != 6 {
 		return fmt.Errorf("otp_code 6 оронтой байх ёстой")
 	}
+	f.Email = strings.ToLower(strings.TrimSpace(f.Email))
 	return nil
 }

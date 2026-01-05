@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, ArrowRight, AlertCircle , Sunrise} from 'lucide-react';
 
 // Саяны зураг дээрх шиг Soft Blue Gradient-тай лого
 const MindfulLogo = ({ className }: { className?: string }) => (
@@ -75,10 +75,9 @@ export default function RegisterPage() {
         {/* Logo Section */}
         <div className="text-center mb-10">
           <Link href="/" className="inline-flex flex-col items-center group">
-            <div className="relative mb-4">
-              <div className="absolute inset-0 bg-blue-600/20 blur-2xl rounded-full scale-150 group-hover:scale-[2] transition-transform duration-500" />
-              <MindfulLogo className="w-16 h-16 relative z-10 transition-transform duration-500 group-hover:scale-110" />
-            </div>
+                  <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:shadow-xl transition-all">
+                      <Sunrise size={24} />
+                    </div>
             <div className="text-center">
               <span className="block text-3xl font-black text-gray-900 italic leading-none tracking-tighter">Mindful</span>
               <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.4em] mt-2 block">Step by Step</span>

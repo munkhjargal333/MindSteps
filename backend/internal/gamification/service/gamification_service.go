@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"mindsteps/database/model"
 	"mindsteps/internal/gamification/form"
 	"mindsteps/internal/gamification/repository"
@@ -79,6 +80,8 @@ func (s *gamificationService) AddXP(userID uint, points int, source_type string,
 		}
 	}
 
+	fmt.Printf("UPDATE хийхийн өмнөх ID: %d, Шинэ Level ID: %d\n", stats.CurrentLevelID, newLevel.ID)
+
 	// 4. Түүх болон Статус хадгалах
 	history := &model.ScoringHistory{
 		UserID:       userID,
@@ -91,6 +94,7 @@ func (s *gamificationService) AddXP(userID uint, points int, source_type string,
 	if err := s.repo.CreateScoreHistory(history); err != nil {
 		return err
 	}
+
 	return s.repo.UpdateProgress(stats)
 }
 
