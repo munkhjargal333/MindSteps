@@ -194,7 +194,8 @@ func (s *lessonService) UpdateLesson(id uint, f form.LessonForm) (*model.Lessons
 	lesson.PointsReward = f.PointsReward
 	lesson.MediaURL = f.MediaURL
 	lesson.ThumbnailURL = f.ThumbnailURL
-	lesson.Tags = f.Tags
+	// lesson.Tags = f.Tags
+	lesson.Tags = "{}"
 	lesson.RelatedValueKeywords = &f.RelatedValueKeywords
 	lesson.RelatedEmotionKeywords = &f.RelatedEmotionKeywords
 	lesson.IsPremium = f.IsPremium

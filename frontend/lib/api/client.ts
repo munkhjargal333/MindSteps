@@ -24,7 +24,9 @@ import {
 
 } from '@/lib/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1/';
+
+
 
 // Response types
 interface ApiResponse<T> {
@@ -121,10 +123,10 @@ interface CreateLessonData {
   is_published?: boolean;
   sort_order?: number;
 }
-  export interface CategoriesList{
+export interface CategoriesList{
     lessons: LessonCategory[];
     total: number;
-  }
+}
 
 
 interface UpdateLessonData extends Partial<CreateLessonData> {}
@@ -158,7 +160,7 @@ class APIClient {
         }
         
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔵 API Request:', config.method?.toUpperCase(), config.url);
+          console.log('🔵 API Request:', config.method?.toUpperCase(),API_BASE, config.url);
         }
         
         return config;

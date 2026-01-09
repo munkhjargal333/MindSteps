@@ -247,7 +247,10 @@ export interface Lesson {
   slug: string;
   description?: string;
   content: string;
-  lesson_type: 'article' | 'meditation' | 'video' | 'audio' | 'interactive';
+  lesson_type:   | 'theory_article'
+  | 'guided_article'
+  | 'core_meditation'
+  | 'healing_meditation';
   difficulty_level: 'beginner' | 'intermediate' | 'advanced';
   required_level: number;
   estimated_duration?: number;

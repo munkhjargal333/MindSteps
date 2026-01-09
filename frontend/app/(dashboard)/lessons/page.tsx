@@ -36,6 +36,7 @@ export default function LessonsListPage() {
       const data = await apiClient.getLessonCategories(token);
       // Backend-ээс data.lessons эсвэл шууд массив ирж байгаа эсэхийг шалгах
       setCategories(data.lessons || data || []);
+
     } catch (err) {
       showToast('Ангилал авахад алдаа гарлаа', 'error');
     }

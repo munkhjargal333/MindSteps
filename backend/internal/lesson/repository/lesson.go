@@ -46,7 +46,7 @@ func (r *lessonRepo) FindAll(page, limit int) ([]model.Lessons, int64, error) {
 	err := r.db.Preload("Category").
 		Limit(limit).
 		Offset((page - 1) * limit).
-		Order("id desc").
+		Order("id asc").
 		Find(&lessons).Error
 
 	return lessons, total, err
