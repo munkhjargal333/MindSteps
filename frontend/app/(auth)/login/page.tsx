@@ -146,13 +146,20 @@ export default function LoginPage() {
 
         {/* Энд Terms of Use маш минималист байдлаар орно */}
           <footer className="text-center space-y-4">
-            <p className="text-[10px] text-gray-400 font-light leading-relaxed">
-              Үргэлжлүүлснээр та манай <br />
-              <Link href="/terms" className="text-gray-600 hover:text-blue-500 underline underline-offset-4 decoration-gray-200 transition-all">Үйлчилгээний нөхцөл</Link> 
-              <span className="mx-2">&</span>
-              <Link href="/privacy" className="text-gray-600 hover:text-blue-500 underline underline-offset-4 decoration-gray-200 transition-all">Нууцлалын бодлого</Link>
-              -г зөвшөөрч байна.
-            </p>
+        <div className="mt-8 px-4 text-center">
+          <p className="text-[12px] text-gray-500 font-normal leading-relaxed tracking-tight">
+            Үргэлжлүүлснээр та манай 
+            <br className="hidden sm:block" /> 
+            <Link href="/terms" className="inline-block mx-1 text-gray-900 font-medium hover:text-blue-600 underline underline-offset-[3px] decoration-gray-200 transition-colors">
+              Үйлчилгээний нөхцөл
+            </Link> 
+            болон
+            <Link href="/privacy" className="inline-block mx-1 text-gray-900 font-medium hover:text-blue-600 underline underline-offset-[3px] decoration-gray-200 transition-colors">
+              Нууцлалын бодлого
+            </Link>
+            -г зөвшөөрч байна.
+          </p>
+        </div>
             
             {/* <div className="pt-4">
               <Link href="/register" className="text-[11px] text-gray-500 uppercase tracking-widest hover:text-blue-600 transition-colors">
