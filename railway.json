@@ -1,13 +1,8 @@
 {
   "build": {
-    "command": "cd backend && go build -o api ./cmd/api/main.go"
+    "builder": "NIXPACKS"
   },
-  "start": {
-    "command": "./backend/api"
-  },
-  "root": "backend",
-  "watchPaths": [
-    "/backend/**"
-  ],
-  "healthcheckPath": "/health"
+  "deploy": {
+    "startCommand": "cd backend && go run cmd/api/main.go"
+  }
 }
