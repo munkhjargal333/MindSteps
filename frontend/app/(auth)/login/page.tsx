@@ -118,7 +118,7 @@ export default function LoginPage() {
           </div>
 
           {/* Google Login Товч */}
-          <button
+          {/* <button
             onClick={handleGoogleLogin}
             className="w-full py-4 bg-white border border-gray-100 text-gray-700 font-black text-[11px] uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-50 transition-all flex items-center justify-center gap-3 shadow-sm"
           >
@@ -141,15 +141,25 @@ export default function LoginPage() {
               />
             </svg>
             Google-ээр үргэлжлүүлэх
-          </button>
+          </button> */}
         </div>
 
-        <p className="mt-8 text-center text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-          Бүртгэлгүй юу?{' '}
-          <Link href="/register" className="text-blue-600 hover:text-blue-700 ml-1">
-            Бүртгүүлэх
-          </Link>
-        </p>
+        {/* Энд Terms of Use маш минималист байдлаар орно */}
+          <footer className="text-center space-y-4">
+            <p className="text-[10px] text-gray-400 font-light leading-relaxed">
+              Үргэлжлүүлснээр та манай <br />
+              <Link href="/terms" className="text-gray-600 hover:text-blue-500 underline underline-offset-4 decoration-gray-200 transition-all">Үйлчилгээний нөхцөл</Link> 
+              <span className="mx-2">&</span>
+              <Link href="/privacy" className="text-gray-600 hover:text-blue-500 underline underline-offset-4 decoration-gray-200 transition-all">Нууцлалын бодлого</Link>
+              -г зөвшөөрч байна.
+            </p>
+            
+            {/* <div className="pt-4">
+              <Link href="/register" className="text-[11px] text-gray-500 uppercase tracking-widest hover:text-blue-600 transition-colors">
+                Шинэ бүртгэл үүсгэх
+              </Link>
+            </div> */}
+          </footer>
       </motion.div>
     </div>
   );
