@@ -1,10 +1,8 @@
 {
-  "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "contextDir": "backend",
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "go build -o main ./cmd/api/main.go && ./main"
+    "startCommand": "cd backend && go run cmd/api/main.go"
   }
 }
