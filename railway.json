@@ -1,6 +1,10 @@
 {
-  "build": "cd backend && go build -o api ./cmd/api/main.go",
-  "start": "./backend/api",
+  "build": {
+    "command": "cd backend && go build -o api ./cmd/api/main.go"
+  },
+  "start": {
+    "command": "./backend/api"
+  },
   "root": "backend",
   "watchPaths": [
     "/backend/**"
