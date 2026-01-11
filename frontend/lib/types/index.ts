@@ -259,6 +259,7 @@ export interface Lesson {
   is_published: boolean;
   view_count: number;
   sort_order?: number;
+   sort_id?: number;
   created_at: string;
   updated_at: string;
   published_at?: string;

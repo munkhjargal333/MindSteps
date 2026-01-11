@@ -59,29 +59,55 @@ export default function LessonsListPage() {
     childCategories.find((c: any) => c.id === selectedCategory), [childCategories, selectedCategory]
   );
 
-  const loadLessons = useCallback(async () => {
-    if (!token) return;
-    setLoading(true);
-    try {
-      const categoryId = selectedCategory || selectedParent || undefined;
-      const isParent = !!(selectedParent && !selectedCategory);
+  // const loadLessons = useCallback(async () => {
+  //   if (!token) return;
+  //   setLoading(true);
+  //   try {
+  //     const categoryId = selectedCategory || selectedParent || undefined;
+  //     const isParent = !!(selectedParent && !selectedCategory);
 
-      const response = await apiClient.getLessons(
-        currentPage, 
-        itemsPerPage, 
-        token,
-        categoryId,
-        isParent
-      );
+  //     const response = await apiClient.getLessons(
+  //       currentPage, 
+  //       itemsPerPage, 
+  //       token,
+  //       categoryId,
+  //       isParent
+  //     );
       
-      setLessons(response.lessons || []);
-      setTotalItems(response.total || 0); 
-    } catch (error) {
-      showToast('Хичээл авахад алдаа гарлаа', 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [token, currentPage, selectedCategory, selectedParent, showToast]);
+  //     setLessons(response.lessons || []);
+  //     setTotalItems(response.total || 0); 
+  //   } catch (error) {
+  //     showToast('Хичээл авахад алдаа гарлаа', 'error');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, [token, currentPage, selectedCategory, selectedParent, showToast]);
+  const loadLessons = useCallback(async () => {
+  if (!token) return;
+  setLoading(true);
+  try {
+    const categoryId = selectedCategory || selectedParent || undefined;
+    const isParent = !!(selectedParent && !selectedCategory);
+
+    const response = await apiClient.getLessons(
+      currentPage, 
+      itemsPerPage, 
+      token,
+      categoryId,
+      isParent
+    );
+    
+    // Хичээлүүдийг sort_id-оор эрэмбэлэх
+    const sortedLessons = (response.lessons || []).sort((a: any, b: any) => a.sort_id - b.sort_id);
+    
+    setLessons(sortedLessons);
+    setTotalItems(response.total || 0); 
+  } catch (error) {
+    showToast('Хичээл авахад алдаа гарлаа', 'error');
+  } finally {
+    setLoading(false);
+  }
+}, [token, currentPage, selectedCategory, selectedParent, showToast]);
 
   useEffect(() => { loadCategories(); }, [loadCategories]);
   useEffect(() => { loadLessons(); }, [loadLessons]);
