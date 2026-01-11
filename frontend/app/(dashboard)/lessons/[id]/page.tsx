@@ -90,7 +90,7 @@ export default function LessonDetailPage() {
 
       await apiClient.completeLesson(payload, token);
 
-      showToast(`✅ Баяр хүргэе! +${lesson.points_reward} оноо авлаа 🎉`, 'success');
+      showToast('Шинэ ухаарал нээгдлээ. Дотогшоо гүн өнгий! 💎', 'success')
       
       // Амжилттай болсны дараа жагсаалт руу буцна
       router.push('/lessons');
