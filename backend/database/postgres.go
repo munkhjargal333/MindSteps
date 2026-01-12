@@ -36,9 +36,9 @@ func MustConnect(logLevel logger.LogLevel) {
 	for i := 1; i <= 5; i++ {
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 			Logger: logger.Default.LogMode(logLevel),
-			NowFunc: func() time.Time {
-				return time.Now().In(time.FixedZone("Asia/Ulaanbaatar", 8*60*60))
-			},
+			// NowFunc: func() time.Time {
+			// 	return time.Now().In(time.FixedZone("Asia/Ulaanbaatar", 8*60*60))
+			// },
 			// Write-ийн дараа заавал SELECT хийхгүй байх (Performance)
 			SkipDefaultTransaction: true,
 		})
