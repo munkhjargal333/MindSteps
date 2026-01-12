@@ -1,16 +1,8 @@
 {
   "build": {
-    "builder": "NIXPACKS",
-    "context": "backend",
-    "nixpacksPlan": {
-      "phases": {
-        "setup": {
-          "pkgs": ["go", "tzdata"]
-        }
-      }
-    }
+    "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "go run cmd/api/main.go"
+    "startCommand": "go run backend/cmd/api/main.go"
   }
 }
