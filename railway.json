@@ -16,6 +16,6 @@
     "context": "backend"
   },
   "deploy": {
-    "startCommand": "./backend/bin/api"
+    "startCommand": "./bin/api"
   }
 }
