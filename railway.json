@@ -1,20 +1,9 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "nixpacksPlan": {
-      "providers": ["go"],
-      "phases": {
-        "install": {
-          "cmds": ["go mod download"]
-        },
-        "build": {
-          "cmds": ["go build -o bin/api ./cmd/api/main.go"]
-        }
-      }
-    },
     "context": "backend"
   },
   "deploy": {
-    "startCommand": "./bin/api"
+    "startCommand": "go run cmd/api/main.go"
   }
 }
