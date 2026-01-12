@@ -19,7 +19,6 @@ require (
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gen v0.3.27
 	gorm.io/gorm v1.31.0
-	gorm.io/plugin/dbresolver v1.6.2
 )
 
 require (
@@ -70,4 +69,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/hints v1.1.2 // indirect
+	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
