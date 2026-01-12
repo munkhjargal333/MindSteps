@@ -1,9 +1,16 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "context": "backend"
+    "context": "backend",
+    "nixpacksPlan": {
+      "phases": {
+        "build": {
+          "cmds": ["go build -o out ./cmd/api/main.go"]
+        }
+      }
+    }
   },
   "deploy": {
-    "startCommand": "go run cmd/api/main.go"
+    "startCommand": "./out"
   }
 }
