@@ -8,13 +8,13 @@
           "cmds": ["go mod download"]
         },
         "build": {
-          "cmds": ["go build -o ./backend/bin/api ./cmd/api/main.go"]
+          "cmds": ["go build -o bin/api ./cmd/api/main.go"]
         }
       }
     },
     "context": "backend"
   },
   "deploy": {
-    "startCommand": "./backend/bin/api"
+    "startCommand": "./bin/api"
   }
 }
