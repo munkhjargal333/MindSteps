@@ -4,13 +4,13 @@
     "context": "backend",
     "nixpacksPlan": {
       "phases": {
-        "build": {
-          "cmds": ["go build -o out ./cmd/api/main.go"]
+        "setup": {
+          "pkgs": ["go", "tzdata"]
         }
       }
     }
   },
   "deploy": {
-    "startCommand": "./out"
+    "startCommand": "go run cmd/api/main.go"
   }
 }
