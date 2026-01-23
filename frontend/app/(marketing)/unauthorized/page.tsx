@@ -80,7 +80,7 @@ export default function UnauthorizedPage() {
                 </div>
               </div>
 
-              {/* TOP100 */}
+              {/* TOP100
               <div className="group flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl">
                 <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center shrink-0">
                   <Sparkles className="w-6 h-6 text-purple-600" />
@@ -91,7 +91,7 @@ export default function UnauthorizedPage() {
                     100,000₮ - Насан туршийн эрх
                   </p>
                 </div>
-              </div>
+              </div> */}
 
               {/* HELLO1000 */}
               <div className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
