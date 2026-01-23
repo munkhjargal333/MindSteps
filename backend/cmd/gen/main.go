@@ -58,7 +58,7 @@ func main() {
 		model("user_gamification"),
 		"UserGamification",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("current_level_id", "int"),
 		gen.FieldType("total_score", "int"),
 		gen.FieldType("level_progress", "int"),
@@ -75,10 +75,7 @@ func main() {
 	users := g.GenerateModelAs(
 		model("users"),
 		"Users",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("uuid", "string"),
-		gen.FieldType("total_score", "int"),
-		gen.FieldType("current_level", "int"),
+		gen.FieldType("id", "string"),
 		gen.FieldType("level_progress", "int"),
 		gen.FieldType("is_active", "bool"),
 		gen.FieldType("is_email_verified", "bool"),
@@ -101,7 +98,7 @@ func main() {
 		model("scoring_history"),
 		"ScoringHistory",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("source_id", "uint"),
 		gen.FieldType("points_earned", "int"),
 		gen.FieldType("metadata", "datatypes.JSON"),
@@ -177,59 +174,8 @@ func main() {
 	)
 
 	// ============================================================================
-	// AUTHENTICATION & SECURITY
+	// SECURITY
 	// ============================================================================
-
-	// Auth OTP
-	authOTP := g.GenerateModelAs(
-		model("auth_otp"),
-		"AuthOTP",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("is_used", "bool"),
-		gen.FieldIgnore("deleted_at"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// User sessions
-	userSessions := g.GenerateModelAs(
-		model("user_sessions"),
-		"UserSessions",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldType("is_active", "bool"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
-
-	// Revoked tokens
-	revokedTokens := g.GenerateModelAs(
-		model("revoked_tokens"),
-		"RevokedTokens",
-		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
-		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"user_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("User"),
-		}),
-	)
 
 	// Encryption keys
 	encryptionKeys := g.GenerateModelAs(
@@ -259,7 +205,7 @@ func main() {
 		model("core_values"),
 		"CoreValues",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("maslow_level_id", "int"),
 		gen.FieldType("priority_order", "int"),
 		gen.FieldType("is_active", "bool"),
@@ -287,7 +233,7 @@ func main() {
 		model("value_reflections"),
 		"ValueReflections",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("value_id", "uint"),
 		gen.FieldType("source_id", "uint"),
 		gen.FieldType("alignment_score", "int"),
@@ -400,7 +346,7 @@ func main() {
 		model("journals"),
 		"Journals",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("word_count", "int"),
 		gen.FieldType("is_private", "bool"),
 
@@ -481,7 +427,7 @@ func main() {
 		model("mood_entries"),
 		"MoodEntries",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("mood_unit_id", "int"),
 		// gen.FieldType("mood_id", "int"),
 		// gen.FieldType("plutchik_id", "int"),
@@ -522,7 +468,7 @@ func main() {
 		model("user_emotion_wheel"),
 		"UserEmotionWheel",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("mood_entry_id", "uint"),
 		gen.FieldType("journal_id", "uint"),
 		gen.FieldType("plutchik_emotion_id", "int"),
@@ -598,7 +544,7 @@ func main() {
 		model("goals"),
 		"Goals",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("value_id", "uint"),
 		gen.FieldType("progress_percentage", "int"),
 		gen.FieldType("is_public", "bool"),
@@ -701,7 +647,7 @@ func main() {
 		"UserLessonProgress",
 		gen.FieldType("id", "uint"),
 		gen.FieldType("lesson_id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("progress_percentage", "int"),
 		gen.FieldType("time_spent", "int"),
 		gen.FieldType("rating", "*int"),
@@ -730,7 +676,7 @@ func main() {
 		model("lesson_recommendations"),
 		"LessonRecommendations",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("lesson_id", "uint"),
 		gen.FieldType("related_value_id", "uint"),
 		gen.FieldType("related_pattern_id", "uint"),
@@ -768,7 +714,7 @@ func main() {
 		"LessonComments",
 		gen.FieldType("id", "uint"),
 		gen.FieldType("lesson_id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("parent_id", "uint"),
 		gen.FieldType("is_edited", "bool"),
 		gen.FieldType("is_deleted", "bool"),
@@ -796,7 +742,7 @@ func main() {
 		"LessonReactions",
 		gen.FieldType("id", "uint"),
 		gen.FieldType("lesson_id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldRelate(field.BelongsTo, "Lesson", lessons, &field.RelateConfig{
 			RelatePointer: true,
 			GORMTag: field.GormTag{
@@ -835,7 +781,7 @@ func main() {
 		model("user_data_requests"),
 		"UserDataRequests",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("processed_by_id", "uint"),
 		gen.FieldType("backup_created", "bool"),
 		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
@@ -861,7 +807,7 @@ func main() {
 		model("user_data_access_log"),
 		"UserDataAccessLog",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("accessed_by_id", "uint"),
 		gen.FieldType("record_id", "uint"),
 		gen.FieldType("session_id", "uint"),
@@ -881,14 +827,14 @@ func main() {
 			},
 			JSONTag: tag("AccessedBy"),
 		}),
-		gen.FieldRelate(field.BelongsTo, "Session", userSessions, &field.RelateConfig{
-			RelatePointer: true,
-			GORMTag: field.GormTag{
-				"foreignKey": []string{"session_id"},
-				"references": []string{"id"},
-			},
-			JSONTag: tag("Session"),
-		}),
+		// gen.FieldRelate(field.BelongsTo, "Session", userSessions, &field.RelateConfig{
+		// 	RelatePointer: true,
+		// 	GORMTag: field.GormTag{
+		// 		"foreignKey": []string{"session_id"},
+		// 		"references": []string{"id"},
+		// 	},
+		// 	JSONTag: tag("Session"),
+		// }),
 	)
 
 	// Deleted data log
@@ -896,7 +842,7 @@ func main() {
 		model("deleted_data_log"),
 		"DeletedDataLog",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("record_id", "uint"),
 		gen.FieldType("deleted_by_id", "uint"),
 		gen.FieldType("can_recover", "bool"),
@@ -946,7 +892,7 @@ func main() {
 		model("system_audit_log"),
 		"SystemAuditLog",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("entity_id", "uint"),
 		gen.FieldType("old_value", "datatypes.JSON"),
 		gen.FieldType("new_value", "datatypes.JSON"),
@@ -965,7 +911,7 @@ func main() {
 		model("error_logs"),
 		"ErrorLogs",
 		gen.FieldType("id", "uint"),
-		gen.FieldType("user_id", "uint"),
+		gen.FieldType("user_id", "string"),
 		gen.FieldType("resolved_by_id", "uint"),
 		gen.FieldType("is_resolved", "bool"),
 		gen.FieldRelate(field.BelongsTo, "User", users, &field.RelateConfig{
@@ -994,8 +940,8 @@ func main() {
 		// Core User Management
 		users, roles, roleOwners,
 
-		// Authentication & Security
-		authOTP, userSessions, revokedTokens, encryptionKeys,
+		//Security
+		encryptionKeys,
 
 		// Gamification System
 		userLevels, scoringHistory, userGamification,

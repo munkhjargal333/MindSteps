@@ -12,9 +12,9 @@ type MoodEntryRepository interface {
 	GetByID(id uint) (*model.MoodEntries, error)
 	Update(entry *model.MoodEntries) error
 	Delete(id uint) error
-	ListByUserID(userID uint, limit int, offset int) ([]model.MoodEntries, error)
-	CountByUserID(userID uint) (int64, error)
-	FindByDateRange(userID uint, fromDate, toDate time.Time) ([]model.MoodEntries, error)
+	ListByUserID(userID string, limit int, offset int) ([]model.MoodEntries, error)
+	CountByUserID(userID string) (int64, error)
+	FindByDateRange(userID string, fromDate, toDate time.Time) ([]model.MoodEntries, error)
 	ListByMoodID() ([]model.MoodCategories, error)
 }
 
@@ -52,7 +52,7 @@ func (r *moodEntryRepo) Delete(id uint) error {
 	return r.db.Delete(&model.MoodEntries{}, id).Error
 }
 
-func (r *moodEntryRepo) ListByUserID(userID uint, limit int, offset int) ([]model.MoodEntries, error) {
+func (r *moodEntryRepo) ListByUserID(userID string, limit int, offset int) ([]model.MoodEntries, error) {
 	var entries []model.MoodEntries
 	if err := r.db.Where("user_id = ?", userID).
 		Preload("MoodUnit").
@@ -80,7 +80,7 @@ func (r *moodEntryRepo) ListByMoodID() ([]model.MoodCategories, error) {
 	return categories, nil
 }
 
-func (r *moodEntryRepo) CountByUserID(userID uint) (int64, error) {
+func (r *moodEntryRepo) CountByUserID(userID string) (int64, error) {
 	var count int64
 	if err := r.db.Model(&model.MoodEntries{}).
 		Where("user_id = ?", userID).
@@ -90,7 +90,7 @@ func (r *moodEntryRepo) CountByUserID(userID uint) (int64, error) {
 	return count, nil
 }
 
-func (r *moodEntryRepo) FindByDateRange(userID uint, fromDate, toDate time.Time) ([]model.MoodEntries, error) {
+func (r *moodEntryRepo) FindByDateRange(userID string, fromDate, toDate time.Time) ([]model.MoodEntries, error) {
 	var entries []model.MoodEntries
 	if err := r.db.Where("user_id = ? AND entry_date BETWEEN ? AND ?",
 		userID, fromDate, toDate).

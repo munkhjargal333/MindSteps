@@ -14,7 +14,7 @@ const TableNameUserLevels = "mindstep.user_levels"
 
 // UserLevels mapped from table <mindstep.user_levels>
 type UserLevels struct {
-	ID          int            `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
+	ID          int            `gorm:"column:id;type:integer;not null" json:"id"`
 	LevelNumber int            `gorm:"column:level_number;type:integer;not null" json:"level_number"`
 	LevelName   string         `gorm:"column:level_name;type:character varying(100);not null" json:"level_name"`
 	MinScore    int            `gorm:"column:min_score;type:integer;not null" json:"min_score"`

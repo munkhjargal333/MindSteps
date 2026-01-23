@@ -8,7 +8,7 @@ const TableNameMoodUnit = "mindstep.mood_unit"
 
 // MoodUnit mapped from table <mindstep.mood_unit>
 type MoodUnit struct {
-	ID                   uint                  `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
+	ID                   uint                  `gorm:"column:id;type:integer;not null" json:"id"`
 	CategoryID           uint                  `gorm:"column:category_id;type:bigint;not null" json:"category_id"`
 	PlutchikID           uint                  `gorm:"column:plutchik_id;type:bigint" json:"plutchik_id"`
 	CombinationID        uint                  `gorm:"column:combination_id;type:bigint" json:"combination_id"`

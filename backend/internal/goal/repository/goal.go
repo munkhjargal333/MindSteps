@@ -13,7 +13,7 @@ type GoalRepository interface {
 	GetByID(id uint) (*model.Goals, error)
 	Update(goal *model.Goals) error
 	Delete(id uint) error
-	ListByUserID(userID uint) ([]model.Goals, error)
+	ListByUserID(userID string) ([]model.Goals, error)
 	CreateMilestone(milestone *model.GoalMilestones) error
 	GetMilestoneByID(id uint) (*model.GoalMilestones, error)
 	UpdateMilestone(milestone *model.GoalMilestones) error
@@ -53,7 +53,7 @@ func (r *goalRepo) Delete(id uint) error {
 	return r.db.Model(&model.Goals{}).Where("id = ?", id).Update("deleted_at", now).Error
 }
 
-func (r *goalRepo) ListByUserID(userID uint) ([]model.Goals, error) {
+func (r *goalRepo) ListByUserID(userID string) ([]model.Goals, error) {
 	var goals []model.Goals
 	if err := r.db.Where("user_id = ? AND deleted_at IS NULL", userID).
 		Preload("Value").

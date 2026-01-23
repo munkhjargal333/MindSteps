@@ -12,8 +12,8 @@ const TableNameLessonRecommendations = "mindstep.lesson_recommendations"
 
 // LessonRecommendations mapped from table <mindstep.lesson_recommendations>
 type LessonRecommendations struct {
-	ID                   uint        `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID               uint        `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	ID                   uint        `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID               string      `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	LessonID             uint        `gorm:"column:lesson_id;type:bigint;not null" json:"lesson_id"`
 	RecommendationReason string      `gorm:"column:recommendation_reason;type:character varying(50)" json:"recommendation_reason"`
 	RelatedValueID       uint        `gorm:"column:related_value_id;type:bigint" json:"related_value_id"`

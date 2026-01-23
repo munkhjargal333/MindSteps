@@ -12,9 +12,9 @@ const TableNameLessonComments = "mindstep.lesson_comments"
 
 // LessonComments mapped from table <mindstep.lesson_comments>
 type LessonComments struct {
-	ID        uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	ID        uint      `gorm:"column:id;type:bigint;not null" json:"id"`
 	LessonID  uint      `gorm:"column:lesson_id;type:bigint;not null" json:"lesson_id"`
-	UserID    uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	UserID    string    `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	ParentID  uint      `gorm:"column:parent_id;type:bigint" json:"parent_id"`
 	Content   string    `gorm:"column:content;type:text;not null" json:"content"`
 	IsEdited  bool      `gorm:"column:is_edited;type:boolean" json:"is_edited"`

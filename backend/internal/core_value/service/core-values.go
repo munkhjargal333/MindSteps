@@ -13,7 +13,7 @@ type CoreValueService interface {
 	GetByID(id uint) (*model.CoreValues, error)
 	Update(id uint, form *form.CoreValueForm) (*model.CoreValues, error)
 	Delete(id uint) error
-	ListByUserID(userID uint) ([]model.CoreValues, error)
+	ListByUserID(userID string) ([]model.CoreValues, error)
 	MaslowLevelList() ([]model.MaslowLevels, error)
 }
 
@@ -74,7 +74,7 @@ func (s *coreValueService) Delete(id uint) error {
 	return s.repo.Delete(id)
 }
 
-func (s *coreValueService) ListByUserID(userID uint) ([]model.CoreValues, error) {
+func (s *coreValueService) ListByUserID(userID string) ([]model.CoreValues, error) {
 	return s.repo.ListByUserID(userID)
 }
 func (s *coreValueService) MaslowLevelList() ([]model.MaslowLevels, error) {

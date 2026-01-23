@@ -1,37 +1,26 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { apiClient } from '@/lib/api/client';
-import { DashboardStats } from '@/lib/types';
+import { useStats } from '@/lib/hooks/userStat';
+import { useGamification } from '@/lib/hooks/useGamification';
+
 import { BookOpen, Activity, Flame, TrendingUp, ArrowRight, Target, Sparkles, Plus } from 'lucide-react';
-import { EmotionWheel } from '@/components/mood/EmotionWheel';
 
 export default function DashboardPage() {
-  const { user, token } = useAuth();
-  const [data, setData] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  const loadStats = useCallback(async () => {
-    if (!token) return;
-    try {
-      const response = await apiClient.getUserStats(token);
-      
-      setData(response);
-    } catch (error) {
-      console.error('Failed to load stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+  const { dashboard, loading: statsLoading, error: statsError } = useStats(user?.id);
+  const { gamification, loading: gamiLoading } = useGamification(user?.id);
 
-  useEffect(() => {
-    loadStats();
-  }, [loadStats]);
+  // Аль нэг нь ачаалж байвал Skeleton харуулна
+  const isLoading = statsLoading || gamiLoading;
 
-  if (loading) return <LoadingSkeleton />;
-  if (!data) return <div className="flex items-center justify-center min-h-screen text-gray-600">Өгөгдөл олдсонгүй</div>;
-
+  if (isLoading) return <LoadingSkeleton />;
+  
+  // Алдаа болон өгөгдөлгүй үеийн шалгалт
+  if (statsError) return <div className="p-10 text-center text-red-500">Алдаа гарлаа</div>;
+  if (!dashboard || !gamification) return <div className="flex ...">Өгөгдөл олдсонгүй</div>;
+  if (!gamification) return <div className="flex items-center justify-center min-h-screen text-gray-600">Өгөгдөл олдсонгүй</div>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-3 sm:p-6">
@@ -52,12 +41,12 @@ export default function DashboardPage() {
                 
                 {/* Энд Emoji-г текст хэлбэрээр гаргана */}
                 <span className="text-2xl md:text-4xl drop-shadow-md select-none">
-                  {user?.gamification?.level?.icon || "🌱"}
+                  {gamification?.level?.icon || "🌱"}
                 </span>
                 
                 {/* Level Number Badge */}
                 <div className="absolute -bottom-1 -right-1 md:-bottom-2 md:-right-2 bg-white text-indigo-600 text-[9px] md:text-[11px] font-black w-5 h-5 md:w-6 md:h-6 rounded-md md:rounded-lg flex items-center justify-center shadow-lg border border-indigo-50">
-                  {user?.gamification?.level?.level_number || 1}
+                  {gamification?.level?.level_number || 1}
                 </div>
               </div>
             </div>
@@ -65,12 +54,12 @@ export default function DashboardPage() {
             {/* Нэр болон Level Name */}
             <div className="flex-1 min-w-0">
               <h1 className="text-lg md:text-2xl font-black text-white leading-tight drop-shadow-sm truncate">
-                {user?.name}
+                {user?.user_metadata.full_name || user?.email || 'Сайн байна уу!'}
               </h1>
               <div className="inline-flex items-center gap-1.5 mt-0.5 md:mt-1 bg-black/20 backdrop-blur-md px-2 md:px-3 py-0.5 md:py-1 rounded-full border border-white/10">
                 <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
                 <span className="text-[9px] md:text-[11px] font-bold uppercase tracking-wider text-cyan-300">
-                  {user?.gamification?.level?.level_name || 'Legendary'}
+                  {gamification?.level?.level_name || 'Legendary'}
                 </span>
               </div>
             </div>
@@ -79,7 +68,7 @@ export default function DashboardPage() {
             <div className="bg-white/10 backdrop-blur-md p-2 md:p-3 rounded-xl md:rounded-2xl border border-white/20 flex flex-col items-center min-w-[50px]">
               <Flame className="w-4 h-4 md:w-5 md:h-5 text-orange-400 fill-orange-400" />
               <span className="text-xs md:text-sm font-black text-white mt-0.5">
-                {user?.gamification?.current_streak || 0}
+                {gamification?.current_streak || 0}
               </span>
             </div>
           </div>
@@ -90,12 +79,12 @@ export default function DashboardPage() {
               <div className="space-y-0.5">
                 <p className="text-[8px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest">Нийт оноо</p>
                 <p className="text-base md:text-xl font-black text-white leading-none">
-                  {user?.gamification?.total_score?.toLocaleString() || 0}
+                  {gamification?.total_score?.toLocaleString() || 0}
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] md:text-xs font-bold text-white mb-0.5">
-                  {user?.gamification?.level_progress || 0}%
+                  {gamification?.level_progress || 0}%
                 </p>
                 <div className="text-[8px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest">Дараагийн түвшин</div>
               </div>
@@ -105,7 +94,7 @@ export default function DashboardPage() {
             <div className="relative h-2 md:h-3 w-full bg-black/20 rounded-full overflow-hidden p-[1px]">
               <div 
                 className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-300 to-white transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(34,211,238,0.5)]"
-                style={{ width: `${user?.gamification?.level_progress || 0}%` }}
+                style={{ width: `${gamification?.level_progress || 0}%` }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-full animate-shimmer"></div>
               </div>
@@ -138,7 +127,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-lg md:text-2xl font-black text-gray-900 leading-none truncate">
-                  {data?.stats.total_journals || 0}
+                  {dashboard?.stats.total_journals || 0}
                 </span>
                 <span className="text-[9px] md:text-[11px] font-bold text-gray-400 uppercase mt-1 truncate">Тэмдэглэл</span>
               </div>
@@ -156,7 +145,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-lg md:text-2xl font-black text-gray-900 leading-none truncate">
-                  {data?.stats.total_moods || 0}
+                  {dashboard?.stats.total_moods || 0}
                 </span>
                 <span className="text-[9px] md:text-[11px] font-bold text-gray-400 uppercase mt-1 truncate">Сэтгэл санаа</span>
               </div>
@@ -175,17 +164,17 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div>
-                <h3 className="text-base md:text-lg font-black text-gray-900 leading-none">Хичээлийн явц</h3>
+                <h3 className="text-base md:text-lg font-black text-gray-900 leading-none">Мэдлэгийн явц</h3>
                 <p className="text-[10px] md:text-xs font-bold text-gray-400 mt-1 md:mt-1.5 flex items-center gap-1.5">
                   <TrendingUp className="w-3 h-3 md:w-3.5 md:h-3.5 text-green-500" />
-                  {data?.stats.total_lessons_completed} хичээл дуусгасан
+                  {dashboard?.stats.total_lessons_completed} хичээл дуусгасан
                 </p>
               </div>
             </div>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-4 md:gap-y-6">
-            {data?.category_progress.map(cat => (
+            {dashboard?.category_progress.map(cat => (
               <div key={cat.category_id} className="group">
                 <div className="flex items-center justify-between mb-1.5 md:mb-2">
                   <div className="flex items-center gap-2">

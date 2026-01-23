@@ -1,32 +1,60 @@
 package auth
 
 import (
-	"mindsteps/config"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"encoding/base64"
+	"encoding/json"
+	"math/big"
+	"os"
+	"sync"
 
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/golang-jwt/jwt/v4"
 )
 
-func MustInitGjwt() {
-	config := config.Get().Auth
+var (
+	supabasePublicKey *ecdsa.PublicKey
+	once              sync.Once
+)
 
-	var (
-		result GJWT
-	)
+// MustInitSupabaseJWT инициализ хийнэ - program эхлэхэд нэг удаа дуудна
+func MustInitSupabaseJWT() {
+	once.Do(func() {
+		jwkRaw := os.Getenv("SUPABASE_JWK")
+		if jwkRaw == "" {
+			log.Fatal("SUPABASE_JWK environment variable not set")
+		}
 
-	private, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(config.JwtPrivateKey))
-	if err != nil {
-		log.Fatal("error parsing private key", err)
-		return
-	}
-	result.Private = private
+		var jwkData struct {
+			X string `json:"x"`
+			Y string `json:"y"`
+		}
 
-	public, err := jwt.ParseRSAPublicKeyFromPEM([]byte(config.JwtPublicKey))
-	if err != nil {
-		log.Fatal("error parsing public key", err)
-		return
-	}
-	result.Public = public
+		if err := json.Unmarshal([]byte(jwkRaw), &jwkData); err != nil {
+			log.Fatalf("Failed to parse SUPABASE_JWK: %v", err)
+		}
 
-	Gjwt = &result
+		xBytes, err := base64.RawURLEncoding.DecodeString(jwkData.X)
+		if err != nil {
+			log.Fatalf("Failed to decode X coordinate: %v", err)
+		}
+
+		yBytes, err := base64.RawURLEncoding.DecodeString(jwkData.Y)
+		if err != nil {
+			log.Fatalf("Failed to decode Y coordinate: %v", err)
+		}
+
+		supabasePublicKey = &ecdsa.PublicKey{
+			Curve: elliptic.P256(),
+			X:     new(big.Int).SetBytes(xBytes),
+			Y:     new(big.Int).SetBytes(yBytes),
+		}
+
+		log.Info("Supabase JWT initialized successfully")
+	})
+}
+
+// GetSupabasePublicKey - public key-г буцаана
+func GetSupabasePublicKey() *ecdsa.PublicKey {
+	return supabasePublicKey
 }

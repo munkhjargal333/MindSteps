@@ -8,6 +8,7 @@ export interface DashboardStats {
     total_moods: number;
     total_lessons_completed: number;
   };
+  
   category_progress: Array<{
     category_id: number;
     category_name: string;
@@ -94,6 +95,12 @@ export interface Journal {
   created_at: string;
   updated_at: string;
   related_value_ids?: number;
+}
+export interface JournalListResponse {
+  journals: Journal[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface MoodCategory {

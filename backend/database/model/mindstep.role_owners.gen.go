@@ -12,7 +12,7 @@ const TableNameRoleOwners = "mindstep.role_owners"
 
 // RoleOwners mapped from table <mindstep.role_owners>
 type RoleOwners struct {
-	ID           uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	ID           uint      `gorm:"column:id;type:bigint;not null" json:"id"`
 	RoleID       uint      `gorm:"column:role_id;type:bigint;not null" json:"role_id"`
 	OwnerID      uint      `gorm:"column:owner_id;type:bigint;not null" json:"owner_id"`
 	Status       string    `gorm:"column:status;type:character varying(10);default:active" json:"status"`

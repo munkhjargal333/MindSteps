@@ -15,8 +15,8 @@ type MoodEntryService interface {
 	GetByID(id uint) (*model.MoodEntries, error)
 	Update(id uint, form *form.MoodEntryForm) (*model.MoodEntries, error)
 	Delete(id uint) error
-	ListByUserID(userID uint, page, limit int) ([]model.MoodEntries, int64, error)
-	GetStatistics(userID uint, days int) (map[string]interface{}, error)
+	ListByUserID(userID string, page, limit int) ([]model.MoodEntries, int64, error)
+	GetStatistics(userID string, days int) (map[string]interface{}, error)
 	ListByMoodID() ([]model.MoodCategories, error)
 }
 
@@ -114,7 +114,7 @@ func (s *moodEntryService) Delete(id uint) error {
 	return s.repo.Delete(id)
 }
 
-func (s *moodEntryService) ListByUserID(userID uint, page, limit int) ([]model.MoodEntries, int64, error) {
+func (s *moodEntryService) ListByUserID(userID string, page, limit int) ([]model.MoodEntries, int64, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -139,7 +139,7 @@ func (s *moodEntryService) ListByUserID(userID uint, page, limit int) ([]model.M
 	return entries, total, nil
 }
 
-func (s *moodEntryService) GetStatistics(userID uint, days int) (map[string]interface{}, error) {
+func (s *moodEntryService) GetStatistics(userID string, days int) (map[string]interface{}, error) {
 	toDate := time.Now()
 	fromDate := toDate.AddDate(0, 0, -days)
 

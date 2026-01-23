@@ -14,7 +14,7 @@ type GoalForm struct {
 	TargetDate  *time.Time `json:"target_date"`
 	Priority    string     `json:"priority" validate:"required,oneof=low medium high"`
 	IsPublic    bool       `json:"is_public"`
-	UserID      uint       `json:"user_id"`
+	UserID      string     `json:"user_id"`
 }
 
 func (f GoalForm) Validate() error {

@@ -140,7 +140,7 @@ export default function LessonsListPage() {
           <div className="relative">
             <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 ml-1 block">Үндсэн бүлэг</label>
             <button onClick={() => { setIsParentOpen(!isParentOpen); setIsChildOpen(false); }} className="w-full bg-white border border-gray-100 p-4 px-6 rounded-2xl text-sm font-bold flex items-center justify-between shadow-sm active:scale-[0.98] transition-all">
-              <span className="truncate">{selectedParentObj ? `${selectedParentObj.emoji} ${selectedParentObj.name_mn}` : '📚 Бүх хичээлүүд'}</span>
+              <span className="truncate">{selectedParentObj ? `${selectedParentObj.emoji} ${selectedParentObj.name_mn}` : '📚 Бүх сэдэвүүд'}</span>
               <ChevronDown size={20} className={`text-blue-500 transition-transform ${isParentOpen ? 'rotate-180' : ''}`} />
             </button>
             <AnimatePresence>
@@ -202,7 +202,10 @@ export default function LessonsListPage() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {lessons.map((lesson) => {
-                const isLocked = user && lesson.required_level > user.gamification.level.level_number;
+                //TODO: Lock хийх нөхцөл
+                // const isLocked = user && lesson.required_level > user.gamification.level.level_number;
+                const isLocked = false;
+                
                 return (
                   <Link key={lesson.id} href={isLocked ? '#' : `/lessons/${lesson.id}`} className={`group bg-white rounded-[2rem] border border-gray-100 shadow-sm flex md:flex-col overflow-hidden transition-all ${isLocked ? 'opacity-60 cursor-not-allowed' : 'active:scale-95 hover:shadow-xl hover:shadow-blue-100/30'}`}>
                     <div className="relative w-24 h-24 sm:w-full sm:h-48 shrink-0 overflow-hidden m-2 sm:m-0 rounded-xl sm:rounded-none">

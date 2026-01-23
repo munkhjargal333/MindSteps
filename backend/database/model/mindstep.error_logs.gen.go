@@ -12,8 +12,8 @@ const TableNameErrorLogs = "mindstep.error_logs"
 
 // ErrorLogs mapped from table <mindstep.error_logs>
 type ErrorLogs struct {
-	ID              uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID          uint      `gorm:"column:user_id;type:bigint" json:"user_id"`
+	ID              uint      `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID          string    `gorm:"column:user_id;type:uuid" json:"user_id"`
 	ErrorType       string    `gorm:"column:error_type;type:character varying(50)" json:"error_type"`
 	ErrorMessage    string    `gorm:"column:error_message;type:text" json:"error_message"`
 	StackTrace      string    `gorm:"column:stack_trace;type:text" json:"stack_trace"`

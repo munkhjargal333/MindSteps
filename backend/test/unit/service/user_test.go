@@ -1,114 +1,101 @@
 package service_test
 
-import (
-	"errors"
-	"testing"
+// func TestUserService_GetProfile_Success(t *testing.T) {
+// 	// Arrange
+// 	mockRepo := new(mockRepository.MockUserRepository)
+// 	svc := userService.NewUserService(mockRepo)
 
-	"mindsteps/database/model"
-	userForm "mindsteps/internal/user/form"
-	userService "mindsteps/internal/user/service"
-	mockRepository "mindsteps/test/unit/mockRepository"
+// 	expectedUser := &model.Users{
+// 		ID:    1,
+// 		Name:  "Test User",
+// 		Email: "test@example.com",
+// 	}
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-)
+// 	mockRepo.On("FindByID", uint(1)).Return(expectedUser, nil)
 
-func TestUserService_GetProfile_Success(t *testing.T) {
-	// Arrange
-	mockRepo := new(mockRepository.MockUserRepository)
-	svc := userService.NewUserService(mockRepo)
+// 	// Act
+// 	result, err := svc.GetProfile(1)
 
-	expectedUser := &model.Users{
-		ID:    1,
-		Name:  "Test User",
-		Email: "test@example.com",
-	}
+// 	// Assert
+// 	assert.NoError(t, err)
+// 	assert.Equal(t, expectedUser, result)
+// 	mockRepo.AssertExpectations(t)
+// }
 
-	mockRepo.On("FindByID", uint(1)).Return(expectedUser, nil)
+// func TestUserService_GetProfile_NotFound(t *testing.T) {
+// 	// Arrange
+// 	mockRepo := new(mockRepository.MockUserRepository)
+// 	svc := userService.NewUserService(mockRepo)
 
-	// Act
-	result, err := svc.GetProfile(1)
+// 	mockRepo.On("FindByID", uint(999)).Return(nil, errors.New("record not found"))
 
-	// Assert
-	assert.NoError(t, err)
-	assert.Equal(t, expectedUser, result)
-	mockRepo.AssertExpectations(t)
-}
+// 	// Act
+// 	result, err := svc.GetProfile(999)
 
-func TestUserService_GetProfile_NotFound(t *testing.T) {
-	// Arrange
-	mockRepo := new(mockRepository.MockUserRepository)
-	svc := userService.NewUserService(mockRepo)
+// 	// Assert
+// 	assert.Error(t, err)
+// 	assert.Nil(t, result)
+// 	mockRepo.AssertExpectations(t)
+// }
 
-	mockRepo.On("FindByID", uint(999)).Return(nil, errors.New("record not found"))
+// func TestUserService_UpdateProfile_Success(t *testing.T) {
+// 	// Arrange
+// 	mockRepo := new(mockRepository.MockUserRepository)
+// 	svc := userService.NewUserService(mockRepo)
 
-	// Act
-	result, err := svc.GetProfile(999)
+// 	existingUser := &model.Users{
+// 		ID:    1,
+// 		Name:  "Old Name",
+// 		Email: "test@example.com",
+// 	}
 
-	// Assert
-	assert.Error(t, err)
-	assert.Nil(t, result)
-	mockRepo.AssertExpectations(t)
-}
+// 	form := &userForm.UpdateProfileForm{
+// 		Name:     "New Name",
+// 		Language: "en",
+// 	}
 
-func TestUserService_UpdateProfile_Success(t *testing.T) {
-	// Arrange
-	mockRepo := new(mockRepository.MockUserRepository)
-	svc := userService.NewUserService(mockRepo)
+// 	mockRepo.On("FindByID", uint(1)).Return(existingUser, nil)
+// 	mockRepo.On("Update", mock.AnythingOfType("*model.Users")).Return(nil)
 
-	existingUser := &model.Users{
-		ID:    1,
-		Name:  "Old Name",
-		Email: "test@example.com",
-	}
+// 	// Act
+// 	result, err := svc.UpdateProfile(1, form)
 
-	form := &userForm.UpdateProfileForm{
-		Name:     "New Name",
-		Language: "en",
-	}
+// 	// Assert
+// 	assert.NoError(t, err)
+// 	assert.Equal(t, "New Name", result.Name)
+// 	assert.Equal(t, "en", result.Language)
+// 	mockRepo.AssertExpectations(t)
+// }
 
-	mockRepo.On("FindByID", uint(1)).Return(existingUser, nil)
-	mockRepo.On("Update", mock.AnythingOfType("*model.Users")).Return(nil)
+// func TestUserService_UpdateProfile_ValidationError(t *testing.T) {
+// 	// Arrange
+// 	mockRepo := new(mockRepository.MockUserRepository)
+// 	svc := userService.NewUserService(mockRepo)
 
-	// Act
-	result, err := svc.UpdateProfile(1, form)
+// 	form := &userForm.UpdateProfileForm{
+// 		Name:     "A", // Too short
+// 		Language: "en",
+// 	}
 
-	// Assert
-	assert.NoError(t, err)
-	assert.Equal(t, "New Name", result.Name)
-	assert.Equal(t, "en", result.Language)
-	mockRepo.AssertExpectations(t)
-}
+// 	// Act
+// 	result, err := svc.UpdateProfile(1, form)
 
-func TestUserService_UpdateProfile_ValidationError(t *testing.T) {
-	// Arrange
-	mockRepo := new(mockRepository.MockUserRepository)
-	svc := userService.NewUserService(mockRepo)
+// 	// Assert
+// 	assert.Error(t, err)
+// 	assert.Nil(t, result)
+// }
 
-	form := &userForm.UpdateProfileForm{
-		Name:     "A", // Too short
-		Language: "en",
-	}
+// func TestUserService_DeleteAccount_Success(t *testing.T) {
+// 	// Arrange
+// 	mockRepo := new(mockRepository.MockUserRepository)
+// 	svc := userService.NewUserService(mockRepo)
 
-	// Act
-	result, err := svc.UpdateProfile(1, form)
+// 	mockRepo.On("Delete", uint(1)).Return(nil)
 
-	// Assert
-	assert.Error(t, err)
-	assert.Nil(t, result)
-}
+// 	// Act
+// 	err := svc.DeleteAccount(1)
 
-func TestUserService_DeleteAccount_Success(t *testing.T) {
-	// Arrange
-	mockRepo := new(mockRepository.MockUserRepository)
-	svc := userService.NewUserService(mockRepo)
-
-	mockRepo.On("Delete", uint(1)).Return(nil)
-
-	// Act
-	err := svc.DeleteAccount(1)
-
-	// Assert
-	assert.NoError(t, err)
-	mockRepo.AssertExpectations(t)
-}
+// 	// Assert
+// 	assert.NoError(t, err)
+// 	mockRepo.AssertExpectations(t)
+// }

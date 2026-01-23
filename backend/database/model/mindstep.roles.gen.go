@@ -14,7 +14,7 @@ const TableNameRoles = "mindstep.roles"
 
 // Roles mapped from table <mindstep.roles>
 type Roles struct {
-	ID          uint           `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	ID          uint           `gorm:"column:id;type:bigint;not null" json:"id"`
 	Level       int16          `gorm:"column:level;type:smallint;not null" json:"level"`
 	Code        string         `gorm:"column:code;type:character varying(20);not null" json:"code"`
 	Name        string         `gorm:"column:name;type:character varying(50);not null" json:"name"`

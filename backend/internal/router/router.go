@@ -22,7 +22,7 @@ import (
 func RegisterRoutes(app *fiber.App) {
 	api := app.Group("/api/v1")
 
-	RegisterAuthRoutes(api)
+	// RegisterAuthRoutes(api)
 	RegisterUserRoutes(api)
 	RegisterjournalRoutes(api)
 	RegisterCoreRoutes(api)

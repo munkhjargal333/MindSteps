@@ -12,7 +12,7 @@ const TableNameEncryptionKeys = "mindstep.encryption_keys"
 
 // EncryptionKeys mapped from table <mindstep.encryption_keys>
 type EncryptionKeys struct {
-	ID         uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	ID         uint      `gorm:"column:id;type:bigint;not null" json:"id"`
 	KeyName    string    `gorm:"column:key_name;type:character varying(50);not null" json:"key_name"`
 	KeyVersion int       `gorm:"column:key_version;type:integer;not null" json:"key_version"`
 	Algorithm  string    `gorm:"column:algorithm;type:character varying(20);default:AES-256" json:"algorithm"`

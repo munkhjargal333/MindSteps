@@ -12,8 +12,8 @@ const TableNameCoreValues = "mindstep.core_values"
 
 // CoreValues mapped from table <mindstep.core_values>
 type CoreValues struct {
-	ID            uint          `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID        uint          `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	ID            uint          `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID        string        `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	MaslowLevelID int           `gorm:"column:maslow_level_id;type:integer" json:"maslow_level_id"`
 	Name          string        `gorm:"column:name;type:character varying(100);not null" json:"name"`
 	Description   string        `gorm:"column:description;type:text" json:"description"`

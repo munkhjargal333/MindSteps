@@ -12,8 +12,8 @@ const TableNameUserDataRequests = "mindstep.user_data_requests"
 
 // UserDataRequests mapped from table <mindstep.user_data_requests>
 type UserDataRequests struct {
-	ID                  uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID              uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	ID                  uint      `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID              string    `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	RequestType         string    `gorm:"column:request_type;type:character varying(50);not null" json:"request_type"`
 	Status              string    `gorm:"column:status;type:character varying(20);default:pending" json:"status"`
 	RequestedTables     string    `gorm:"column:requested_tables;type:text[]" json:"requested_tables"`

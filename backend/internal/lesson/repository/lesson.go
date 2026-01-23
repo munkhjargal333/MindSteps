@@ -20,8 +20,8 @@ type LessonRepository interface {
 	FindByParentCategoryID(parentID uint, page, limit int) ([]model.Lessons, int64, error)
 	FindByCategoryID(categoryID uint, page, limit int) ([]model.Lessons, int64, error)
 	UpsertProgress(p *model.UserLessonProgress) error
-	GetProgress(userID, lessonID uint) (*model.UserLessonProgress, error)
-	UpsertProgressMap(userID uint, lessonID uint, updates map[string]interface{}) error
+	GetProgress(userID string, lessonID uint) (*model.UserLessonProgress, error)
+	UpsertProgressMap(userID string, lessonID uint, updates map[string]interface{}) error
 }
 
 type lessonRepo struct {
@@ -104,7 +104,7 @@ func (r *lessonRepo) UserLessonProgress(userID, lessonID uint) (*model.UserLesso
 	return &progress, err
 }
 
-func (r *lessonRepo) UpsertProgressMap(userID uint, lessonID uint, updates map[string]interface{}) error {
+func (r *lessonRepo) UpsertProgressMap(userID string, lessonID uint, updates map[string]interface{}) error {
 	var progress model.UserLessonProgress
 
 	// FirstOrCreate нь user_id, lesson_id-аар хайна.
@@ -141,7 +141,7 @@ func (r *lessonRepo) UpsertProgress(p *model.UserLessonProgress) error {
 	}).Create(p).Error
 }
 
-func (r *lessonRepo) GetProgress(userID, lessonID uint) (*model.UserLessonProgress, error) {
+func (r *lessonRepo) GetProgress(userID string, lessonID uint) (*model.UserLessonProgress, error) {
 	var progress model.UserLessonProgress
 	err := r.db.Where("user_id = ? AND lesson_id = ?", userID, lessonID).First(&progress).Error
 	return &progress, err

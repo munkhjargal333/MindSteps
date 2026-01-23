@@ -15,8 +15,8 @@ const TableNameDeletedDataLog = "mindstep.deleted_data_log"
 
 // DeletedDataLog mapped from table <mindstep.deleted_data_log>
 type DeletedDataLog struct {
-	ID                uint           `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID            uint           `gorm:"column:user_id;type:bigint" json:"user_id"`
+	ID                uint           `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID            string         `gorm:"column:user_id;type:uuid" json:"user_id"`
 	TableName_        string         `gorm:"column:table_name;type:character varying(100)" json:"table_name"`
 	RecordID          uint           `gorm:"column:record_id;type:bigint" json:"record_id"`
 	RecordData        datatypes.JSON `gorm:"column:record_data;type:jsonb" json:"record_data"`

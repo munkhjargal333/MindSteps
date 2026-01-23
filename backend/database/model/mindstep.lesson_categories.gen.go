@@ -12,7 +12,7 @@ const TableNameLessonCategory = "mindstep.lesson_categories"
 
 // LessonCategory mapped from table <mindstep.lesson_categories>
 type LessonCategory struct {
-	ID          int              `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
+	ID          int              `gorm:"column:id;type:integer;not null" json:"id"`
 	ParentID    *int             `gorm:"column:parent_id;type:integer" json:"parent_id"`
 	NameEn      string           `gorm:"column:name_en;type:character varying(100);not null" json:"name_en"`
 	NameMn      string           `gorm:"column:name_mn;type:character varying(100);not null" json:"name_mn"`

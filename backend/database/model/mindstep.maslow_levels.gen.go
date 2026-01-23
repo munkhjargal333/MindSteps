@@ -12,7 +12,7 @@ const TableNameMaslowLevels = "mindstep.maslow_levels"
 
 // MaslowLevels mapped from table <mindstep.maslow_levels>
 type MaslowLevels struct {
-	ID          int       `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
+	ID          int       `gorm:"column:id;type:integer;not null" json:"id"`
 	LevelNumber int       `gorm:"column:level_number;type:integer;not null" json:"level_number"`
 	Name        string    `gorm:"column:name;type:character varying(100);not null" json:"name"`
 	Description string    `gorm:"column:description;type:text" json:"description"`

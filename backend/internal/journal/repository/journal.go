@@ -12,8 +12,8 @@ type JournalRepository interface {
 	GetByID(id uint) (*model.Journals, error)
 	Update(journal *model.Journals) error
 	Delete(id uint) error
-	ListByUserID(userID uint, limit int, offset int) ([]model.Journals, error)
-	CountByUserID(userID uint) (uint, error)
+	ListByUserID(userID string, limit int, offset int) ([]model.Journals, error)
+	CountByUserID(userID string) (uint, error)
 	Search(userID uint, query string, tags []string, fromDate, toDate time.Time) ([]model.Journals, error)
 	GetRecentByUserID(userID uint, days int) ([]model.Journals, error)
 }
@@ -47,7 +47,7 @@ func (r *journalRepo) Delete(id uint) error {
 	return r.db.Model(&model.Journals{}).Where("id = ?", id).Update("deleted_at", now).Error
 }
 
-func (r *journalRepo) ListByUserID(userID uint, limit int, offset int) ([]model.Journals, error) {
+func (r *journalRepo) ListByUserID(userID string, limit int, offset int) ([]model.Journals, error) {
 	var journals []model.Journals
 	if err := r.db.Where("user_id = ? AND deleted_at IS NULL", userID).
 		Order("created_at DESC").
@@ -59,7 +59,7 @@ func (r *journalRepo) ListByUserID(userID uint, limit int, offset int) ([]model.
 	return journals, nil
 }
 
-func (r *journalRepo) CountByUserID(userID uint) (uint, error) {
+func (r *journalRepo) CountByUserID(userID string) (uint, error) {
 	var count int64
 	if err := r.db.Model(&model.Journals{}).
 		Where("user_id = ? AND deleted_at IS NULL", userID).

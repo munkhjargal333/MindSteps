@@ -14,8 +14,8 @@ const TableNameGoals = "mindstep.goals"
 
 // Goals mapped from table <mindstep.goals>
 type Goals struct {
-	ID                 uint             `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID             uint             `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	ID                 uint             `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID             string           `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	ValueID            uint             `gorm:"column:value_id;type:bigint" json:"value_id"`
 	Title              string           `gorm:"column:title;type:character varying(255);not null" json:"title"`
 	Description        string           `gorm:"column:description;type:text" json:"description"`

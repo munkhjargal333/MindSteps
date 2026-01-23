@@ -12,7 +12,7 @@ const TableNameLessons = "mindstep.lessons"
 
 // Lessons mapped from table <mindstep.lessons>
 type Lessons struct {
-	ID                     uint            `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	ID                     uint            `gorm:"column:id;type:bigint;not null" json:"id"`
 	CategoryID             int             `gorm:"column:category_id;type:integer;not null" json:"category_id"`
 	ParentID               *uint           `gorm:"column:parent_id;type:bigint" json:"parent_id"`
 	Title                  string          `gorm:"column:title;type:character varying(255);not null" json:"title"`
@@ -37,6 +37,7 @@ type Lessons struct {
 	CreatedAt              time.Time       `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
 	UpdatedAt              time.Time       `gorm:"column:updated_at;type:timestamp without time zone;default:now()" json:"updated_at"`
 	PublishedAt            time.Time       `gorm:"column:published_at;type:timestamp without time zone" json:"published_at"`
+	SortID                 int32           `gorm:"column:sort_id;type:integer" json:"sort_id"`
 	Category               *LessonCategory `gorm:"foreignKey:category_id;references:id" json:"Category"`
 }
 

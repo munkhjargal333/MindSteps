@@ -12,8 +12,8 @@ const TableNameUserEmotionWheel = "mindstep.user_emotion_wheel"
 
 // UserEmotionWheel mapped from table <mindstep.user_emotion_wheel>
 type UserEmotionWheel struct {
-	ID                    uint                  `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID                uint                  `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	ID                    uint                  `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID                string                `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	MoodEntryID           uint                  `gorm:"column:mood_entry_id;type:bigint" json:"mood_entry_id"`
 	JournalID             uint                  `gorm:"column:journal_id;type:bigint" json:"journal_id"`
 	PlutchikEmotionID     int                   `gorm:"column:plutchik_emotion_id;type:integer;not null" json:"plutchik_emotion_id"`

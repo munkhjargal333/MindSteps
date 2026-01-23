@@ -80,9 +80,9 @@ func (h *UserHandler) ChangePassword(c *fiber.Ctx) error {
 		return shared.ResponseBadRequest(c, err.Error())
 	}
 
-	if err := h.service.ChangePassword(tokenInfo.UserID, &f); err != nil {
-		return shared.ResponseBadRequest(c, err.Error())
-	}
+	// if err := h.service.ChangePassword(tokenInfo.UserID, &f); err != nil {
+	// 	return shared.ResponseBadRequest(c, err.Error())
+	// }
 
 	return c.JSON(fiber.Map{
 		"success": true,

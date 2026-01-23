@@ -16,7 +16,7 @@ type MoodEntryForm struct {
 	Weather        string `json:"weather"`
 	MoodUnitId     int    `json:"mood_unit_id"`
 	CorevalueID    uint   `json:"core_value_id"`
-	UserID         uint   `json:"user_id"`
+	UserID         string `json:"user_id"`
 }
 
 func (f MoodEntryForm) Validate() error {

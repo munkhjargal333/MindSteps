@@ -122,7 +122,9 @@ export default function LessonDetailPage() {
 
   if (!lesson) return null;
 
-  const isLocked = user && lesson.required_level > user.gamification.level.level_number;
+  //TODO
+  // const isLocked = user && lesson.required_level > user.gamification.level.level_number;
+  const isLocked = false; // TEMPORARY UNLOCK FOR DEMO
 
 return (
     <div className="min-h-screen bg-[#FDFDFD] pb-10">
@@ -269,7 +271,7 @@ return (
                 onClick={handleOpenRating}
                 className="w-full py-4 sm:py-5 bg-blue-600 text-white font-black text-[11px] sm:text-xs uppercase tracking-[0.2em] rounded-xl sm:rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                Хичээл дуусгах <CheckCircle2 size={16} />
+                Сэдэв дуусгах <CheckCircle2 size={16} />
               </button>
             </article>
           </>

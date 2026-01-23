@@ -14,8 +14,8 @@ const TableNameScoringHistory = "mindstep.scoring_history"
 
 // ScoringHistory mapped from table <mindstep.scoring_history>
 type ScoringHistory struct {
-	ID           uint           `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID       uint           `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	ID           uint           `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID       string         `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	SourceType   string         `gorm:"column:source_type;type:character varying(30);not null" json:"source_type"`
 	SourceID     uint           `gorm:"column:source_id;type:bigint" json:"source_id"`
 	PointsEarned int            `gorm:"column:points_earned;type:integer;not null" json:"points_earned"`

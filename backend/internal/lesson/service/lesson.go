@@ -21,7 +21,7 @@ type LessonService interface {
 	CreateLesson(f form.LessonForm) (*model.Lessons, error)
 	UpdateLesson(id uint, f form.LessonForm) (*model.Lessons, error)
 	DeleteLesson(id uint) error
-	CompleteLesson(userID uint, f *form.CompleteLessonForm) error
+	CompleteLesson(userID string, f *form.CompleteLessonForm) error
 }
 
 type lessonService struct {
@@ -67,7 +67,7 @@ func (s *lessonService) GetLessonsByCategory(categoryID uint, page, limit int) (
 	return lessons, count, nil
 }
 
-func (s *lessonService) CompleteLesson(userID uint, f *form.CompleteLessonForm) error {
+func (s *lessonService) CompleteLesson(userID string, f *form.CompleteLessonForm) error {
 	// 2. Өмнөх прогрессийг шалгах
 	existingProgress, err := s.repo.GetProgress(userID, f.LessonID)
 
