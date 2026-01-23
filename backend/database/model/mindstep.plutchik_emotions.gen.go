@@ -12,7 +12,7 @@ const TableNamePlutchikEmotions = "mindstep.plutchik_emotions"
 
 // PlutchikEmotions mapped from table <mindstep.plutchik_emotions>
 type PlutchikEmotions struct {
-	ID                int       `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
+	ID                int       `gorm:"column:id;type:integer;not null" json:"id"`
 	NameEn            string    `gorm:"column:name_en;type:character varying(50);not null" json:"name_en"`
 	NameMn            string    `gorm:"column:name_mn;type:character varying(50);not null" json:"name_mn"`
 	OppositeEmotionID int32     `gorm:"column:opposite_emotion_id;type:integer" json:"opposite_emotion_id"`

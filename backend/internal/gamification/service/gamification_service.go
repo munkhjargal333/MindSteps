@@ -9,10 +9,10 @@ import (
 )
 
 type GamificationService interface {
-	GetUserGamification(userID uint) (*model.UserGamification, error)
-	AddXP(userID uint, points int, source_type string, sourceID uint, metadata string) error
+	GetUserGamification(userID string) (*model.UserGamification, error)
+	AddXP(userID string, points int, source_type string, sourceID uint, metadata string) error
 
-	GetFullDashboardData(userID uint) (*form.UserDashboardResponse, error)
+	GetFullDashboardData(userID string) (*form.UserDashboardResponse, error)
 }
 
 type gamificationService struct {
@@ -24,11 +24,11 @@ func NewGamificationService(repo repository.GamificationRepository) *gamificatio
 	return &gamificationService{repo: repo}
 }
 
-func (s *gamificationService) GetUserGamification(userID uint) (*model.UserGamification, error) {
+func (s *gamificationService) GetUserGamification(userID string) (*model.UserGamification, error) {
 	return s.repo.GetByUserID(userID)
 }
 
-func (s *gamificationService) AddXP(userID uint, points int, source_type string, sourceID uint, metadata string) error {
+func (s *gamificationService) AddXP(userID string, points int, source_type string, sourceID uint, metadata string) error {
 	stats, err := s.repo.GetByUserID(userID)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (s *gamificationService) AddXP(userID uint, points int, source_type string,
 	return s.repo.UpdateProgress(stats)
 }
 
-func (s *gamificationService) GetFullDashboardData(userID uint) (*form.UserDashboardResponse, error) {
+func (s *gamificationService) GetFullDashboardData(userID string) (*form.UserDashboardResponse, error) {
 	var (
 		dashboard = &form.UserDashboardResponse{}
 		errChan   = make(chan error, 3) // 3 өөр параллель процесс ажиллуулна

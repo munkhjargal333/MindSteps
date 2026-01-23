@@ -12,8 +12,8 @@ const TableNameMoodEntries = "mindstep.mood_entries"
 
 // MoodEntries mapped from table <mindstep.mood_entries>
 type MoodEntries struct {
-	ID               uint        `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID           uint        `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	ID               uint        `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID           string      `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	MoodUnitID       int         `gorm:"column:mood_unit_id;type:bigint;not null" json:"mood_unit_id"`
 	EntryDate        time.Time   `gorm:"column:entry_date;type:date;not null;default:CURRENT_DATE" json:"entry_date"`
 	Intensity        int         `gorm:"column:intensity;type:integer" json:"intensity"`

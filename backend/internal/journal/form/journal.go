@@ -12,15 +12,15 @@ type JournalForm struct {
 	IsPrivate       bool   `json:"is_private"`
 	Tags            string `json:"tags"`
 	RelatedValueIds int    `json:"related_value_ids"`
-	UserID          uint   `json:"user_id"`
+	UserID          string `json:"user_id"`
 }
 
 func (f JournalForm) Validate() error {
 	if f.Content == "" {
 		return fmt.Errorf("content хоосон байна")
 	}
-	if len(f.Content) < 10 {
-		return fmt.Errorf("content 10-аас дээш тэмдэгт байх ёстой")
+	if len(f.Content) < 3 {
+		return fmt.Errorf("агуулга 3-аас дээш тэмдэгт байх ёстой")
 	}
 	if f.Title != "" && len(f.Title) > 255 {
 		return fmt.Errorf("title 255 тэмдэгтээс урт байж болохгүй")

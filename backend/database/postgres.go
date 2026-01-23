@@ -20,13 +20,13 @@ func MustConnect(logLevel logger.LogLevel) {
 
 	// 1. DSN тохиргоо - disable_prepared_statement=true нь Neon/PgBouncer-т заавал хэрэгтэй
 	dsn := fmt.Sprintf(
-		"host=%s port=%d dbname=%s user=%s password=%s sslmode=require TimeZone=Asia/Ulaanbaatar search_path=%s&disable_prepared_statement=true",
+		"host=%s port=%d dbname=%s user=%s password=%s sslmode=require TimeZone=Asia/Ulaanbaatar search_path=%s default_query_exec_mode=simple_protocol",
 		cfg.DB.Host,
 		cfg.DB.Port,
 		cfg.DB.Name,
 		cfg.DB.User,
 		cfg.DB.Password,
-		cfg.DB.Schema,
+		"mindstep", // search_path-аа энд зөв дамжуулж байгаа эсэхийг шалгаарай
 	)
 
 	var db *gorm.DB
@@ -35,7 +35,8 @@ func MustConnect(logLevel logger.LogLevel) {
 	// 2. Retry Logic: DB "сэрэх" эсвэл түр зуурын сүлжээний алдааг давах (max 5 удаа оролдоно)
 	for i := 1; i <= 5; i++ {
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-			Logger: logger.Default.LogMode(logLevel),
+			PrepareStmt: false,
+			Logger:      logger.Default.LogMode(logLevel),
 			// NowFunc: func() time.Time {
 			// 	return time.Now().In(time.FixedZone("Asia/Ulaanbaatar", 8*60*60))
 			// },
@@ -61,11 +62,10 @@ func MustConnect(logLevel logger.LogLevel) {
 		log.Fatal("sql.DB объект авч чадсангүй: ", err)
 	}
 
-	// Render Starter (512MB RAM) болон Neon Free-д зориулсан утгууд:
-	sqlDB.SetMaxOpenConns(15)                  // Нийт 15 холболтоос хэтрүүлэхгүй
-	sqlDB.SetMaxIdleConns(5)                   // Сул байх холболтыг багасгаж RAM хэмнэнэ
-	sqlDB.SetConnMaxLifetime(10 * time.Minute) // Холболтыг шинэчилж байх (Neon proxy-д хэрэгтэй)
-	sqlDB.SetConnMaxIdleTime(5 * time.Minute)
+	sqlDB.SetMaxOpenConns(20) // Supabase нь илүү connection даах чадвартай
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(30 * time.Minute) // Proxy биш тул илүү урт хугацаа байж болно
+	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
 
 	DB = db
 	log.Println("Database connection successfully established and tuned.")

@@ -8,15 +8,15 @@ import (
 )
 
 type GamificationRepository interface {
-	GetByUserID(userID uint) (*model.UserGamification, error)
+	GetByUserID(userID string) (*model.UserGamification, error)
 	UpdateProgress(stats *model.UserGamification) error
 	CreateScoreHistory(history *model.ScoringHistory) error
 	GetLevelByScore(score int) (*model.UserLevels, error)
 
 	//dashboard
-	GetUserProgressByParentCategories(userID uint) ([]form.CategoryProgress, error)
-	GetUserActivityStats(userID uint) (*form.UserActivityStats, error)
-	GetPlutchikDashboardData(userID uint) ([]form.PlutchikStat, error)
+	GetUserProgressByParentCategories(userID string) ([]form.CategoryProgress, error)
+	GetUserActivityStats(userID string) (*form.UserActivityStats, error)
+	GetPlutchikDashboardData(userID string) ([]form.PlutchikStat, error)
 }
 
 type gamificationRepo struct {
@@ -27,7 +27,7 @@ func NewGamificationRepository(db *gorm.DB) GamificationRepository {
 	return &gamificationRepo{db}
 }
 
-func (r *gamificationRepo) GetByUserID(userID uint) (*model.UserGamification, error) {
+func (r *gamificationRepo) GetByUserID(userID string) (*model.UserGamification, error) {
 	var stats model.UserGamification
 
 	// 1. Хэрэглэгчийн статистикийг хайна, байхгүй бол анхны утгатайгаар үүсгэнэ
@@ -59,7 +59,7 @@ func (r *gamificationRepo) CreateScoreHistory(history *model.ScoringHistory) err
 	return r.db.Create(history).Error
 }
 
-func (r *gamificationRepo) GetUserProgressByParentCategories(userID uint) ([]form.CategoryProgress, error) {
+func (r *gamificationRepo) GetUserProgressByParentCategories(userID string) ([]form.CategoryProgress, error) {
 	var results []form.CategoryProgress
 
 	// SQL query:
@@ -96,7 +96,7 @@ func (r *gamificationRepo) GetUserProgressByParentCategories(userID uint) ([]for
 	return results, nil
 }
 
-func (r *gamificationRepo) GetUserActivityStats(userID uint) (*form.UserActivityStats, error) {
+func (r *gamificationRepo) GetUserActivityStats(userID string) (*form.UserActivityStats, error) {
 	var stats form.UserActivityStats
 
 	// 1. Нийт бичсэн Journal-ын тоо
@@ -123,7 +123,7 @@ func (r *gamificationRepo) GetUserActivityStats(userID uint) (*form.UserActivity
 	return &stats, nil
 }
 
-func (r *gamificationRepo) GetPlutchikDashboardData(userID uint) ([]form.PlutchikStat, error) {
+func (r *gamificationRepo) GetPlutchikDashboardData(userID string) ([]form.PlutchikStat, error) {
 	var stats []form.PlutchikStat
 
 	query := `

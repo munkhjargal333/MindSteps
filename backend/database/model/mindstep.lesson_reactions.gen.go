@@ -12,9 +12,9 @@ const TableNameLessonReactions = "mindstep.lesson_reactions"
 
 // LessonReactions mapped from table <mindstep.lesson_reactions>
 type LessonReactions struct {
-	ID           uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	ID           uint      `gorm:"column:id;type:bigint;not null" json:"id"`
 	LessonID     uint      `gorm:"column:lesson_id;type:bigint;not null" json:"lesson_id"`
-	UserID       uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	UserID       string    `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	ReactionType string    `gorm:"column:reaction_type;type:character varying(20)" json:"reaction_type"`
 	CreatedAt    time.Time `gorm:"column:created_at;type:timestamp without time zone;default:now()" json:"created_at"`
 	Lesson       *Lessons  `gorm:"foreignKey:lesson_id;references:id" json:"Lesson"`

@@ -14,8 +14,8 @@ const TableNameJournals = "mindstep.journals"
 
 // Journals mapped from table <mindstep.journals>
 type Journals struct {
-	ID               uint           `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID           uint           `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	ID               uint           `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID           string         `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	Title            string         `gorm:"column:title;type:character varying(255)" json:"title"`
 	Content          string         `gorm:"column:content;type:text;not null" json:"content"`
 	ContentEncrypted string         `gorm:"column:content_encrypted;type:text" json:"content_encrypted"`

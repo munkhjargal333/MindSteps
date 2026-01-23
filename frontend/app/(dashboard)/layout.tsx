@@ -3,12 +3,12 @@
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useGamification } from '@/lib/hooks/useGamification';
 import { 
   Compass, BookOpen, Activity, Gem, 
-  Sparkles, LogOut, Menu, X, User, Sunrise,
-  Award, TrendingUp
+  Sparkles, LogOut, Menu, X, User, Sunrise
 } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -16,24 +16,27 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navigation = [
+  const { gamification, loading } = useGamification(user?.id);
+
+  // Хэрэв дата ачаалж дуусаагүй бол null safety ашиглах
+  const currentLevel = gamification?.level?.level_number || 1;
+  const totalScore = gamification?.total_score || 0;
+  const levelName = gamification?.level?.level_name || 'Шинэ';
+  const levelIcon = gamification?.level?.icon || '🌱';
+  const levelColor = gamification?.level?.color || '#3b82f6';
+
+    const navigation = [
     { name: 'Нүүр', href: '/dashboard', icon: <Compass size={20} />, shortName: 'Нүүр' },
     { name: 'Бодол', href: '/journal', icon: <BookOpen size={20} />, shortName: 'Бодол' },
     { name: 'Сэтгэл', href: '/mood', icon: <Activity size={20} />, shortName: 'Сэтгэл' },
-    { name: 'Үнэт зүйл', href: '/core-values', icon: <Gem size={20} />, shortName: 'Үнэт' },
-    { name: 'Сургалт', href: '/lessons', icon: <Sparkles size={20} />, shortName: 'Сургалт' },
+    { name: 'Цэнэ', href: '/core-values', icon: <Gem size={20} />, shortName: 'Үнэт' },
+    { name: 'Мэдлэг', href: '/lessons', icon: <Sparkles size={20} />, shortName: 'Сургалт' },
   ];
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === href;
     return pathname?.startsWith(href);
   };
-
-  const currentLevel = user?.gamification?.level?.level_number || 1;
-  const totalScore = user?.gamification?.total_score || 0;
-  const levelName = user?.gamification?.level?.level_name || 'Шинэ';
-  const levelIcon = user?.gamification?.level?.icon || '🌱';
-  const levelColor = user?.gamification?.level?.color || '#3b82f6';
 
   return (
     <div className="min-h-screen bg-[#FAFBFC] flex flex-col">
@@ -96,7 +99,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               {/* User Profile */}
               <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
                 <div className="text-right">
-                  <p className="text-sm font-bold text-gray-900 leading-none">{user?.name || 'User'}</p>
+                  <p className="text-sm font-bold text-gray-900 leading-none">{user?.user_metadata.name || 'User'}</p>
                   <p className="text-[10px] font-medium text-gray-400 uppercase tracking-tight mt-1">
                     {levelName}
                   </p>
@@ -195,7 +198,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     {levelIcon}
                   </div>
                   <div>
-                    <p className="text-sm font-black text-gray-900 leading-none">{user?.name || 'User'}</p>
+                    <p className="text-sm font-black text-gray-900 leading-none">{user?.user_metadata.name || 'User'}</p>
                     <p className="text-[10px] font-bold uppercase tracking-wide mt-1" style={{ color: levelColor }}>
                       {levelName}
                     </p>
@@ -215,7 +218,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   </div>
                   <div className="w-px h-8 bg-gray-200"></div>
                   <div className="text-center flex-1">
-                    <p className="text-2xl font-black text-green-600">{user?.gamification?.current_streak || 0}</p>
+                    <p className="text-2xl font-black text-green-600">{gamification?.current_streak || 0}</p>
                     <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Цуваа</p>
                   </div>
                 </div>

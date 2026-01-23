@@ -12,7 +12,7 @@ const TableNameSystemSettings = "mindstep.system_settings"
 
 // SystemSettings mapped from table <mindstep.system_settings>
 type SystemSettings struct {
-	ID           int       `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
+	ID           int       `gorm:"column:id;type:integer;not null" json:"id"`
 	SettingKey   string    `gorm:"column:setting_key;type:character varying(100);not null" json:"setting_key"`
 	SettingValue string    `gorm:"column:setting_value;type:text" json:"setting_value"`
 	SettingType  string    `gorm:"column:setting_type;type:character varying(20)" json:"setting_type"`

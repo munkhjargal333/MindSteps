@@ -12,7 +12,7 @@ const TableNameDataRetentionPolicies = "mindstep.data_retention_policies"
 
 // DataRetentionPolicies mapped from table <mindstep.data_retention_policies>
 type DataRetentionPolicies struct {
-	ID               int       `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
+	ID               int       `gorm:"column:id;type:integer;not null" json:"id"`
 	TableName_       string    `gorm:"column:table_name;type:character varying(100);not null" json:"table_name"`
 	RetentionDays    int       `gorm:"column:retention_days;type:integer;not null" json:"retention_days"`
 	ArchiveAfterDays int       `gorm:"column:archive_after_days;type:integer" json:"archive_after_days"`

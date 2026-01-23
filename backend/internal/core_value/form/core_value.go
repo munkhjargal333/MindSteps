@@ -12,7 +12,7 @@ type CoreValueForm struct {
 	Color         string `json:"color" validate:"required"`
 	Icon          string `json:"icon"`
 	PriorityOrder int    `json:"priority_order" validate:"required,min=1,max=7"`
-	UserID        uint   `json:"user_id"`
+	UserID        string `json:"user_id"`
 	IsActive      bool   `json:"is_active"`
 	// CoreValueId   uint   `json:"core_values_id"`
 }

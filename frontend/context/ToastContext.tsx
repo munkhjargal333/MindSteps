@@ -64,8 +64,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 style={{
                   position: 'fixed',
                   left: '50%',
-                  bottom: '60px',
-                  width: 'min(420px, 92%)',
+                  top: '60px', // БАЙРШИЛ: Дээрээс 40px зайтай
+                  width: 'min(400px, 90%)',
                   pointerEvents: 'auto',
                 }}
                 className={`

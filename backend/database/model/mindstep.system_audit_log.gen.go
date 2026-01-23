@@ -14,8 +14,8 @@ const TableNameSystemAuditLog = "mindstep.system_audit_log"
 
 // SystemAuditLog mapped from table <mindstep.system_audit_log>
 type SystemAuditLog struct {
-	ID         uint           `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
-	UserID     uint           `gorm:"column:user_id;type:bigint" json:"user_id"`
+	ID         uint           `gorm:"column:id;type:bigint;not null" json:"id"`
+	UserID     string         `gorm:"column:user_id;type:uuid" json:"user_id"`
 	ActionType string         `gorm:"column:action_type;type:character varying(50)" json:"action_type"`
 	EntityType string         `gorm:"column:entity_type;type:character varying(50)" json:"entity_type"`
 	EntityID   uint           `gorm:"column:entity_id;type:bigint" json:"entity_id"`

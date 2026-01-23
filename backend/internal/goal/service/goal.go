@@ -13,7 +13,7 @@ type GoalService interface {
 	GetByID(id uint) (*model.Goals, error)
 	Update(id uint, form *form.GoalForm) (*model.Goals, error)
 	Delete(id uint) error
-	ListByUserID(userID uint) ([]model.Goals, error)
+	ListByUserID(userID string) ([]model.Goals, error)
 	CreateMilestone(goalID uint, form *form.MilestoneForm) (*model.GoalMilestones, error)
 	UpdateMilestone(id uint, form *form.MilestoneForm) (*model.GoalMilestones, error)
 	CompleteMilestone(id uint) (*model.GoalMilestones, error)
@@ -88,7 +88,7 @@ func (s *goalService) Delete(id uint) error {
 	return s.repo.Delete(id)
 }
 
-func (s *goalService) ListByUserID(userID uint) ([]model.Goals, error) {
+func (s *goalService) ListByUserID(userID string) ([]model.Goals, error) {
 	return s.repo.ListByUserID(userID)
 }
 

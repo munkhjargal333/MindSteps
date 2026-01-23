@@ -1,9 +1,6 @@
 package main
 
 import (
-	"context"
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -16,21 +13,21 @@ import (
 	"mindsteps/internal/auth"
 	"mindsteps/internal/router"
 	"mindsteps/pkg/cloudflare"
-	cache "mindsteps/pkg/redis"
 )
 
 func main() {
 	config.MustLoad()
-	database.MustConnect(logLevel.Info) //
+	database.MustConnect(logLevel.Info)
+	auth.MustInitSupabaseJWT()
 	// firebase.MustLoad()
 	// _, err := mqtt.MustLoad()
 	// if err != nil {
 	// 	println(err.Error())
 	// }
-	if _, err := cache.InitRedis(context.Background()); err != nil {
-		fmt.Printf("Redis холбогдохгүй байна: %v\n", err)
-	}
-	defer cache.CloseRedis()
+	// if _, err := cache.InitRedis(context.Background()); err != nil {
+	// 	fmt.Printf("Redis холбогдохгүй байна: %v\n", err)
+	// }
+	// defer cache.CloseRedis()
 
 	err := cloudflare.Load()
 	if err != nil {
@@ -67,7 +64,6 @@ func main() {
 
 	app.Use(recover.New())
 
-	auth.MustInitGjwt()
 	router.RegisterRoutes(app)
 
 	err = app.Listen(`:8080`)

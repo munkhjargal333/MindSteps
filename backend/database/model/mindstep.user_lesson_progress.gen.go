@@ -12,9 +12,9 @@ const TableNameUserLessonProgress = "mindstep.user_lesson_progress"
 
 // UserLessonProgress mapped from table <mindstep.user_lesson_progress>
 type UserLessonProgress struct {
-	ID                 uint      `gorm:"column:id;type:bigint;primaryKey;autoIncrement:true" json:"id"`
+	ID                 uint      `gorm:"column:id;type:bigint;not null" json:"id"`
 	LessonID           uint      `gorm:"column:lesson_id;type:bigint;not null" json:"lesson_id"`
-	UserID             uint      `gorm:"column:user_id;type:bigint;not null" json:"user_id"`
+	UserID             string    `gorm:"column:user_id;type:uuid;not null" json:"user_id"`
 	ProgressPercentage int       `gorm:"column:progress_percentage;type:integer" json:"progress_percentage"`
 	Status             string    `gorm:"column:status;type:character varying(20);default:not_started" json:"status"`
 	TimeSpent          int       `gorm:"column:time_spent;type:integer" json:"time_spent"`

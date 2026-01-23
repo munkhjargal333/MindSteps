@@ -12,7 +12,7 @@ const TableNameMoodCategories = "mindstep.mood_categories"
 
 // MoodCategories mapped from table <mindstep.mood_categories>
 type MoodCategories struct {
-	ID        int       `gorm:"column:id;type:integer;primaryKey;autoIncrement:true" json:"id"`
+	ID        int       `gorm:"column:id;type:integer;not null" json:"id"`
 	NameEn    string    `gorm:"column:name_en;type:character varying(50);not null" json:"name_en"`
 	NameMn    string    `gorm:"column:name_mn;type:character varying(50);not null" json:"name_mn"`
 	Color     string    `gorm:"column:color;type:character varying(7)" json:"color"`

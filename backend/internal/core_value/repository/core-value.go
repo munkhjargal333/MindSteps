@@ -11,8 +11,8 @@ type CoreValueRepository interface {
 	GetByID(id uint) (*model.CoreValues, error)
 	Update(value *model.CoreValues) error
 	Delete(id uint) error
-	ListByUserID(userID uint) ([]model.CoreValues, error)
-	CountByUserID(userID uint) (uint, error)
+	ListByUserID(userID string) ([]model.CoreValues, error)
+	CountByUserID(userID string) (uint, error)
 	MaslowLevelList() ([]model.MaslowLevels, error)
 }
 
@@ -45,7 +45,7 @@ func (r *coreValueRepo) Delete(id uint) error {
 	return r.db.Model(&model.CoreValues{}).Where("id = ?", id).Update("is_active", false).Error
 }
 
-func (r *coreValueRepo) ListByUserID(userID uint) ([]model.CoreValues, error) {
+func (r *coreValueRepo) ListByUserID(userID string) ([]model.CoreValues, error) {
 	var values []model.CoreValues
 	if err := r.db.Where("user_id = ? AND is_active IS true", userID).
 		Order("maslow_level_id desc").
@@ -56,7 +56,7 @@ func (r *coreValueRepo) ListByUserID(userID uint) ([]model.CoreValues, error) {
 	return values, nil
 }
 
-func (r *coreValueRepo) CountByUserID(userID uint) (uint, error) {
+func (r *coreValueRepo) CountByUserID(userID string) (uint, error) {
 	var count int64
 	if err := r.db.Model(&model.CoreValues{}).
 		Where("user_id = ?", userID).
