@@ -89,6 +89,14 @@ export default function PrivacyPage() {
             Mindful — Таны дотоод ертөнцийн хамгаалагч
           </p>
         </motion.div>
+        <div className="text-center space-y-3">
+              <p className="text-xs text-gray-400">
+                © {new Date().getFullYear()}  Бүх эрх хуулиар хамгаалагдсан.
+                <br className="sm:hidden" />
+                <span className="hidden sm:inline"> • </span>
+                Улаанбаатар, Монгол
+              </p>
+        </div>
       </main>
     </div>
   );

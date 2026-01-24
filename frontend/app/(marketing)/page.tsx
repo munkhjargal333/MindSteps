@@ -4,16 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
-  Compass,
   Sunrise,
   Fingerprint,
   Map,
-  Layers,
-  Brain,
   Search,
   Heart,
-  Home,
-  User,
   ArrowRight,
 } from 'lucide-react';
 
@@ -96,28 +91,25 @@ export default function Page() {
         <div className="space-y-12">
           <SoftCard
             icon={<Fingerprint className="text-rose-500" />}
-            title="Та цор ганц өгөгдөл"
-            text={`Таны мэдрэмж, хариу үйлдэл бол таны амьдралын түүхээс бүтсэн 'хурууны хээ' юм. Бусадтай адилхан байх албагүй. 
+            title="Та бол цор ганц 'Эх хувь'"
+            text={`Таны мэдрэмж, хариу үйлдэл бол таны амьдралын түүхээс бүтсэн 'хурууны хээ' юм. Бусадтай адилхан байх гэж өөрийгөө хүчлэх шаардлагагүй. 
 
-            Өөрийгөө олох нь шинэ хүн болох тухай биш, харин дээр чинь хуримтлагдсан бусдын хүлээлтийг арилгаж, 'жинхэнэ өөрийгөө' ил гаргах үйл явц юм.`}
+            Өөрийгөө олох нь шинэ хүн болох тухай биш, харин дээр чинь хуримтлагдсан бусдын хүлээлтийг арилгаж, гүнд нь нуугдсан 'жинхэнэ өөрийгөө' чөлөөлөх үйл явц юм.`}
           />
 
           <SoftCard
-            icon={<Map className="text-indigo-500" />}
-            title="Дотоод луужингаа тохируулах"
-            text={`Сэтгэл хөдлөл бол таныг хаашаа явахыг зааж өгдөг луужин юм. 
-
-            Уурлаж байвал таны хил хязгаарыг давсныг, атаархаж байвал та юуг хүсэж байгаагаа, гуниглаж байвал юу танд үнэ цэнтэй байсныг хэлж өгдөг.`}
-            foot="Мэдрэмжээ сонсож сурах нь өөрийгөө хайрлахын эхлэл."
-          />
+              icon={<Heart className="text-indigo-500" />}
+              title="Өөрийгөө 'тайлж' унших нь"
+              text={`Мэдрэмж хэзээ ч санамсаргүй биш. Таны байнга давтагддаг бодол, сэтгэлийн гэнэтийн хөдөлгөөнүүд бол таны дотоод ертөнцийн 'зураглал' юм. Тэр бүхнийг ажиглаж сурах тусам та өөрийнхөө учрыг олж эхэлнэ.`}
+              foot="Мэдрэмжээ сонсох нь өөртэйгөө хийх хамгийн анхны чин сэтгэлийн яриа."
+            />
 
           <SoftCard
-            icon={<Heart className="text-amber-500" />}
-            title="Хэрэгцээгээ хүлээн зөвшөөрөх"
-            text={`Өөрийгөө олох хамгийн дөт зам бол 'Надад яг одоо юу хэрэгтэй байна вэ?' гэж асуух юм. 
-
-            Амралт уу? Хэн нэгэнд сонсогдох уу? Эсвэл зүгээр л ганцаараа байх уу? Өөрийнхөө хэрэгцээг үл тоомсорлох нь өөрөөсөө холдохын нэр юм.`}
-          />
+              icon={<Map className="text-amber-500" />}
+              title="Та өөрчлөгдөх боломжтой"
+              text={`Өөрчлөлт гэдэг нэг л өглөө тохиодог үсрэлт биш, харин чимээгүй явагддаг процесс. Гэхдээ та нэгэнт л өөрийгөө анзаарч эхэлсэн бол өөрчлөлт аль хэдийн эхэлсэн гэсэн үг. Ухамсарласан зүйл хэзээ ч хэвээрээ үлддэггүй, тэр танаас зугтаж чадахгүй.`}
+              foot="Нэгэнт л гэрэл туссан газарт харанхуй удаан тогтдоггүй."
+            />
         </div>
 
           {/* SCIENCE SECTION */}
@@ -133,44 +125,55 @@ export default function Page() {
           </p>
         </section> */}
 
+          {/* MARKETING COLLABORATION SECTION */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="mt-12 p-1 bg-gradient-to-br from-indigo-500 via-violet-400 to-amber-200 rounded-[2.5rem]"
+          >
+            <div className="bg-white rounded-[2.4rem] p-8 text-center space-y-6">
+              <div className="space-y-2">
+                <h3 className="text-xl font-black tracking-tight text-gray-900">
+                  Хамтдаа бүтээлцэх үү? 🤝
+                </h3>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium">
+                  Бидний зорилгыг дэмжиж, хамтран ажиллах эсвэл <br />
+                  <span className="text-indigo-600 font-bold">АНХДАГЧ</span> болох боломж танд нээлттэй.
+                </p>
+              </div>
+
+              <Link 
+                href="/unauthorized" 
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white rounded-2xl font-bold text-sm hover:bg-black transition-all active:scale-95 shadow-lg shadow-gray-200"
+              >
+                Дэлгэрэнгүй мэдээлэл авах
+                <ArrowRight size={18} />
+              </Link>
+
+              <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-[0.2em]">
+                #Community #Mindfulness #Partnership
+              </p>
+            </div>
+          </motion.div>
 
           {/* FOOTER CALL TO ACTION */}
           <motion.section variants={fadeInUp} className="space-y-8">
             <div className="text-center space-y-3">
-              <h3 className="font-bold text-2xl tracking-tight">Өөрийн түүхээ хадгалах</h3>
-              <p className="text-gray-500 text-sm px-6">Бид таны дотоод өөрчлөлтүүдийг нандигнан хадгална.</p>
+
+              <p className="text-xs text-gray-400">
+                © {new Date().getFullYear()} Mindful Platform. Бүх эрх хуулиар хамгаалагдсан.
+                <br className="sm:hidden" />
+                <span className="hidden sm:inline"> • </span>
+                Улаанбаатар, Монгол
+              </p>
             </div>
 
-            <div className="space-y-4">
-              <Link href="/login" className="group flex items-center justify-center gap-3 w-full py-5 bg-indigo-600 rounded-[2rem] text-white font-bold transition-all hover:bg-indigo-700 active:scale-[0.97] shadow-xl shadow-indigo-100">
-                Аяллаа эхлэх
-                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              
-              <div className="p-6 bg-gray-50 rounded-[2rem] border border-dashed border-gray-200 text-center">
-                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block mb-1">Бүртгүүлэх</span>
-                <p className="text-[13px] text-gray-400 font-medium italic">Тун удахгүй: Шинэ гишүүд 2-р сард</p>
-              </div>
-            </div>
           </motion.section>
         </motion.div>
       </main>
 
     </div>
-  );
-}
-
-// Components with improved styles
-function TabItem({ icon, active = false, label }: { icon: React.ReactNode, active?: boolean, label: string }) {
-  return (
-    <motion.div 
-      whileTap={{ scale: 0.9 }}
-      className={`flex flex-col items-center gap-1 p-2 transition-all ${active ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
-    >
-      {icon}
-      <span className="text-[9px] font-bold uppercase tracking-tighter">{label}</span>
-      {active && <motion.div layoutId="tab-dot" className="w-1 h-1 bg-indigo-600 rounded-full" />}
-    </motion.div>
   );
 }
 

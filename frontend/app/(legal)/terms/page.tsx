@@ -83,16 +83,14 @@ export default function TermsPage() {
           ))}
         </div>
 
-        {/* Төгсгөл */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          className="mt-24 pt-12 border-t border-gray-100 text-center"
-        >
-          {/* <p className="text-gray-400 text-xs italic">
-            Асуух зүйл байвал <a href="mailto:support@mindful.mn" className="text-blue-500 hover:underline">support@mindful.mn</a> хаягаар холбогдоно уу.
-          </p> */}
-        </motion.div>
+        <div className="text-center space-y-3">
+              <p className="text-xs text-gray-400">
+                © {new Date().getFullYear()}  Бүх эрх хуулиар хамгаалагдсан.
+                <br className="sm:hidden" />
+                <span className="hidden sm:inline"> • </span>
+                Улаанбаатар, Монгол
+              </p>
+        </div>
       </main>
     </div>
   );

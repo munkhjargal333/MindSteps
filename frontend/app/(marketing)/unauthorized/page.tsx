@@ -1,163 +1,156 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import {
-  Lock,
   ArrowLeft,
   Heart,
   Sparkles,
   MessageCircle,
-  Award,
   CheckCircle2,
   Star,
-  Mail
+  Mail,
+  Crown,
+  ChevronRight
 } from 'lucide-react';
 
 export default function UnauthorizedPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full animate-fadeIn">
-        <div className="bg-white rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden">
+    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center p-6 font-sans">
+      <div className="max-w-md w-full">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-[2.5rem] shadow-2xl shadow-indigo-100/50 border border-slate-100 overflow-hidden"
+        >
+          {/* Header Section */}
+          <div className="pt-12 pb-8 px-8 text-center">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl mb-6 shadow-lg shadow-indigo-200"
+            >
+              <Crown className="w-8 h-8 text-white" />
+            </motion.div>
 
-          {/* HEADER */}
-          <div className="p-6 md:p-10 text-center relative">
-            <div className="absolute inset-x-0 -top-24 h-40 bg-gradient-to-b from-blue-100/40 to-transparent blur-2xl" />
-
-            <div className="relative inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl mb-4 shadow-sm">
-              <Lock className="w-7 h-7 text-red-500" />
-            </div>
-
-            <h1 className="text-2xl font-black text-slate-900 mb-2 leading-tight">
-              Mindstep Early Access
+            <h1 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">
+              Mindstep <span className="text-indigo-600 font-bold">Founders Club</span>
             </h1>
-
-            <p className="text-[13px] text-slate-500 leading-relaxed px-3 mb-6">
-              Систем одоогоор <strong>хаалттай Beta</strong> хөгжүүлэлт дээр байна.
-              <br />
-              <span className="text-slate-700 font-semibold">
-                Зөвхөн сонгогдсон хэрэглэгчид нэвтрэх боломжтой.
-              </span>
+            <p className="text-sm text-slate-500 font-medium leading-relaxed">
+              Ирээдүйн платформыг хамт бүтээлцэх <br />
+              <span className="text-slate-900">алсын хараатай түншүүдийн нэгдэл</span>
             </p>
+          </div>
 
-            {/* BENEFITS */}
-            <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-4 mb-6 text-left border border-blue-100">
-              <h4 className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mb-2 flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Early access давуу тал
-              </h4>
-
-              <ul className="space-y-2">
-                {[
-                  'Системийн хөгжүүлэлтэд шууд санал нөлөө үзүүлэх',
-                  'Нэг удаагийн дэмжлэг — дахин төлбөргүй',
-                  'Ирээдүйн PRO хувилбар дээр lifetime хөнгөлөлт',
-                  'Founder / Early Builder badge'
-                ].map((text, i) => (
-                  <li
-                    key={i}
-                    className="flex gap-2 text-[11px] text-slate-600 font-medium"
-                  >
-                    <CheckCircle2 className="w-3 h-3 text-blue-500 mt-0.5 shrink-0" />
-                    {text}
-                  </li>
-                ))}
-              </ul>
+          {/* Core Benefits Card */}
+          <div className="mx-6 p-6 bg-slate-900 rounded-[2rem] relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Sparkles size={40} className="text-white" />
             </div>
+            
+            <h4 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <div className="w-1 h-1 bg-indigo-400 rounded-full" /> АНХДАГЧ-уудийн давуу тал
+            </h4>
 
-            {/* TIERS */}
-            <div className="grid gap-3 mb-8">
-              {/* ANGEL */}
-              <div className="group flex items-center gap-3 p-3 bg-gradient-to-r from-amber-50/50 to-white border border-amber-200 rounded-2xl">
-                <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-                  <Award className="w-6 h-6 text-amber-600" />
+            <div className="space-y-3">
+              {[
+                'Зөвхөн хэрэглэгч биш, хамт бүтээгч байх орон зай',
+                'Платформын хөгжил, стратегийн чиглэлийг хамт тодорхойлох',
+                'Хөнгөлөлт, урамшуулал, зөвхөн гишүүдэд зориулсан саналууд',
+                'Ирээдүйд оролцооны хэлбэрээр хувь хүртэх боломж',
+                'Дотоод хүрээний уулзалт, эвентүүдэд урилгаар оролцох'
+              ].map((text, i) => (
+                <div key={i} className="flex items-center gap-3 text-[12.5px] text-slate-200">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="font-medium">{text}</span>
                 </div>
-                <div className="text-left">
-                  <h3 className="font-bold text-slate-900 text-[12px] flex items-center gap-1">
-                    ANGEL <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
-                  </h3>
-                  <p className="text-[10px] text-slate-500 leading-tight">
-                    Хөрөнгө оруулагч, стратегийн түнш
-                  </p>
-                </div>
-              </div>
-
-              {/* TOP100
-              <div className="group flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-2xl">
-                <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center shrink-0">
-                  <Sparkles className="w-6 h-6 text-purple-600" />
-                </div>
-                <div className="text-left">
-                  <h3 className="font-bold text-slate-900 text-[12px]">TOP100 Дэмжигч</h3>
-                  <p className="text-[10px] text-slate-500 leading-tight font-medium">
-                    100,000₮ - Насан туршийн эрх
-                  </p>
-                </div>
-              </div> */}
-
-              {/* HELLO1000 */}
-              <div className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                <Heart className="w-9 h-9 text-blue-500 shrink-0" />
-                <div className="text-left">
-                  <h3 className="font-bold text-slate-900 text-[13px]">
-                    HELLO1000
-                  </h3>
-                  <p className="text-[10px] text-slate-500">
-                    100,000₮ ба түүнээс дээш • Early Beta
-                  </p>
-                </div>
-              </div>
-
-              {/* FIRST20 */}
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50 to-white border border-emerald-200 rounded-2xl">
-                <Sparkles className="w-9 h-9 text-emerald-500 shrink-0" />
-                <div className="text-left">
-                  <h3 className="font-bold text-slate-900 text-[13px]">
-                    FIRST20
-                  </h3>
-                  <p className="text-[10px] text-emerald-700">
-                    Үнэгүй • Анхны 20 хэрэглэгч
-                  </p>
-                </div>
-              </div>
-
+              ))}
             </div>
+          </div>
 
-            {/* CONTACT */}
+          {/* Tier Selection */}
+          <div className="p-6 space-y-3">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em] ml-2">Боломжит түвшнүүд</p>
+            
+            {/* Tiers List */}
             <div className="space-y-2">
-              <a
-                href="mailto:munkhjargal.ts39@gmail.com"
-                className="flex items-center justify-center gap-2 w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition"
-              >
-                <Mail className="w-4 h-4" />
-                Founder-т email бичих
-              </a>
-
-              <a
-                href="https://www.facebook.com/tenger.uhaan"
-                target="_blank"
-                className="flex items-center justify-center gap-2 w-full bg-[#1877F2] text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Facebook-р холбогдох
-              </a>
+              <TierItem 
+                icon={<Star className="w-5 h-5 text-amber-500 fill-amber-500" />} 
+                title="ANGEL" 
+                desc="Хөрөнгө оруулагч, стратегийн түнш"
+                color="amber"
+              />
+              <TierItem 
+                icon={<Heart className="w-5 h-5 text-rose-500" />} 
+                title="HELLO1000" 
+                desc="20,000₮ ба түүнээс дээш"
+                color="rose"
+              />
+              <TierItem 
+                icon={<Sparkles className="w-5 h-5 text-emerald-500" />} 
+                title="FIRST20" 
+                desc="Үнэгүй • 18 суудал үлдсэн"
+                color="emerald"
+                isSpecial
+              />
             </div>
+          </div>
 
-            {/* BACK */}
+          {/* Action Buttons */}
+          <div className="px-6 pb-8 space-y-3">
+            <a
+              href="mailto:munkhjargal.ts39@gmail.com"
+              className="flex items-center justify-center gap-2 w-full bg-slate-100 text-slate-900 py-3.5 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all active:scale-[0.98]"
+            >
+              <Mail className="w-4 h-4" />
+              Email илгээх
+            </a>
+
+            <a
+              href="https://www.facebook.com/tenger.uhaan"
+              target="_blank"
+              className="flex items-center justify-center gap-2 w-full bg-indigo-600 text-white py-3.5 rounded-2xl font-bold text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all active:scale-[0.98]"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Facebook холбогдох
+            </a>
+
             <button
               onClick={() => (window.location.href = '/login')}
-              className="mt-6 text-[11px] text-slate-400 font-medium hover:text-slate-600 flex items-center gap-1 mx-auto"
+              className="w-full text-[11px] text-slate-400 font-semibold hover:text-indigo-600 transition flex items-center justify-center gap-1 pt-2"
             >
               <ArrowLeft className="w-3 h-3" />
-              Өөр хаягаар нэвтрэх
+              Нэвтрэх хэсэг рүү буцах
             </button>
           </div>
-
-          {/* FOOTER */}
-          <div className="bg-slate-50 py-3 border-t border-slate-100">
-            <p className="text-[9px] text-center text-slate-400 font-bold uppercase tracking-widest">
-              Mindstep • Early Builders Program
-            </p>
-          </div>
-        </div>
+        </motion.div>
+        
+            <div className="text-center space-y-3">
+              <p className="text-xs text-gray-400">
+                © {new Date().getFullYear()} Mindful Platform. Бүх эрх хуулиар хамгаалагдсан.
+                <br className="sm:hidden" />
+                <span className="hidden sm:inline"> • </span>
+                Улаанбаатар, Монгол
+              </p>
+            </div>
       </div>
+    </div>
+  );
+}
+
+function TierItem({ icon, title, desc, color, isSpecial = false }: any) {
+  const colors: any = {
+    amber: "bg-amber-50 border-amber-100",
+    rose: "bg-rose-50 border-rose-100",
+    emerald: "bg-emerald-50 border-emerald-100",
+  };
+
+  return (
+    <div className={`flex items-center gap-4 p-3.5 rounded-2xl border transition-all cursor-default ${colors[color]} hover:shadow-sm`}>
+      <div className="shrink-0">{icon}</div>
+      <div className="flex-1">
+        <h3 className="text-[13px] font-bold text-slate-900 leading-none mb-1">{title}</h3>
+        <p className="text-[11px] text-slate-500 font-medium">{desc}</p>
+      </div>
+      <ChevronRight className="w-4 h-4 text-slate-300" />
     </div>
   );
 }
