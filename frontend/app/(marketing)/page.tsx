@@ -121,7 +121,7 @@ export default function Page() {
         </div>
 
           {/* SCIENCE SECTION */}
-        <section className="bg-indigo-50/50 rounded-[2.5rem] p-8 border border-indigo-100 space-y-6">
+        {/* <section className="bg-indigo-50/50 rounded-[2.5rem] p-8 border border-indigo-100 space-y-6">
           <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm">
             <Brain className="text-indigo-600" size={24} />
           </div>
@@ -131,7 +131,7 @@ export default function Page() {
           <p className="text-gray-600 leading-relaxed text-sm">
             Бид <b>Plutchik</b>-ийн өнгөт дугуй болон <b>Hawkins</b>-ийн ухамсарын түвшинг ашиглан таны дотоод ертөнцийг зураглахад тусална. Энэ бол зүгээр нэг тест биш, таны өөрийгөө тодорхойлох толь юм.
           </p>
-        </section>
+        </section> */}
 
 
           {/* FOOTER CALL TO ACTION */}

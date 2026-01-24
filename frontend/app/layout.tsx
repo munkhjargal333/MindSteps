@@ -16,7 +16,7 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Mindful - Сэтгэцийн аюулгүй орон зай',
+    default: 'Mindful - Өөрийгөө олох зам',
     template: '%s | Mindful'
   },
   description: 'Өдрийн тэмдэглэл, сэтгэл санаа, зорилго, болон бясалгалын нэгдсэн платформ',

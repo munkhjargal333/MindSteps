@@ -37,7 +37,7 @@ self.addEventListener('install', (event) => {
    ACTIVATE
 -------------------------------- */
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating...');
+  // console.log('[SW] Activating...');
   
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -79,13 +79,13 @@ self.addEventListener('fetch', (event) => {
   );
 
   if (shouldSkipCache) {
-    console.log('[SW] Skipping cache for:', pathname);
+    // console.log('[SW] Skipping cache for:', pathname);
     return; // Network-өөр шууд явна
   }
 
   // 🔥 5️⃣ Query параметр агуулсан динамик хуудсуудыг алгасах
   if (search && (search.includes('code=') || search.includes('error='))) {
-    console.log('[SW] Skipping dynamic URL:', pathname + search);
+    // console.log('[SW] Skipping dynamic URL:', pathname + search);
     return;
   }
 
@@ -99,7 +99,7 @@ self.addEventListener('fetch', (event) => {
         }
 
         // Cache-д байхгүй бол network-өөс татна
-        console.log('[SW] Fetching from network:', pathname);
+        // console.log('[SW] Fetching from network:', pathname);
         return fetch(request)
           .then((response) => {
             // Зөвхөн OK response-ийг кэшлэнэ
