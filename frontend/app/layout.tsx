@@ -4,6 +4,7 @@ import { Plus_Jakarta_Sans } from 'next/font/google'; // Илүү зөөлөн, 
 import './globals.css';
 import PWARegister from '@/public/pwa-register';
 import { ToastProvider } from '@/context/ToastContext';
+import { AuthProvider } from '@/context/AuthContext';
 
 
 // Фонт тохируулга
@@ -48,10 +49,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="mn" suppressHydrationWarning className={`${jakarta.variable}`}>
       <body className={`${jakarta.className} antialiased min-h-screen bg-theme-gradient`}>
         <Providers>
-          <ToastProvider>
-            {children}  {/* ← main-ийг энд шууд оруулах */}
-            <PWARegister />
-          </ToastProvider>
+ 
+            <ToastProvider>
+              {children}  {/* ← main-ийг энд шууд оруулах */}
+              <PWARegister />
+            </ToastProvider>
+          
         </Providers>
       </body>
     </html>

@@ -291,7 +291,7 @@ function LoginForm() {
                     {/* Register Link */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Манайхыг дэмжих үү?{' '}
+              Манайхыг дэмжиж хамтран ажиллах болон анхны хэрэглэгч болох уу?{' '}
               <Link 
                 href="/unauthorized" 
                 className="text-blue-600 font-bold hover:text-blue-700 underline underline-offset-4 decoration-2 decoration-blue-300 hover:decoration-blue-500 transition-all"
