@@ -148,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
           queryParams: { 
             access_type: 'offline', 
             prompt: 'consent' 
@@ -174,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           data: { full_name: name },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
         },
       });
       
