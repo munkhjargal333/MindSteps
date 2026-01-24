@@ -36,13 +36,14 @@
   "include": [
     "next-env.d.ts",
     "**/*.ts",
-    "**/*.tsx",
+    "**/*.tsx"
+    // ❌ Энд байсан ".next/types/**/*.ts" болон ".next/dev/types/**/*.ts"-ийг устгалаа
+    ,
     ".next/types/**/*.ts",
-    "tests/**/*.ts",
-    "tests/**/*.tsx",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
-  ]
+    "node_modules",
+    ".next"
+  ] // 👈 ".next"-ийг энд нэмчихвэл TypeScript хайж гацахгүй
 }

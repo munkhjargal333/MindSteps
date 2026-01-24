@@ -1,18 +1,22 @@
 package main
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
-	logLevel "gorm.io/gorm/logger"
+	"context"
+	"fmt"
 
 	"mindsteps/config"
 	"mindsteps/database"
 	"mindsteps/internal/auth"
 	"mindsteps/internal/router"
 	"mindsteps/pkg/cloudflare"
+	cache "mindsteps/pkg/redis"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+	logLevel "gorm.io/gorm/logger"
 )
 
 func main() {
@@ -24,10 +28,10 @@ func main() {
 	// if err != nil {
 	// 	println(err.Error())
 	// }
-	// if _, err := cache.InitRedis(context.Background()); err != nil {
-	// 	fmt.Printf("Redis холбогдохгүй байна: %v\n", err)
-	// }
-	// defer cache.CloseRedis()
+	if _, err := cache.InitRedis(context.Background()); err != nil {
+		fmt.Printf("Redis холбогдохгүй байна: %v\n", err)
+	}
+	defer cache.CloseRedis()
 
 	err := cloudflare.Load()
 	if err != nil {

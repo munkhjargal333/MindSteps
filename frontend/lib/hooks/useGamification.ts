@@ -23,7 +23,7 @@ export function useGamification(userId: string | undefined) {
     .single();
 
     if (!error) setData(data);
-    console.log("data",data);
+    // console.log("data",data);
     if (error) console.error("error",error);
 
     setLoading(false);
