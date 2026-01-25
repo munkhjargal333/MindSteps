@@ -29,8 +29,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     { name: 'Нүүр', href: '/dashboard', icon: <Compass size={20} />, shortName: 'Нүүр' },
     { name: 'Бодол', href: '/journal', icon: <BookOpen size={20} />, shortName: 'Бодол' },
     { name: 'Сэтгэл', href: '/mood', icon: <Activity size={20} />, shortName: 'Сэтгэл' },
-    { name: 'Цэнэ', href: '/core-values', icon: <Gem size={20} />, shortName: 'Үнэт' },
-    { name: 'Мэдлэг', href: '/lessons', icon: <Sparkles size={20} />, shortName: 'Сургалт' },
+    { name: 'Цэнэ', href: '/core-values', icon: <Gem size={20} />, shortName: 'Цэнэ' },
+    { name: 'Мэдлэг', href: '/lessons', icon: <Sparkles size={20} />, shortName: 'Мэдлэг' },
   ];
 
   const isActive = (href: string) => {
