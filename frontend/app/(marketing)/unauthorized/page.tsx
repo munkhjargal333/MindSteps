@@ -36,7 +36,7 @@ export default function UnauthorizedPage() {
             </h1>
             <p className="text-sm text-slate-500 font-medium leading-relaxed">
               Ирээдүйн платформыг хамт бүтээлцэх <br />
-              <span className="text-slate-900">алсын хараатай түншүүдийн нэгдэл</span>
+              <span className="text-slate-900">алсын хараатай түншүүдийг хайж байна</span>
             </p>
           </div>
 
@@ -115,9 +115,9 @@ export default function UnauthorizedPage() {
 
             <button
               onClick={() => (window.location.href = '/login')}
-              className="w-full text-[12px] text-slate-400 font-semibold hover:text-indigo-600 transition flex items-center justify-center gap-1 pt-2"
+              className="w-full text-sm text-slate-500 font-medium hover:text-indigo-600 transition flex items-center justify-center gap-2 pt-4"
             >
-            <ArrowLeft className="w-3 h-3" />
+              <ArrowLeft className="w-4 h-4" />
               Нэвтрэх хэсэг рүү буцах
             </button>
           </div>
