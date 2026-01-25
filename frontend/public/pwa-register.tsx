@@ -8,7 +8,7 @@ export default function PWARegister() {
       const registerSW = async () => {
         try {
           const registration = await navigator.serviceWorker.register('/sw.js');
-          console.log('SW registered:', registration.scope);
+          // console.log('SW registered:', registration.scope);
 
           // 1. Deployment болгоны дараа шинэчлэлийг шалгах (5 минут тутамд)
           const interval = setInterval(() => {
@@ -33,7 +33,7 @@ export default function PWARegister() {
 
           return () => clearInterval(interval);
         } catch (error) {
-          console.error('SW registration failed:', error);
+          // console.error('SW registration failed:', error);
         }
       };
 

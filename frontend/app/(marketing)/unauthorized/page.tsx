@@ -115,9 +115,9 @@ export default function UnauthorizedPage() {
 
             <button
               onClick={() => (window.location.href = '/login')}
-              className="w-full text-[11px] text-slate-400 font-semibold hover:text-indigo-600 transition flex items-center justify-center gap-1 pt-2"
+              className="w-full text-[12px] text-slate-400 font-semibold hover:text-indigo-600 transition flex items-center justify-center gap-1 pt-2"
             >
-              <ArrowLeft className="w-3 h-3" />
+            <ArrowLeft className="w-3 h-3" />
               Нэвтрэх хэсэг рүү буцах
             </button>
           </div>

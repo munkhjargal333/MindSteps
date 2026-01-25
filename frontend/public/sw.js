@@ -23,7 +23,7 @@ const SKIP_CACHE_PATTERNS = [
    INSTALL
 -------------------------------- */
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing...');
+  // console.log('[SW] Installing...');
   self.skipWaiting();
   
   event.waitUntil(
@@ -44,7 +44,7 @@ self.addEventListener('activate', (event) => {
       Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME && key !== RUNTIME_CACHE) {
-            console.log('[SW] Deleting old cache:', key);
+            // console.log('[SW] Deleting old cache:', key);
             return caches.delete(key);
           }
         })
