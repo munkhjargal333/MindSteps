@@ -1,10 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Providers } from '@/context/Providers';
-import { Plus_Jakarta_Sans } from 'next/font/google'; // Илүү зөөлөн, сэтгэл зүйн апп-д тохиромжтой
+import { Plus_Jakarta_Sans } from 'next/font/google'; 
 import './globals.css';
 import PWARegister from '@/public/pwa-register';
 import { ToastProvider } from '@/context/ToastContext';
-import { AuthProvider } from '@/context/AuthContext';
 
 
 // Фонт тохируулга
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
     default: 'Mindful - Өөрийгөө олох зам',
     template: '%s | Mindful'
   },
-  description: 'Өдрийн тэмдэглэл, сэтгэл санаа, зорилго, болон бясалгалын нэгдсэн платформ',
+  description: 'Өөрийгөө таних аялалд чиглэсэн мэдлэг, бясалгал, тэмдэглэлийн платформ',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
