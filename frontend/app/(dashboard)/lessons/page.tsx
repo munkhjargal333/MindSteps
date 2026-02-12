@@ -11,6 +11,8 @@ import {
   Check, ChevronLeft, ChevronRight 
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAutoTour } from '@/lib/hooks/useAutoTour';
+import { TourButton } from '@/components/ui/TourButton';
 
 export default function LessonsListPage() {
   const { token, user } = useAuth();
@@ -123,16 +125,49 @@ export default function LessonsListPage() {
     <div className="min-h-screen bg-[#F8FAFC] pb-24 text-gray-900">
       
       <div className="max-w-6xl mx-auto px-5 py-8 sm:py-12">
-        
-        {/* Header */}
-        <header className="mb-8 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
-            <BookOpen size={20} strokeWidth={2.5} />
+
+        {/* Header & Manifesto Section */}
+        <header className="relative flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 border-b border-gray-100 pb-10">
+          <div className="flex-1 space-y-6">
+            {/* Progress & Level Label */}
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+              Мэдлэгийн <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-600">сан</span>
+            </h1>
+
+            {/* Philosophy Quote */}
+            <div className="relative max-w-2xl group">
+              <div className="absolute -left-4 top-0 bottom-0 w-[3px] bg-gradient-to-b from-blue-600 to-transparent rounded-full"></div>
+              <div className="pl-6 space-y-3">
+                <p className="text-[14px] leading-relaxed text-gray-600 font-medium">
+                  Мэдлэгийг ойлгох амархан,  <span className="text-blue-600 font-bold italic">ухаарах хэцүү.</span> 
+                   <span className="text-blue-600 font-bold italic"> Чадахгүй бол</span> дараагийн бүлгийг унших хэрэггүй.
+                </p>
+
+                {/* TourButton - Compact integration */}
+                <div className="flex items-center gap-2">
+                  <TourButton 
+                    tourType="lessons" 
+                    showText={true}
+                    text="Дэлгэрэнгүй"
+                    className="!bg-transparent !border-none !shadow-none !p-0 !text-[10px] !font-black !uppercase !tracking-widest !text-blue-600 hover:!text-blue-800 transition-colors"
+                  />
+                  <span className="w-8 h-[1px] bg-blue-200"></span>
+                </div>
+              </div>
+            </div>
           </div>
-          <h1 className="text-2xl font-black italic uppercase tracking-tight">
-            Мэдлэгийн <span className="text-blue-600 not-italic">Сан</span>
-          </h1>
+
+          {/* Icon Side - Compact & Aligned */}
+          <div className="pb-2">
+            <div className="relative group flex items-center justify-center w-14 h-14 rounded-2xl bg-gray-900 text-white shadow-lg transition-transform hover:rotate-6">
+              <BookOpen size={24} strokeWidth={2.5} />
+              {/* Чимэглэлийн жижиг цэг */}
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></span>
+            </div>
+          </div>
         </header>
+        {/* Мэдлэгийг ойлгох амархан,  ухаарах хэцүү.  Хэрэв та уншсан л бол үнэхээр оршин байна уу гэдгээ баталгаажуул.   Чадахгүй бол дараагийн бүлгийг унших хэрэггүй. */}
 
         {/* Dropdowns */}
         <div className="flex flex-col gap-4 mb-10">

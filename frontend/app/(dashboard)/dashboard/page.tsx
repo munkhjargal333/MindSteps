@@ -3,11 +3,14 @@
 import { useAuth } from '@/context/AuthContext';
 import { useStats } from '@/lib/hooks/userStat';
 import { useGamification } from '@/lib/hooks/useGamification';
+import { useAutoTour } from '@/lib/hooks/useAutoTour';
+import { TourButton } from '@/components/ui/TourButton';
 
 import { BookOpen, Activity, Flame, TrendingUp, ArrowRight, Target, Sparkles, Plus } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  useAutoTour('dashboard'); // Автоматаар эхлүүлэх
 
   const { dashboard, loading: statsLoading, error: statsError } = useStats(user?.id);
   const { gamification, loading: gamiLoading } = useGamification(user?.id);
@@ -24,9 +27,10 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 p-3 sm:p-6">
+{/* <TourButton tourType="dashboard" className="ml-1" /> */}
 
       {/* 1. PREMIUM GAMIFIED HERO */}
-      <div className="relative overflow-hidden rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 mb-6 shadow-2xl shadow-indigo-200/50">
+      <div className="gamification-hero relative overflow-hidden rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 mb-6 shadow-2xl shadow-indigo-200/50">
         
         {/* Арын фон (Gradient) */}
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500"></div>
@@ -111,7 +115,7 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
         {/* 1. Миний идэвх - Compact & Side-by-Side on Mobile */}
-        <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-7 shadow-xl shadow-gray-200/40 border border-gray-50">
+        <div data-tour="activity-card" className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-7 shadow-xl shadow-gray-200/40 border border-gray-50">
           <div className="flex items-center justify-between mb-5 md:mb-8">
             <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Миний идэвх</span>
             <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-green-500" />
@@ -154,7 +158,7 @@ export default function DashboardPage() {
         </div>
 
         {/* 2. Хичээлийн явц - Хэвээрээ боловч mobile дээр padding-г нь багасгав */}
-        <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-7 shadow-xl shadow-gray-200/40 border border-gray-50 md:col-span-2">
+        <div data-tour="progress-card" className="bg-white rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-7 shadow-xl shadow-gray-200/40 border border-gray-50 md:col-span-2">
           <div className="flex items-center justify-between mb-6 md:mb-8">
             <div className="flex items-center gap-3 md:gap-4">
               <div className="relative">

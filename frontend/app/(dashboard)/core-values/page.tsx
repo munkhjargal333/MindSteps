@@ -10,10 +10,13 @@ import { CoreValue, Maslow } from '@/lib/types';
 import { ValueCard } from '@/components/value/ValueCard';
 import { MaslowDropdown } from '@/components/value/MaslowDropdown';
 import DeleteConfirmModal from '@/components/ui/DeleteModal';
+import { useAutoTour } from '@/lib/hooks/useAutoTour';
+import { TourButton } from '@/components/ui/TourButton';
 
 export default function CoreValuesPage() {
   const { token } = useAuth();
   const { showToast } = useGlobalToast();
+  useAutoTour('coreValues');
   
   const [values, setValues] = useState<CoreValue[]>([]);
   const [maslowLevels, setMaslowLevels] = useState<Maslow[]>([]);
@@ -112,29 +115,39 @@ export default function CoreValuesPage() {
     <div className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-12 md:py-20 min-h-screen bg-[#FAFAFA]">
       
       
-    <header className="mb-8 sm:mb-12 text-center relative">
-      <motion.div
-        initial={{ opacity: 0, y: -5 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center"
-      >
-        {/* Жижиг текст ба гарчгийг ойртуулсан */}
-        <p className="text-[6px] sm:text-[8px] font-black text-gray-300 uppercase tracking-[0.4em] mb-1">
-          Maslow Hierarchy
+  {/* Бодол мэдрэмж үйлдэлийн ган холбоос бол үнэт зүйл.
+  Энэ нь чамд юу үнэ цэнэтэй вэ? Гэдэг асуулт юм. Үүнээс үүдэж чи хэн байхаа тодорхойлно.
+  Дэлгэрэнгүй* */}
+
+<header className="relative flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 border-b border-gray-100 pb-10">
+  <div className="flex-1 space-y-6">
+    {/* Title */}
+    <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+      Үнэт зүйлийн <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-500 to-purple-600">Эрэмбэ</span>
+    </h1>
+
+    {/* Quote/Philosophy */}
+    <div className="relative max-w-2xl group">
+      <div className="absolute -left-4 top-0 bottom-0 w-[3px] bg-gradient-to-b from-gray-900 to-transparent rounded-full"></div>
+      <div className="pl-6 space-y-3">
+        <p className="text-[14px] leading-relaxed text-gray-600 font-medium">
+          Бодол мэдрэмж үйлдлийн ган холбоос бол <span className="text-blue-600 font-bold italic">үнэт зүйл</span>. 
+          Энэ нь чамд юу үнэ цэнэтэй вэ? гэдэг асуулт юм. Үүнээс үүдэж чи 
+          <span className="text-blue-600 font-bold italic"> хэн байхаа тодорхойлно</span>.
         </p>
-
-        <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-[0.1em] text-gray-900 uppercase">
-          Үнэт зүйлийн <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">эрэмбэ</span>
-        </h1>
-
-        {/* Маш нарийн чимэглэл */}
-        <div className="w-12 h-[2px] bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full mt-2 opacity-60" />
-
-        <p className="mt-3 text-[7px] sm:text-[9px] font-bold text-gray-400 uppercase tracking-widest max-w-[240px] sm:max-w-md mx-auto">
-          Дотоод ертөнцийн <span className="text-gray-600">бүтцийн зураглал</span>
-        </p>
-      </motion.div>
-    </header>
+        <div className="flex items-center gap-2">
+          <TourButton 
+            tourType="coreValues" 
+            showText={true}
+            text="Дэлгэрэнгүй"
+            className="!bg-transparent !border-none !shadow-none !p-0 !text-[12px] !font-black !uppercase !tracking-widest !text-purple-600 hover:!text-purple-800 transition-colors"
+          />
+          <span className="w-8 h-[1px] bg-purple-200"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
 
       {/* Add Entry Button / Form - Pyramid дээр */}
       <div className="flex justify-center mb-10 sm:mb-16 relative z-30">

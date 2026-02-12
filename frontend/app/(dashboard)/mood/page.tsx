@@ -9,6 +9,8 @@ import DeleteConfirmModal from '@/components/ui/DeleteModal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Plus, Calendar, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useAutoTour } from '@/lib/hooks/useAutoTour';
+import { TourButton } from '@/components/ui/TourButton';
 
 export default function MoodListPage() {
   const { token } = useAuth();
@@ -105,8 +107,7 @@ export default function MoodListPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24">
-      
-      {/* Custom Delete Modal */}
+
       <DeleteConfirmModal 
         isOpen={deleteModal.open}
         onClose={() => setDeleteModal({ ...deleteModal, open: false })}
@@ -115,42 +116,62 @@ export default function MoodListPage() {
         isDeleting={deletingId === deleteModal.id}
       />
 
+
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-black text-gray-900">
-              Миний <span className="text-purple-600">Түүх</span>
-            </h1>
-            {/* Нийт тоог энд харуулав */}
+
+      {/* Мэдрэмж гэдэг бол бидний бие бодол гэх мэт бүрдэлүүдийн үйлдэл хийхэд чиглэсэн 
+      эцсийн шийдвэр юм. Мэдрэмжийг ажиглах бодолыг ажиглахаас хэд дахин хүнд ба ээдрээтэй.
+      Учир нь энэ бидний бүхийл биеээс үүсэж мөн уусаж буй энергийн буюу эрчимийн урсгал юм. Дэлгэрэнгүй */}
+      {/* Custom Delete Modal */}
+        <header className="relative flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 border-b border-gray-100 pb-10">
+          <div className="flex-1 space-y-6">
+            {/* Counter */}
             {!loading && (
-              <p className="text-gray-400 font-bold mt-1 ml-0.5 tracking-widest text-[10px] uppercase flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                Нийт {total} бичлэг
-              </p>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse"></span>
+                <p className="text-[10px] font-black tracking-widest text-indigo-700 uppercase">
+                  {total} Ажиглалт
+                </p>
+              </div>
             )}
+
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+              Мэдрэмжийн <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Түүх</span>
+            </h1>
+
+            {/* Quote/Philosophy */}
+            <div className="relative max-w-2xl group">
+              <div className="absolute -left-4 top-0 bottom-0 w-[3px] bg-gradient-to-b from-indigo-600 to-transparent rounded-full"></div>
+              <div className="pl-6 space-y-3">
+                <p className="text-[14px] leading-relaxed text-gray-600 font-medium">
+                  Мэдрэмж гэдэг бол бидний бие бодол гэх мэт бүрдэлүүдийн үйлдэл хийхэд чиглэсэн 
+                  <span className="text-blue-600 font-bold italic"> эцсийн шийдвэр </span> юм. 
+                  Мэдрэмжийг ажиглах нь бодлыг ажиглахаас хэд дахин хүнд ба ээдрээтэй. Учир нь энэ бидний бүхий л биед үүсэж буй 
+                  <span className="text-blue-600 font-bold italic"> энергийн буюу эрчмийн урсгал</span> юм.
+                </p>
+                <div className="flex items-center gap-2">
+                  <TourButton 
+                    tourType="mood" 
+                    showText={true}
+                    text="Дэлгэрэнгүй"
+                    className="!bg-transparent !border-none !shadow-none !p-0 !text-[12px] !font-black !uppercase !tracking-widest !text-blue-600 hover:!text-purple-800 transition-colors"
+                  />
+                  <span className="w-8 h-[1px] bg-purple-200"></span>
+                </div>
+              </div>
+            </div>
           </div>
-          
-          <Link 
-            href="/mood/new" 
-            className="flex items-center gap-2 px-5 py-3 bg-purple-600 text-white font-bold rounded-2xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-100 active:scale-95"
-          >
-            <Plus size={20} strokeWidth={3} /> <span className="hidden sm:inline">Шинэ</span>
+
+          {/* Action Button */}
+          <Link href="/mood/new" className="group relative overflow-hidden flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white font-black rounded-2xl hover:bg-indigo-600 transition-all duration-500 uppercase text-[11px] tracking-widest">
+            <Plus size={18} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
+            <span>Шинэ бичлэг</span>
           </Link>
-        </div>
+        </header>
 
-        {moodEntries.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-gray-400 text-lg mb-4">Одоогоор бичлэг алга байна</p>
-            <Link 
-              href="/mood/new"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white font-bold rounded-2xl hover:bg-purple-700 transition-all"
-            >
-              <Plus size={20} /> Эхний бичлэг үүсгэх
-            </Link>
-          </div>
-        ) : (
 
-          <div className="space-y-3">
+        <div className="space-y-3">
             {moodEntries.map((entry) => (
               <Link key={entry.id} href={`/mood/${entry.id}`} className="block group">
                 <div 
@@ -216,7 +237,6 @@ export default function MoodListPage() {
               </Link>
             ))}
           </div>
-        )}
 
         {/* PAGINATION */}
         {total > 10 && (

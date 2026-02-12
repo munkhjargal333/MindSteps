@@ -7,8 +7,11 @@ import { Journal } from '@/lib/types';
 import { useGlobalToast } from '@/context/ToastContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Calendar, Edit2, Trash2, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { Plus, Edit2, Trash2, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import DeleteConfirmModal from '@/components/ui/DeleteModal';
+import { TourButton } from '@/components/ui/TourButton';
+import { useAutoTour } from '@/lib/hooks/useAutoTour';
+
 
 export default function JournalListPage() {
   const { token } = useAuth();
@@ -86,13 +89,52 @@ export default function JournalListPage() {
       />
 
       <div className="max-w-4xl mx-auto px-5 py-10">
-        <header className="flex items-end justify-between mb-10">
-          <div>
-            <h1 className="text-4xl font-black text-gray-900 tracking-tight italic">Бичвэрүүд</h1>
-            <p className="text-gray-400 font-bold mt-2 ml-1 tracking-widest text-xs uppercase">Нийт {total}</p>
+              {/* Өнөөдрийн бодол өчигдрийн бодолийн 90 орчим хувийг агуулдаг. 
+              Тоолж барамгүй олон удаа давтагдаад байгаа энэ бодолыг чи мэдэх үү? Хэрвээ санахгүй байгаа бол та өөрийнхөө талаар юу ч мэддэггүй гэсэн үг.  Дэлгэрэнгүй*/}
+
+        <header className="relative flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12 border-b border-gray-100 pb-10">
+          <div className="flex-1 space-y-6">
+            {/* Counter */}
+            {!loading && (
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-50 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse"></span>
+                <p className="text-[10px] font-black tracking-widest text-purple-700 uppercase">
+                  {total} Бичлэг
+                </p>
+              </div>
+            )}
+
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+              Бодлын <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">Түүх</span>
+            </h1>
+
+            {/* Quote/Philosophy */}
+            <div className="relative max-w-2xl group">
+              <div className="absolute -left-4 top-0 bottom-0 w-[3px] bg-gradient-to-b from-purple-600 to-transparent rounded-full"></div>
+              <div className="pl-6 space-y-3">
+                <p className="text-[14px] leading-relaxed text-gray-600 font-medium">
+                  Өнөөдрийн бодол өчигдрийн бодлын <span className="text-blue-600 font-bold italic">90 орчим хувийг </span>  агуулдаг. 
+                  Тоолж барамгүй олон удаа давтагдаад байгаа энэ бодлыг чи санаж байна уу? 
+                  Хэрвээ санахгүй байгаа бол та <span className="text-blue-600 font-bold italic"> өөрийнхөө талаар юу ч мэддэггүй </span> гэсэн үг.
+                </p>
+                <div className="flex items-center gap-2">
+                  <TourButton 
+                    tourType="journal" 
+                    showText={true}
+                    text="Дэлгэрэнгүй"
+                    className="!bg-transparent !border-none !shadow-none !p-0 !text-[12px] !font-black !uppercase !tracking-widest !text-purple-600 hover:!text-purple-800 transition-colors"
+                  />
+                  <span className="w-8 h-[1px] bg-purple-200"></span>
+                </div>
+              </div>
+            </div>
           </div>
-          <Link href="/journal/new" className="flex items-center gap-2 px-6 py-4 bg-blue-600 text-white font-bold rounded-[1.8rem] hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 active:scale-95">
-            <Plus size={22} strokeWidth={3} /> <span className="hidden sm:inline">Шинэ</span>
+
+          {/* Action Button */}
+          <Link href="/journal/new" className="group relative overflow-hidden flex items-center justify-center gap-3 px-8 py-4 bg-gray-900 text-white font-black rounded-2xl hover:bg-purple-600 transition-all duration-500 uppercase text-[11px] tracking-widest">
+            <Plus size={18} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
+            <span>Шинэ бодол</span>
           </Link>
         </header>
 
