@@ -1,61 +1,42 @@
 'use client';
 
 import { Sunrise, ArrowRight, Eye, Zap, Sparkles, Brain, Heart, BookOpen } from 'lucide-react';
-import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { Button } from '@/components/ui/button';
+import { MainHeader } from '@/components/shared/MainHeader';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-        <div className="container max-w-5xl mx-auto h-14 flex items-center justify-between px-4">
-          <a href="/" className="flex items-center gap-2.5 group">
-            <Sunrise className="w-6 h-6 text-orange-500" strokeWidth={2.5} />
-            <span className="text-[17px] font-bold tracking-tight">MindSteps</span>
-          </a>
-
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Button asChild size="sm">
-              <a href="/login">Нэвтрэх</a>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <MainHeader />
 
       <main>
         {/* Hero */}
         <section className="container max-w-3xl mx-auto px-4 py-20 md:py-32">
           <div className="text-center space-y-6 md:space-y-8">
-            <div className="space-y-3 md:space-y-4">
-              <p className="text-sm text-muted-foreground uppercase tracking-wider">
+            <div className="space-y-3">
+              <p className="text-lg uppercase tracking-wider text-amber-500 dark:text-amber-400 font-semibold">
                 Ухаалаг тэмдэглэлийн дэвтэр
               </p>
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-                Таны тэмдэглэл таныг
+                Таны тэмдэглэл
                 <br />
-                <span className="text-muted-foreground">хөгжүүлж чаддаг бол ямар вэ?</span>
+                <span className="text-muted-foreground">
+                  таны сэтгэл санааны толь.
+                </span>
               </h1>
+              <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+                Өдөр бүрийн бодлоо тэмдэглэж, сэтгэл хөдлөл, хэрэгцээгээ ойлго. 
+                MindSteps танд давтагдах хэв маягийг илрүүлж, ухамсартай амьдрахад туслана.
+              </p>
             </div>
-            
 
-            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              MindSteps бол <strong>зөвхөн бичих талбар биш</strong>. Энэ бол таны тэмдэглэлийг 
-              <strong>шинжлэх</strong>, давтагдаж буй хэв маягийг илрүүлэх, 
-              <strong>автомат амьдралаас гарахад</strong> туслах таны хувийн зөвлөх систем юм.
-            </p>
-
-            {/* <p className="text-sm md:text-base text-muted-foreground/80 italic max-w-xl mx-auto">
-              Бид таны бодлыг мэдээлэл болгож, мэдрэмжийг чинь эрчим хүч болгон хувиргана.
-            </p> */}
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 md:pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
               <Button asChild size="lg" className="w-full sm:w-auto">
-                <a href="/join">
-                  Нэгдэх
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </a>
+                <a href="/quick">Үнэгүй турших <ArrowRight className="w-4 h-4 ml-2" /></a>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+                <a href="/join">Нэгдэх</a>
               </Button>
             </div>
           </div>
@@ -102,7 +83,6 @@ export default function LandingPage() {
         <section className="border-t bg-muted/30">
           <div className="container max-w-5xl mx-auto px-4 py-16 md:py-24">
             <div className="text-center mb-12 md:mb-16">
-              <p className="text-sm text-muted-foreground uppercase tracking-wider mb-3 md:mb-4">Арга зам</p>
               <h2 className="text-3xl md:text-4xl font-bold">Хэрхэн ажилладаг вэ?</h2>
             </div>
 
@@ -111,19 +91,19 @@ export default function LandingPage() {
                 step="01"
                 icon={Eye}
                 title="Ажиглах"
-                description="Өдөр бүр давтагддаг бодол, мэдрэмжээ ажиглаж тэмдэглэх. 10 секунд байхад хангалттай."
+                description="Өдөр бүр давтагддаг бодол, мэдрэмжээ товч тэмдэглэх. 90 секунд хангалттай"
               />
               <HowItWorksCard
                 step="02"
                 icon={Zap}
                 title="Холбох"
-                description="Давтагдаж буй бодол, мэдрэмжүүд хоорондоо хэрхэн холбоотойг харах."
+                description="Давтагдаж байгаа зүйлс хоорондоо хэрхэн холбогдож байгааг анзаарах"
               />
               <HowItWorksCard
                 step="03"
                 icon={Sparkles}
                 title="Орон зай"
-                description="Ажигласан зүйл дээрээ шууд хариу үйлдэл хийхгүй байх боломж."
+                description="Бодол, мэдрэмждээ шууд хариу үйлдэл хийхгүй байх орон зай бий болгоно"
               />
             </div>
 
@@ -134,7 +114,6 @@ export default function LandingPage() {
         <section className="border-t">
           <div className="container max-w-5xl mx-auto px-4 py-16 md:py-24">
             <div className="text-center mb-12 md:mb-16">
-              <p className="text-sm text-muted-foreground uppercase tracking-wider mb-3 md:mb-4">Боломжууд</p>
               <h2 className="text-3xl md:text-4xl font-bold">Юу хийж болох вэ?</h2>
             </div>
 
@@ -146,13 +125,13 @@ export default function LandingPage() {
               />
               <FeatureCard
                 icon={Eye}
-                title="Ухамсар"
-                description="Автомат хариу үйлдэл хэзээ идэвхждгийг анзаарах."
+                title="Автомат биш, сонголттой болох"
+                description="Автомат биш, сонголттой болох."
               />
               <FeatureCard
                 icon={BookOpen}
-                title="Ойлголт"
-                description="Өөрийн дотоод төлөвийн тухай шинэ өнцөг олж харах."
+                title="Өөрийгөө буруутгахгүй ойлгох"
+                description="Өөрийгөө буруутгахгүй ойлгох."
               />
             </div>
 
@@ -172,7 +151,7 @@ export default function LandingPage() {
                 <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">✓ Зориулагдсан</h3>
                 <WhoForItem text="Амьдралын утга хайж байгаа хүмүүс" />
                 <WhoForItem text="Өөрийгөө таних хүсэлтэй" />
-                <WhoForItem text="Давтагдаж байгаа бодлоосоо чөлөөлөгдөх" />
+                <WhoForItem text="Зан төлөв, бодлын хэв маягаа үнэхээр ойлгомоор байгаа" />
                 <WhoForItem text="16-аас дээш насны хүмүүс" />
               </div>
 
@@ -180,16 +159,17 @@ export default function LandingPage() {
                 <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-muted-foreground">✕ Зориулагдаагүй</h3>
                 <WhoNotForItem text="Сэтгэцийн эмчилгээ хийлгэж байгаа" />
                 <WhoNotForItem text="16 хүрээгүй хүүхдүүд" />
-                <WhoNotForItem text="Шуурхай шийдэл хайж байгаа" />
-                <WhoNotForItem text="Хэт мэдрэг, төсөөлөлдөө төөрдөг" />
+                <WhoNotForItem text="Шуурхай, богино хугацаанд бүхнийг шийдэхийг хүсэж байгаа" />
+                <WhoNotForItem text="Хүчтэй сэтгэл хөдлөлийн хямрал дунд байгаа" />
               </div>
             </div>
 
             <div className="mt-8 md:mt-12 p-4 md:p-6 border rounded-lg bg-background">
               <p className="text-xs md:text-sm text-muted-foreground text-center leading-relaxed">
-                <strong className="text-foreground">Чухал анхааруулга:</strong> MindSteps нь сэтгэцийн эмчилгээний орлуулагч биш. 
-                Хэрэв та ноцтой сэтгэл санааны асуудалтай тулгарч байгаа бол мэргэжлийн эмч, 
-                сэтгэл зүйчтэй уулзахыг зөвлөж байна.
+                <strong className="text-foreground">Чухал анхааруулга:</strong> <br/>
+                  MindSteps нь сэтгэцийн эмчилгээний орлуулагч биш.
+                  Хэрэв та ноцтой сэтгэл санааны хямралтай тулгарч байгаа бол
+                  мэргэжлийн эмч, сэтгэл зүйчид хандахыг зөвлөж байна.
               </p>
             </div>
           </div>
@@ -202,27 +182,30 @@ export default function LandingPage() {
               <div>
                 <Sunrise className="w-10 h-10 md:w-12 md:h-12 text-orange-500 mx-auto mb-4 md:mb-6" />
                 <h2 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4">
-                  Өөрийгөө таних аялалд гарцгаая
+                  Өөрийгөө илүү тодорхой харж эхэлье
                 </h2>
                 <p className="text-base md:text-lg text-muted-foreground">
-                  Үнэгүй бүртгүүлэх, кредит карт шаардлагагүй.
+                  Эхний алхмаа үнэгүй хийгээд үз.
+                  Хэрэв энэ орон зай танд тохирвол,
+                  илүү гүн шатанд нэгдэх боломж нээлттэй.
                 </p>
               </div>
 
-              <Button asChild size="lg" className="w-full sm:w-auto">
-                <a href="/join">
-                  Үнэгүй эхлэх
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </a>
-              </Button>
-
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+                <Button asChild size="lg" className="w-full sm:w-auto">
+                  <a href="/demo">Үнэгүй турших <ArrowRight className="w-4 h-4 ml-2" /></a>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+                  <a href="/join">Нэгдэх</a>
+                </Button>
+              </div>
             </div>
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t">
+      <footer className="border-t bg-background">
         <div className="container max-w-5xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
@@ -231,7 +214,6 @@ export default function LandingPage() {
             </div>
             
             <div className="flex gap-6 text-sm text-muted-foreground">
-              {/* <a href="/about" className="hover:text-foreground transition-colors">About</a> */}
               <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
               <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
               <a href="/join" className="hover:text-foreground transition-colors">Join</a>

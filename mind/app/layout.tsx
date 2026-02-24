@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/context/theme-provider";
+import { ThemeProvider } from "@/contexts/theme-provider";
 import { Plus_Jakarta_Sans } from 'next/font/google'; 
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ThoughtProvider } from "@/components/thought";
+import { TourProvider } from "@/contexts/TourContext";
 
 // Фонт тохируулга
 const jakarta = Plus_Jakarta_Sans({ 
@@ -47,11 +48,16 @@ export default function RootLayout({
         <AuthProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <TourProvider>
+              <ThoughtProvider >
+                  {children}
+              </ThoughtProvider>
+            </TourProvider>
+
           </ThemeProvider>
         </AuthProvider>
       </body>

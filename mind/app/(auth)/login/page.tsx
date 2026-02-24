@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Sunrise, ArrowRight, Mail, Lock, Eye, EyeOff, AlertCircle, X, UserCircle, Info } from 'lucide-react';
+import { ArrowRight, Mail, Lock, Eye, EyeOff, AlertCircle, X, UserCircle, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import  { MainHeader } from '@/components/shared/MainHeader';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -71,20 +72,7 @@ function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <div className="max-w-md w-full space-y-8">
         
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <Sunrise className="w-7 h-7 text-orange-500" strokeWidth={2.5} />
-            <span className="text-2xl font-bold tracking-tight">MindSteps</span>
-          </Link>
-          
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Тавтай морил</h1>
-            <p className="text-sm text-muted-foreground mt-2">
-              Өөрийгөө таних аялал эхэллээ
-            </p>
-          </div>
-        </div>
+        <MainHeader />
 
         {/* Card */}
         <div className="bg-card border rounded-lg p-8 space-y-6">
@@ -196,22 +184,24 @@ function LoginForm() {
           </Button>
 
           {/* Guest Login */}
+
           <div className="space-y-2">
             <Button
-              onClick={handleGuestLogin}
+              asChild  // Link-ийг child болгон ашиглах
               type="button"
               variant="outline"
               className="w-full"
               size="lg"
-              disabled={loading}
             >
-              <UserCircle className="w-5 h-5 mr-2" />
-              Зочноор үргэлжлүүлэх
+              <Link href="/demo">
+                <UserCircle className="w-5 h-5 mr-2" />
+                Демо үзэх (зочин)
+              </Link>
             </Button>
             <div className="flex items-start gap-2 px-1">
               <Info className="w-3 h-3 text-muted-foreground flex-shrink-0 mt-0.5" />
               <p className="text-xs text-muted-foreground">
-                И-мэйл шаардлагагүй, туршилтын горим
+                Бүртгэлгүйгээр демо хувилбарыг үзэх
               </p>
             </div>
           </div>
