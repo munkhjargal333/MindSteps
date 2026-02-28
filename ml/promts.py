@@ -10,7 +10,6 @@ DeepSeek-V3.2 загварт зориулсан сайжруулсан хуви�
 - Монгол хэлний нарийн ширийн тохиргоо
 """
 
-
 class PromptTemplates:
     """Prompt загваруудын цуглуулга - Production Ready"""
     
@@ -323,7 +322,6 @@ class PromptTemplates:
             "compare": "Python болон JavaScript-ийг харьцуул",
         }
 
-
 # ============ HELPER FUNCTIONS ============
 
 def get_prompt(prompt_type: str, message: str) -> str:
@@ -345,7 +343,6 @@ def get_prompt(prompt_type: str, message: str) -> str:
     template = templates.get(prompt_type, templates["system"])
     return template.format(message=message)
 
-
 def validate_prompt_type(prompt_type: str) -> bool:
     """
     Prompt төрөл зөв эсэхийг шалгах
@@ -357,7 +354,6 @@ def validate_prompt_type(prompt_type: str) -> bool:
         bool: Зөв бол True
     """
     return prompt_type in PromptTemplates.get_all()
-
 
 def get_prompt_info(prompt_type: str) -> dict:
     """
@@ -383,7 +379,6 @@ def get_prompt_info(prompt_type: str) -> dict:
         "example": examples.get(prompt_type),
         "template": PromptTemplates.get_all()[prompt_type]
     }
-
 
 # ============ TESTING ============
 if __name__ == "__main__":
