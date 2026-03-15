@@ -7,10 +7,8 @@ export type Tier = 'free' | 'pro';
 export interface SessionData {
   actionType: QuickActionType;
   surfaceText: string;
-  bodyFelt: string;
-  firstReaction: string;
-  whatMatters: string;
-  conflict: string;
+  innerText: string;
+  meaningText: string;
 }
 
 export interface SeedInsight {

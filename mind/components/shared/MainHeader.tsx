@@ -1,7 +1,7 @@
-import { Sunrise, LogIn, User, Sparkles } from 'lucide-react';
+import { Sunrise, User, Sparkles } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { useThoughtContext } from '@/components/thought/context';
+import { useThoughtContext } from '@/contexts/context';
 
 export function MainHeader() {
   const { tier } = useThoughtContext(); // user object байгаа гэж үзье
@@ -41,9 +41,6 @@ export function MainHeader() {
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" asChild>
                 <a href="/login">Нэвтрэх</a>
-              </Button>
-              <Button size="sm" asChild>
-                <a href="/signup">Бүртгүүлэх</a>
               </Button>
             </div>
           )}

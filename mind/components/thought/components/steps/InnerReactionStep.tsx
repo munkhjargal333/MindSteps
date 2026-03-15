@@ -1,12 +1,12 @@
 import { Flame } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import type { StepCopy } from '../../constants';
+import type { StepCopy } from '../../../../data/constants';
 
 interface Props {
   cfg: StepCopy['inner'];
-  bodyFelt: string;
-  onBodyChange: (v: string) => void;
+  innerText: string;
+  onInnerTextChange: (v: string) => void;
 }
 
 const textareaClass = cn(
@@ -18,34 +18,23 @@ const textareaClass = cn(
 
 export function InnerReactionStep({
   cfg,
-  bodyFelt,
-  onBodyChange,
+  innerText,
+  onInnerTextChange,
 }: Props) {
   return (
     <div className="space-y-6" data-tour="demo-step-2">
       <div className="space-y-1.5">
-        {/* <div className="flex items-center gap-2 text-muted-foreground/60">
-          <Flame size={13} />
-          <span className="text-[10px] tracking-widest uppercase font-semibold">Дотоод хариу</span>
-        </div> */}
         <h2 data-tour="demo-step-0" className="text-xl font-bold leading-snug">{cfg.q}</h2>
-        {/* <p className="text-sm text-muted-foreground">
-          Оюун санаа биеэ мэдэрч, анзаарч байна
-        </p> */}
       </div>
 
       <Textarea
-        value={bodyFelt}
+        value={innerText}
         data-tour="demo-step-1"
-        onChange={(e) => onBodyChange(e.target.value)}
+        onChange={(e) => onInnerTextChange(e.target.value)}
         placeholder={cfg.placeholder}
         className={textareaClass}
         autoFocus
       />
-
-      <p className="text-[11px] text-muted-foreground/50 italic text-center">
-        Биеийн мэдрэмжид анхаарах нь чухал
-      </p>
     </div>
   );
 }

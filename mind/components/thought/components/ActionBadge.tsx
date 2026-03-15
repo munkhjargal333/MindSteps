@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
-import type { QuickActionType } from '../types';
-import { ACTION_MAP } from '../constants';
+import type { QuickActionType } from '../../../types/types';
+import { ACTION_MAP } from '../../../data/constants';
 
 interface Props {
   type: QuickActionType;

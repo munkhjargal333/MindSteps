@@ -1,6 +1,4 @@
-import type { SessionData, SeedInsight, JournalEntry } from './types';
-import { ACTION_LABELS } from './constants';
-
+import type { SessionData, SeedInsight } from '../../../types/types';
 // ─── Config ───────────────────────────────────────────────────
 
 export interface ApiConfig {
@@ -9,15 +7,6 @@ export interface ApiConfig {
 }
 
 // ─── Request/Response types (backend contract) ────────────────
-
-interface InsightRequest {
-  action_type: string;
-  surface_text: string;
-  body_felt?: string;
-  first_reaction?: string;
-  what_matters?: string;
-  conflict?: string;
-}
 
 interface InsightResponse {
   mirror: string;
@@ -31,8 +20,10 @@ export interface AnalyzeResult {
   insight: SeedInsight;
 }
 
-// ─── Single backend call ──────────────────────────────────────
-// AI key frontend-д байхгүй — бүгд backend-аар дамжина
+interface InsightRequest {
+  user_id?: number; // Optional, backend can infer from token
+  session: SessionData;
+}
 
 export async function analyzeSession(
   session: SessionData,
@@ -48,12 +39,7 @@ export async function analyzeSession(
   }
 
   const body: InsightRequest = {
-    action_type:    session.actionType,
-    surface_text:   session.surfaceText,
-    body_felt:      session.bodyFelt      || undefined,
-    first_reaction: session.firstReaction || undefined,
-    what_matters:   session.whatMatters   || undefined,
-    conflict:       session.conflict      || undefined,
+    session
   };
 
   const res = await fetch(`${base}/journal/insight`, {

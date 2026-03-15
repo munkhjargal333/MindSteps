@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { QuickActionType, SessionData, FlowStep } from '../types';
-import type { AnalyzeResult } from '../api';
-import { analyzeSession, type ApiConfig } from '../api';
+import type { QuickActionType, SessionData, FlowStep } from '../../types/types';
+import type { AnalyzeResult } from '@/lib/api/api';
+import { analyzeSession, type ApiConfig } from '@/lib/api/api';
 
 // ─── State shape ──────────────────────────────────────────────
 
@@ -22,10 +22,8 @@ interface ThoughtFlowState {
 
 const EMPTY_DATA: StepData = {
   surfaceText:   '',
-  bodyFelt:      '',
-  firstReaction: '',
-  whatMatters:   '',
-  conflict:      '',
+  innerText:      '',
+  meaningText: '',
 };
 
 // ─── Hook ─────────────────────────────────────────────────────
@@ -64,14 +62,16 @@ export function useThoughtFlow(config: ApiConfig) {
   const runAnalysis = useCallback(
     async (session: SessionData) => {
       try {
+        console.log('Use');
         const result = await analyzeSession(session, config);
+        
         setState((s) => ({ ...s, analyzing: false, result }));
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Алдаа гарлаа';
         setState((s) => ({ ...s, analyzing: false, error: msg }));
       }
     },
-    [config],
+    [],
   );
 
   /** Буцах */

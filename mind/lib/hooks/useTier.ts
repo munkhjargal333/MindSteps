@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
-import type { Tier } from '../types';
+import type { Tier } from '../../types/types';
 
 export function useTier(): Tier {
   const { user } = useAuth();

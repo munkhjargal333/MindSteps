@@ -2,7 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Tier } from './types';
+import type { Tier } from '../types/types';
 
 interface ThoughtContextValue {
   apiBase: string;

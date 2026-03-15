@@ -1,12 +1,12 @@
 import { Compass } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import type { StepCopy } from '../../constants';
+import type { StepCopy } from '../../../../data/constants';
 
 interface Props {
   cfg: StepCopy['meaning'];
-  whatMatters: string;
-  onMattersChange: (v: string) => void;
+  meaningText: string;
+  onMeaningChange: (v: string) => void;
 }
 
 const textareaClass = cn(
@@ -18,33 +18,23 @@ const textareaClass = cn(
 
 export function MeaningStep({
   cfg,
-  whatMatters,
-  onMattersChange,
+  meaningText,
+  onMeaningChange,
 }: Props) {
   return (
     <div className="space-y-6">
       <div className="space-y-1.5">
-        {/* <div className="flex items-center gap-2 text-muted-foreground/60">
-          <Compass size={13} />
-          <span className="text-[10px] tracking-widest uppercase font-semibold">Үнэт зүйл</span>
-        </div> */}
         <h2 className="text-xl font-bold leading-snug">{cfg.q}</h2>
-        {/* <p className="text-sm text-muted-foreground">
-          Мэдрэмжийн цаана байгаа утга учрыг хайж байна
-        </p> */}
       </div>
 
       <Textarea
-        value={whatMatters}
-        onChange={(e) => onMattersChange(e.target.value)}
+        value={meaningText}
+        onChange={(e) => onMeaningChange(e.target.value)}
         placeholder={cfg.placeholder}
         className={textareaClass}
         autoFocus
       />
 
-      <p className="text-[11px] text-muted-foreground/50 italic text-center">
-        Гүнээс ирж байгааг бич
-      </p>
     </div>
   );
 }

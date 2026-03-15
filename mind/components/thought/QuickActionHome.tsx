@@ -1,9 +1,9 @@
 'use client';
 
 import { Sparkles } from 'lucide-react';
-import { FREE_ACTIONS } from './constants';
+import { FREE_ACTIONS } from '../../data/constants';
 import { QuickActionButton } from './components/QuickActionButton';
-import type { QuickActionType } from './types';
+import type { QuickActionType } from '../../types/types';
 
 interface Props {
   onSelectAction: (type: QuickActionType) => void;
@@ -11,7 +11,6 @@ interface Props {
 }
 
 export function QuickActionHome({ onSelectAction, onUpgrade }: Props) {
-  const mainActions = FREE_ACTIONS.slice(0, 4);
 
   return (
     <div className="w-full max-w-md mx-auto px-5 py-8 space-y-8">
@@ -29,32 +28,17 @@ export function QuickActionHome({ onSelectAction, onUpgrade }: Props) {
       </div>
 
       {/* Tour target 2: товчнуудын grid */}
-      <div
-        data-tour="demo-actions"
-        className="grid grid-cols-2 gap-4"
-      >
-        {mainActions.map((action, index) => (
-          // Tour target 3: эхний товч тусад нь
-          <div
-            key={action.type}
-            data-tour={index === 0 ? 'demo-action-0' : undefined}
-          >
+        <div data-tour="demo-actions" className="grid grid-cols-2 gap-4">
+          {FREE_ACTIONS.map((action) => (
             <QuickActionButton
               key={action.type}
               action={action}
               onSelect={onSelectAction}
               variant="compact"
-              className="w-90%"
+              className='w-full'
             />
-          </div>
-        ))}
-      </div>
-
-      <div className="pt-4 text-center">
-        <p className="text-[10px] text-muted-foreground/30 italic">
-          "Бодол бол зөвхөн үүл, харин чи бол тэнгэр юм."
-        </p>
-      </div>
+          ))}
+        </div>
     </div>
   );
 }

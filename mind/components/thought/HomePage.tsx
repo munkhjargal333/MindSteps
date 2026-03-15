@@ -2,8 +2,8 @@
 'use client';
 
 import { Sparkles, Lock, LayoutGrid } from 'lucide-react';
-import { FREE_ACTIONS, PRO_ACTIONS } from './constants';
-import { useThoughtContext } from './context';
+import { FREE_ACTIONS, PRO_ACTIONS } from '../../data/constants';
+import { useThoughtContext } from '../../contexts/context';
 import { QuickActionButton } from './components/QuickActionButton';
 
 interface Props {

@@ -3,7 +3,7 @@ import {
   Target, Compass, Shield, Sun,
   Layers, Flame, LucideIcon,
 } from 'lucide-react';
-import type { QuickActionType } from './types';
+import type { QuickActionType } from '../types/types';
 
 // ─── Tier ─────────────────────────────────────────────────────
 

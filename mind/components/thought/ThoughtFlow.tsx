@@ -3,8 +3,8 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Sparkles, RefreshCw } from 'lucide-react';
-import { useThoughtContext } from './context';
-import { useThoughtFlow } from './hooks/useThoughtFlow';
+import { useThoughtContext } from '../../contexts/context';
+import { useThoughtFlow } from '../../lib/hooks/useThoughtFlow';
 import { QuickActionHome } from './QuickActionHome';
 import { HomePage } from './HomePage';
 import { StepIndicator } from './components/StepIndicator';
@@ -13,8 +13,8 @@ import { SurfaceStep } from './components/steps/SurfaceStep';
 import { InnerReactionStep } from './components/steps/InnerReactionStep';
 import { MeaningStep } from './components/steps/MeaningStep';
 import { SeedInsightStep } from './components/SeedInsightStep';
-import { STEP_CONFIG } from './constants';
-import type { QuickActionType } from './types';
+import { STEP_CONFIG } from '../../data/constants';
+import type { QuickActionType } from '../../types/types';
 
 interface Props {
   /** 'home' = pricing, 'quick' = action grid */
@@ -101,15 +101,15 @@ export function ThoughtFlow({ view = 'demo', initialAction, onBack, onUpgrade }:
         {flow.step === 2 && (
           <InnerReactionStep
             cfg={cfg.inner}
-            bodyFelt={flow.data.bodyFelt}
-            onBodyChange={(v) => flow.updateData({ bodyFelt: v })}
+            innerText={flow.data.innerText}
+            onInnerTextChange={(v) => flow.updateData({ innerText: v })}
           />
         )}
         {flow.step === 3 && (
           <MeaningStep
             cfg={cfg.meaning}
-            whatMatters={flow.data.whatMatters}
-            onMattersChange={(v) => flow.updateData({ whatMatters: v })}
+            meaningText={flow.data.meaningText}
+            onMeaningChange={(v) => flow.updateData({ meaningText: v })}
           />
         )}
       </div>

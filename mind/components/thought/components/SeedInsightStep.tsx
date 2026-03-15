@@ -2,9 +2,9 @@
 
 import { useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { INSIGHT_CARDS, ACTION_MAP } from '../constants';
-import type { SessionData } from '../types';
-import type { AnalyzeResult } from '../api';
+import { INSIGHT_CARDS, ACTION_MAP } from '../../../data/constants';
+import type { SessionData } from '../../../types/types';
+import type { AnalyzeResult } from '@/lib/api/api';
 
 interface Props {
   session: SessionData;
@@ -34,29 +34,15 @@ export function SeedInsightStep({
     <div className="space-y-8">
       {/* Header */}
       <div className="space-y-1.5">
-        <div className={cn(
+        {/* <div className={cn(
           'inline-flex items-center gap-2 px-3 py-1.5 rounded-full',
           'text-[11px] font-bold uppercase tracking-widest',
           actionCfg.bg, actionCfg.color,
         )}>
           <Icon size={11} />
           {actionCfg.label}
-        </div>
+        </div> */}
         <h2 className="text-xl font-bold">Seed Insight</h2>
-        <p className="text-[12px] text-muted-foreground/60 leading-relaxed">
-          Зөвлөгөө биш · Онош биш · Summary биш
-        </p>
-      </div>
-
-      {/* Thought echo */}
-      <div className="relative overflow-hidden p-5 rounded-2xl bg-muted/30 border border-muted">
-        <p className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-bold mb-2">
-          Бичсэн зүйл
-        </p>
-        <p className="text-sm text-foreground/70 leading-relaxed line-clamp-3">
-          {session.surfaceText}
-        </p>
-        <div className="absolute -right-6 -bottom-6 w-20 h-20 rounded-full bg-primary/5 blur-2xl pointer-events-none" />
       </div>
 
       {/* Loading skeleton */}
@@ -112,22 +98,16 @@ export function SeedInsightStep({
               </p>
             </div>
           ))}
-
-          {result.entryId && (
-            <p className="text-center text-[10px] text-muted-foreground/30 pt-1">
-              ✓ тэмдэглэл #{result.entryId} хадгалагдлаа
-            </p>
-          )}
         </div>
       )}
 
       {/* Footer */}
-      <div className="pt-2 border-t border-dashed border-muted-foreground/10">
+      {/* <div className="pt-2 border-t border-dashed border-muted-foreground/10">
         <p className="text-[11px] text-center text-muted-foreground/40 italic leading-relaxed">
           "Бодол бол үүл шиг ирээд өнгөрнө.<br />
           Харин та бол тэр үүлсийг ажиглаж буй тэнгэр."
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }
