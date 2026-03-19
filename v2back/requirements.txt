@@ -19,5 +19,3 @@ httpx==0.27.2
 
 # Resilience
 tenacity==9.0.0
-
-booktype

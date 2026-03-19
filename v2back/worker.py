@@ -2,9 +2,10 @@
 Worker эхлүүлэгч.
 Ажиллуулах: python worker.py
 
-Queue-ууд:
-  analysis    — тэмдэглэлийн LLM шинжилгээ (timeout: 2 мин)
-  deep_insight — гүн шинжилгээ (timeout: 5 мин)
+Queue-ууд (priority дарааллаар):
+  seed        — Seed Insight (хурдан, хамгийн өндөр)
+  analysis    — Full analysis (Maslow/Plutchik/Hawkins)
+  deep_insight— Deep Insight (удаан, бага priority)
 """
 
 import logging
@@ -22,13 +23,13 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 
-_QUEUE_NAMES = ["analysis", "deep_insight"]
-
+# Queue-ийн дараалал = priority (эхний нь өндөр)
+_QUEUES = ["seed", "analysis", "deep_insight"]
 
 if __name__ == "__main__":
     conn = get_redis_connection()
-    queues = [Queue(name, connection=conn) for name in _QUEUE_NAMES]
+    queues = [Queue(name, connection=conn) for name in _QUEUES]
     logging.getLogger(__name__).info(
-        f"🔧 Worker эхэлж байна — queues: {_QUEUE_NAMES}"
+        f"🔧 Worker эхэлж байна — queues: {_QUEUES}"
     )
     Worker(queues, connection=conn).work(with_scheduler=True)

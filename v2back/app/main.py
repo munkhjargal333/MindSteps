@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.settings import get_settings
 from app.core.middleware import apply_rate_limit
-from app.api.routes import entries, graph, admin, websocket
+from app.api.routes import entries, graph, admin, websocket, demo
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,6 +41,7 @@ app.middleware("http")(apply_rate_limit)
 app.include_router(entries.router, prefix="/api")
 app.include_router(graph.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
+app.include_router(demo.router, prefix="/api")
 app.include_router(websocket.router)
 
 # ── System ────────────────────────────────────────────────────────────────────
@@ -51,21 +52,21 @@ async def check_health():
     from app.db.redis_client import get_redis_connection
     from app.db.supabase import get_anon_client
 
-    results = {"api": "ok", "redis": "unknown", "supabase": "unknown"}
+    result = {"api": "ok", "redis": "unknown", "supabase": "unknown"}
 
     try:
         get_redis_connection().ping()
-        results["redis"] = "ok"
+        result["redis"] = "ok"
     except Exception as exc:
-        results["redis"] = f"error: {exc}"
+        result["redis"] = f"error: {exc}"
 
     try:
         get_anon_client().table("plans").select("id").limit(1).execute()
-        results["supabase"] = "ok"
+        result["supabase"] = "ok"
     except Exception as exc:
-        results["supabase"] = f"error: {exc}"
+        result["supabase"] = f"error: {exc}"
 
-    return results
+    return result
 
 
 @app.on_event("startup")

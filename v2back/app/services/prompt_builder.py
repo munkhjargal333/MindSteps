@@ -1,15 +1,30 @@
 """
 PromptBuilder — LLM промпт угсралт.
-LlmService-с тусгаарласан (SRP).
+
+3 төрлийн промпт:
+  build_seed_messages     — богино, seed only (хурдан)
+  build_analysis_messages — бүрэн шинжилгээ (few-shot-тай)
+  build_deep_insight_messages — ValueGraph дүн шинжилгээ
 """
 
 import json
+from app.services.few_shot_data import ANALYSIS_FEW_SHOT
 
 _ALPHA = 0.3
 
-# ── System Prompt ─────────────────────────────────────────────────────────────
+_SEED_SYSTEM = """\
+Чи бол сэтгэл зүйн туслагч. Хэрэглэгчийн тэмдэглэлийг уншаад
+доорх JSON-г Монгол хэлээр буцаана. Зөвхөн JSON, тайлбар хэрэггүй.
 
-_SYSTEM = """\
+{
+  "mirror":  "бичсэнийг дүгнэлтгүй 1-2 өгүүлбэрт тусгана",
+  "reframe": "өөр өнцгөөс харах боломж нээнэ (Narrative Therapy)",
+  "relief":  "нэг жижиг, хийж болохуйц алхам",
+  "summary": "бүгдийг 1 өгүүлбэрт"
+}
+"""
+
+_ANALYSIS_SYSTEM = """\
 Чи бол Маслоу, Плутчик, Хокинсын онолоор мэргэшсэн сэтгэл зүйн аналитикч.
 
 ## Маслоу — category утгууд
@@ -32,74 +47,26 @@ disgust+anticipation=cynicism, anger+joy=pride, anticipation+trust=hope
 ## Хокинсын бүс
 20-50: crisis_flag=true | 75-175: zone=below_200 | 200+: zone=above_200
 
-## Seed Insight (Монгол хэлээр)
-mirror  — бичсэнийг дүгнэлтгүй 1-2 өгүүлбэрт
-reframe — өөр өнцгөөс харах боломж
-relief  — нэг жижиг, хийж болохуйц алхам
-summary — бүгдийг 1 өгүүлбэрт
-
 ## Дүрэм
 - Зөвхөн цэвэр JSON, тайлбар хэрэггүй
 - score: 0.0–1.0 | intensity: low | medium | high
 """
 
-_FEW_SHOT: list[dict] = [
-    {
-        "role": "user",
-        "content": (
-            "Surface: Уулзалтад буруу зүйл хэлчихлээ, мартаж чадахгүй.\n"
-            "Inner Reaction: Дахин бодохоор улам л муу санагдаад"
-            " зайлсхийж байна.\n"
-            "Meaning: Хүмүүс чадваргүй гэж бодоосой гэхгүй,"
-            " хүндлэгдэхийг хүсч байна."
-        ),
-    },
-    {
-        "role": "assistant",
-        "content": json.dumps(
-            {
-                "maslow": [
-                    {
-                        "category": "esteem",
-                        "values": [
-                            {"хүлээн зөвшөөрөгдөх": 0.85},
-                            {"нэр хүнд": 0.65},
-                        ],
-                    },
-                    {"category": "safety", "values": [{"тогтвортой байдал": 0.40}]},
-                ],
-                "plutchik": {
-                    "primary": "fear", "primary_score": 0.72,
-                    "secondary": "sadness", "secondary_score": 0.58,
-                    "dyad": "despair", "dyad_score": 0.62,
-                    "conflict_flag": False, "intensity": "medium",
-                },
-                "hawkins": {
-                    "emotion": "grief", "level": 162, "score": 0.70,
-                    "zone": "below_200", "crisis_flag": False,
-                    "ewma_previous": None, "ewma_updated": 162,
-                },
-                "seed_insight": {
-                    "mirror": (
-                        "Чухал мөчид шилдэг чанараараа харагдахыг"
-                        " хүсэж байсан нь ойлгомжтой."
-                    ),
-                    "reframe": (
-                        "Мартаж чадахгүй байгаа нь буруу хийсний тэмдэг биш"
-                        " — чи сайн хийхийг хүсдэг гэдгийн баталгаа."
-                    ),
-                    "relief": "Тэр уулзалтаас нэг зөв хийсэн зүйлийг бич.",
-                    "summary": (
-                        "Хүндлэгдэх хэрэгцээнээс үүдсэн айдас"
-                        " чиний өндөр стандартыг харуулж байна."
-                    ),
-                },
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-    },
-]
+_DEEP_INSIGHT_SYSTEM = (
+    "Урт хугацааны сэтгэл зүйн хэв маягийг шинжилдэг мэргэжилтэн."
+    " Монгол хэлээр, зөвхөн JSON буцаана.\n"
+    '{"insight_text": "...", "recommendations": ["..."]}'
+)
+
+
+def build_seed_messages(
+    surface: str, inner: str, meaning: str
+) -> list[dict]:
+    """Зөвхөн Seed Insight. Few-shot байхгүй → хурдан."""
+    return [
+        {"role": "system", "content": _SEED_SYSTEM},
+        {"role": "user", "content": _entry_text(surface, inner, meaning)},
+    ]
 
 
 def build_analysis_messages(
@@ -108,20 +75,14 @@ def build_analysis_messages(
     meaning: str,
     ewma: float | None,
 ) -> list[dict]:
-    system = _SYSTEM
+    """Maslow + Plutchik + Hawkins. Few-shot жишээтэй."""
+    system = _ANALYSIS_SYSTEM
     if ewma:
         system += f"\n[Хэрэглэгчийн EWMA өмнөх дундаж: {ewma:.1f}]"
     return [
         {"role": "system", "content": system},
-        *_FEW_SHOT,
-        {
-            "role": "user",
-            "content": (
-                f"Surface: {surface}\n"
-                f"Inner Reaction: {inner}\n"
-                f"Meaning: {meaning}"
-            ),
-        },
+        *ANALYSIS_FEW_SHOT,
+        {"role": "user", "content": _entry_text(surface, inner, meaning)},
     ]
 
 
@@ -134,14 +95,7 @@ def build_deep_insight_messages(summary: dict, count: int) -> list[dict]:
         f"Давамгайлсан сэтгэл: {summary.get('dominant_emotion', '?')}"
     )
     return [
-        {
-            "role": "system",
-            "content": (
-                "Урт хугацааны сэтгэл зүйн хэв маягийг шинжилдэг"
-                " мэргэжилтэн. Монгол хэлээр, зөвхөн JSON буцаана.\n"
-                '{"insight_text": "...", "recommendations": ["..."]}'
-            ),
-        },
+        {"role": "system", "content": _DEEP_INSIGHT_SYSTEM},
         {"role": "user", "content": prompt},
     ]
 
@@ -157,3 +111,11 @@ def apply_ewma(data: dict, previous: float | None) -> None:
     else:
         updated = float(level)
     data["hawkins"]["ewma_updated"] = updated
+
+
+def _entry_text(surface: str, inner: str, meaning: str) -> str:
+    return (
+        f"Surface: {surface}\n"
+        f"Inner Reaction: {inner}\n"
+        f"Meaning: {meaning}"
+    )

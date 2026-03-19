@@ -1,5 +1,11 @@
 # Тэмдэглэлийн системийн Backend
 
+FastAPI + Supabase + Redis Queue + OpenAI (Qwen3-д бэлэн)
+
+---
+
+## Хурдан эхлүүлэх
+
 ```bash
 # 1. Суулгах
 python -m venv venv && source venv/bin/activate

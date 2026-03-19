@@ -1,5 +1,10 @@
 """
-LlmService — OpenAI compatible LLM шинжилгээ.
+LlmService — Seed Insight болон Analysis тусдаа дуудалттай.
+
+Урсгал:
+  POST /entries
+    ├── generate_seed_insight()  → шууд (sync) → хэрэглэгчид буцаана
+    └── [queue] → run_analysis() → async → ValueGraph шинэчилнэ
 """
 
 import json
@@ -7,7 +12,7 @@ import logging
 from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 from app.core.settings import get_settings
-from app.schemas.analysis import LlmAnalysisResult
+from app.schemas.analysis import LlmAnalysisResult, SeedInsightData
 from app.services import prompt_builder
 
 _log = logging.getLogger(__name__)
@@ -24,8 +29,27 @@ class LlmService:
             base_url=base if "openai.com" not in base else None,
         )
 
+    # ── Seed Insight (sync — шууд буцаана) ───────────────────────────────────
+
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=8))
-    async def analyze_entry(
+    async def generate_seed_insight(
+        self,
+        surface: str,
+        inner: str,
+        meaning: str,
+    ) -> SeedInsightData:
+        """
+        Хэрэглэгчийн тэмдэглэлд Seed Insight үүсгэнэ.
+        Шууд буцаах учир хурд чухал — хялбар промпт ашиглана.
+        """
+        messages = prompt_builder.build_seed_messages(surface, inner, meaning)
+        raw = await self._complete(messages)
+        return SeedInsightData(**_parse_json(raw))
+
+    # ── Analysis (async — queue дамжина) ─────────────────────────────────────
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=8))
+    async def run_analysis(
         self,
         surface: str,
         inner: str,
@@ -33,8 +57,8 @@ class LlmService:
         ewma_previous: float | None = None,
     ) -> LlmAnalysisResult:
         """
-        Тэмдэглэлийн гурван хэсгийг шинжилж LlmAnalysisResult буцаана.
-        Амжилтгүй бол 3 удаа retry хийнэ.
+        Маслоу + Плутчик + Хокинс шинжилгээ.
+        Worker-аар async дуудагдана.
         """
         messages = prompt_builder.build_analysis_messages(
             surface, inner, meaning, ewma_previous
@@ -43,6 +67,8 @@ class LlmService:
         data = _parse_json(raw)
         prompt_builder.apply_ewma(data, ewma_previous)
         return LlmAnalysisResult(**data)
+
+    # ── Deep Insight ──────────────────────────────────────────────────────────
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=8))
     async def generate_deep_insight(
@@ -54,6 +80,8 @@ class LlmService:
         )
         raw = await self._complete(messages)
         return _parse_json(raw)
+
+    # ── Private ───────────────────────────────────────────────────────────────
 
     async def _complete(self, messages: list[dict]) -> str:
         response = await self._client.chat.completions.create(
