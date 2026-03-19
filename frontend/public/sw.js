@@ -17,6 +17,7 @@ const SKIP_CACHE_PATTERNS = [
   '/api/',
   '/auth/',
   '/_next/data/',
+  
 ];
 
 /* -------------------------------

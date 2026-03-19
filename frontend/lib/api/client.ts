@@ -127,7 +127,6 @@ interface CreateLessonData {
     total: number;
   }
 
-
 interface UpdateLessonData extends Partial<CreateLessonData> {}
 
 class APIClient {

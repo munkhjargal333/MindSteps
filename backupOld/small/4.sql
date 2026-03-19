@@ -1,0 +1,3 @@
+--
+-- Name: auth_otp; Type: TABLE; Schema: mindstep; Owner: neondb_owner
+--

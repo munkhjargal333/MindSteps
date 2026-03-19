@@ -57,16 +57,31 @@ export default function NewJournalPage() {
         <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-xl shadow-blue-50/50 overflow-hidden">
           
           {/* HEADER ХЭСЭГ */}
-          <div className="bg-gradient-to-r from-blue-50 to-transparent p-8 sm:p-10 border-b border-gray-50">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                <PenTool size={24} strokeWidth={2.5} />
+          <div className="bg-gradient-to-b from-blue-50/40 to-transparent p-8 sm:p-12 border-b border-gray-100">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+              
+              <div className="flex-1 space-y-6">
+                {/* Icon & Title */}
+
+                {/* Таны өгсөн Hook - Илүү "Deep" дизайнтай */}
+                <div className="relative max-w-2xl group">
+                  {/* Чимэглэлийн босоо шугам */}
+                  <div className="absolute -left-5 top-0 bottom-0 w-[3px] bg-gradient-to-b from-blue-600 via-blue-200 to-transparent rounded-full"></div>
+                  
+                  <div className="pl-6 space-y-4">
+                    <div className="space-y-3">
+                      <p className="text-[15px] md:text-[16px] leading-relaxed text-gray-600 font-medium">
+                        Та магадгүй бусдад сайн зөвлөгч байдаг байх. Гэхдээ өөртөө чаддаггүй. 
+                        Чадахгүй гэхээс илүү <span className="text-blue-600 font-bold italic"> өөрийгөө сонсож үзээгүй</span> гэсэн үг.
+                      </p>
+                      <p className="text-[15px] md:text-[16px] leading-relaxed text-gray-800 font-bold italic">
+                        Яг л бусдын яриа шиг өөрийгөө сонсож эхэлвэл та өөртөө ч бас тусалж чадна.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h1 className="text-3xl font-black text-gray-900 tracking-tight">
-                Шинэ <span className="text-blue-600">Бичвэр</span>
-              </h1>
             </div>
-            <p className="text-gray-500 font-medium ml-1">Өнөөдөр таны дотор юу болж байна?</p>
           </div>
 
           {/* FORM ХЭСЭГ */}
@@ -79,19 +94,6 @@ export default function NewJournalPage() {
               onSubmit={handleCreate}
               loading={saving}
             />
-          </div>
-
-          {/* AI TIP ХЭСЭГ - Дизайныг нь Mood-тэй ижилхэн зөөлөн болгов */}
-          <div className="mx-8 mb-10 p-6 bg-indigo-50/50 rounded-[2rem] border border-indigo-100 flex gap-4 items-start">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm shrink-0">
-              <Sparkles size={20} />
-            </div>
-            <div>
-              <h4 className="font-bold text-indigo-900 text-sm mb-1">AI Зөвлөмж</h4>
-              <p className="text-xs text-indigo-700/80 leading-relaxed font-medium">
-                Таны бичсэн тэмдэглэлийг AI шинжилгээ хийж системээс таньд үзүүлэх хамгийн тохиромжтой зөвлөмжүүдийг санал болгоно.
-              </p>
-            </div>
           </div>
         </div>
       </div>

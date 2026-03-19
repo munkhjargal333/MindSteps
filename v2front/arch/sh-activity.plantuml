@@ -1,0 +1,48 @@
+@startuml
+skinparam backgroundColor #FAFAFA
+skinparam activity {
+    BackgroundColor #F0F4FF
+    BorderColor #4A6FA5
+    ArrowColor #4A6FA5
+    StartColor #2d6a4f
+    EndColor #c1121f
+}
+skinparam shadowing false
+
+title Сэтгэл зүйн тэмдэглэлийн системийн үйл ажиллагаа
+
+start
+
+:Хэрэглэгч нэвтэрнэ;
+
+if (Ямар үйлдэл хийх?) then (Тэмдэглэл бичих)
+
+    :Тэмдэглэл бичих;
+    :Entry хадгалах;
+    :SeedInsight үүсгэх;
+    :Insight харуулах;
+    :Queue-д WriteJob илгээх;
+
+    fork
+        :Worker job авах;
+        :Entry анализ хийх;
+        :ValueGraph шинэчлэх;
+    end fork
+
+else (Deep insight)
+
+    :Deep Insight хүсэх;
+    :Queue-д InsightJob илгээх;
+    :202 Accepted;
+
+    fork
+        :Worker job авах;
+        :Graph data авах;
+        :Deep insight үүсгэх;
+        :User-д notify;
+    end fork
+
+endif
+
+stop
+@enduml

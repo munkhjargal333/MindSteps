@@ -1,0 +1,71 @@
+/* app/globals.css эсвэл тусдаа файл үүсгээд import хийх */
+
+/* React Joyride Custom Styles */
+.__floater__open {
+  z-index: 10001 !important;
+}
+
+.react-joyride__tooltip {
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.react-joyride__tooltip svg {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Icon colors */
+.react-joyride__tooltip svg {
+  color: currentColor;
+}
+
+/* Overlay style */
+.react-joyride__overlay {
+  backdrop-filter: blur(2px);
+}
+
+/* Beacon animation */
+@keyframes joyride-beacon-inner {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.8);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes joyride-beacon-outer {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.react-joyride__beacon {
+  animation: joyride-beacon-outer 1.2s infinite ease-in-out;
+}
+
+.react-joyride__beacon span {
+  animation: joyride-beacon-inner 1.2s infinite ease-in-out;
+}
+
+/* Button hover effects */
+.react-joyride__tooltip button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+/* Progress bar custom */
+.react-joyride__tooltip [class*="progress"] {
+  background: linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%) !important;
+  border-radius: 10px !important;
+  height: 4px !important;
+}

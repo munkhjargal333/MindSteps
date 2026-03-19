@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 @layer base {
   /* Хувьсагчдыг шууд :root дотор зарлаж өгөх (энэ нь light mode болно) */
   :root {

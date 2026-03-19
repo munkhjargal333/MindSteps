@@ -1,3 +1,13 @@
+hook
+
+Та магадгүй бусдад сайн зөвлөгч байдаг байх.
+Гэхдээ өөртөө чаддаггүй. Чадахгүй гэхээс илүү өөрийгөө сонсож үзээгүй гэсэн үг.
+Яг л бусдын яриа шиг өөрийгөө сонсож эхэлвэл та өөртөө ч бас тусалж чадна.
+
+
+
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

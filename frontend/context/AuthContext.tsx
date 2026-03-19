@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
@@ -21,8 +21,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const PUBLIC_PATHS = ['/login', '/unauthorized', '/terms', '/privacy', '/'];
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -30,7 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const pathname = usePathname();
   const supabase = createClient();
 
   useEffect(() => {
@@ -51,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         setToken(session?.access_token ?? null);
         
-        // SIGNED_OUT event дээр login руу шилжүүлэх
+        // Гарах үед login руу шилжүүлэх
         if (event === 'SIGNED_OUT') {
           router.push('/login');
         }
@@ -61,24 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     return () => subscription.unsubscribe();
-  }, [router]);
-
-  // Route protection
-  useEffect(() => {
-    if (loading) return;
-    
-    const isPublicPath = PUBLIC_PATHS.includes(pathname) || pathname.startsWith('/auth/');
-
-    if (!session && !isPublicPath) {
-      router.push('/login');
-      return;
-    }
-
-    if (session && pathname === '/login') {
-      router.push('/dashboard');
-      return;
-    }
-  }, [session, loading, pathname, router]);
+  }, [router, supabase.auth]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -119,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Whitelist-д байхгүй anonymous user
         if (error.message.includes('not authorized') || 
             error.message.includes('Signup Error')) {
-          router.push('/unauthorized');
+          router.push('/join');
           return;
         }
         
@@ -182,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Whitelist-д байхгүй email
         if (error.message.includes('not authorized') || 
             error.message.includes('Signup Error')) {
-          router.push('/unauthorized');
+          router.push('/join');
           return;
         }
         throw error;

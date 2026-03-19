@@ -1,0 +1,44 @@
+@startuml
+autonumber
+
+actor User
+participant API
+participant Queue
+participant Worker
+participant ValueGraph
+participant DeepInsight
+
+
+User -> API : requestInsight()
+activate API
+
+API -> Queue : enqueue(insightJob)
+activate Queue
+Queue --> API : ok
+deactivate Queue
+
+API --> User : 202 Accepted
+deactivate API
+
+
+Worker -> Queue : dequeue()
+activate Worker
+activate Queue
+Queue --> Worker : insightJob
+deactivate Queue
+
+Worker -> ValueGraph : getGraphData()
+activate ValueGraph
+ValueGraph --> Worker : graphData
+deactivate ValueGraph
+
+Worker -> DeepInsight : generateInsight(graphData)
+activate DeepInsight
+DeepInsight --> Worker : insight + recommendations
+deactivate DeepInsight
+
+' Notification - Хариу нь тусдаа сум байх ёстой
+Worker --> User : notify(insight)
+deactivate Worker
+
+@enduml

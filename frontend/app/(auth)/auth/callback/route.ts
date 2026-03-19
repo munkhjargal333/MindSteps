@@ -15,11 +15,11 @@ export async function GET(request: Request) {
     console.error('[CALLBACK] Auth error:', { error, error_description })
     
     if (error === 'access_denied') {
-      return NextResponse.redirect(`${origin}/unauthorized`)
+      return NextResponse.redirect(`${origin}/join`)
     }
     if (error_description && error_description.includes('Database error saving new user')) {
       // Урьдчилан бүртгүүлээгүй хэрэглэгчийг unauthorized руу шилжүүлнэ
-      return NextResponse.redirect(`${origin}/unauthorized`)
+      return NextResponse.redirect(`${origin}/join`)
     }
 
 
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
         exchangeError.message.includes('User not allowed')
 
       if (isUnauthorized) {
-        return NextResponse.redirect(`${origin}/unauthorized`)
+        return NextResponse.redirect(`${origin}/join`)
       }
 
       // Бусад алдаа
@@ -70,7 +70,7 @@ export async function GET(request: Request) {
     
     if (userError || !user) {
       console.error('User verification failed:', userError)
-      return NextResponse.redirect(`${origin}/unauthorized`)
+      return NextResponse.redirect(`${origin}/join`)
     }
 
     // 5. Амжилттай бол dashboard руу
