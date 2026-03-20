@@ -1,8 +1,22 @@
-export type QuickActionType =
-  | 'stress' | 'loneliness' | 'gratitude' | 'self_doubt'   // free
-  | 'purpose' | 'values' | 'fear' | 'joy';                  // pro
+// ─── Tier ────────────────────────────────────────────────────────────────────
 
 export type Tier = 'free' | 'pro';
+
+// ─── Action types ─────────────────────────────────────────────────────────────
+
+export type QuickActionType =
+  | 'stress'
+  | 'loneliness'
+  | 'gratitude'
+  | 'self_doubt'
+  | 'purpose'
+  | 'values'
+  | 'fear'
+  | 'joy';
+
+// ─── Flow ─────────────────────────────────────────────────────────────────────
+
+export type FlowStep = 1 | 2 | 3 | 4;
 
 export interface SessionData {
   actionType: QuickActionType;
@@ -11,16 +25,10 @@ export interface SessionData {
   meaningText: string;
 }
 
+// ─── Insight ──────────────────────────────────────────────────────────────────
+
 export interface SeedInsight {
   mirror: string;
   reframe: string;
   relief: string;
-}
-
-export type FlowStep = 1 | 2 | 3 | 4;
-
-export interface JournalEntry {
-  id: number;
-  status: 'pending' | 'analyzing' | 'done' | 'failed';
-  text: string;
 }

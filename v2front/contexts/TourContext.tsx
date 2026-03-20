@@ -1,4 +1,3 @@
-// contexts/TourContext.tsx
 'use client';
 
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
@@ -11,7 +10,7 @@ interface TourContextType {
   hasSeenTour: (tourType: TourType) => boolean;
 }
 
-export type TourType = 'dashboard' | 'coreValues' | 'lessons' | 'mood' | 'journal' | 'demo';
+export type TourType = 'dashboard' | 'coreValues' | 'lessons' | 'mood' | 'journal' | 'demo' | 'quick';
 
 const TourContext = createContext<TourContextType | undefined>(undefined);
 

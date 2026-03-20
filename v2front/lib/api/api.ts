@@ -1,69 +1,49 @@
-import { Session } from 'inspector/promises';
 import type { SessionData, SeedInsight } from '../../types/types';
+import { createEntry, demoSeedInsight } from './journalBackend';
 
 // ─── Config ───────────────────────────────────────────────────
 
 export interface ApiConfig {
   apiBase?: string;
-  token?: string;
+  token?: string | null;
 }
 
-// ─── Request/Response types (backend contract) ────────────────
-
-interface InsightResponse {
-  mirror: string;
-  reframe: string;
-  relief: string;
-  entry_id: number | null;
-}
+// ─── Result ───────────────────────────────────────────────────
 
 export interface AnalyzeResult {
-  entryId: number | null;
-  insight: SeedInsight;
+  entryId: string | null;
+  insight: SeedInsight & { summary?: string };
 }
 
-// ─── Single backend call ──────────────────────────────────────
-// AI key frontend-д байхгүй — бүгд backend-аар дамжина
+// ─── Main entry point ─────────────────────────────────────────
+// Authenticated → POST /api/entries/
+// Demo (no token) → POST /api/demo/seed-insight
 
 export async function analyzeSession(
   session: SessionData,
   config: ApiConfig,
 ): Promise<AnalyzeResult> {
-  const base = config.apiBase ?? 'http://localhost:8000';
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
   if (config.token) {
-    headers['Authorization'] = `Bearer ${config.token}`;
+    const result = await createEntry(config.token, {
+      surface_text: session.surfaceText,
+      inner_reaction_text: session.innerText,
+      meaning_text: session.meaningText,
+      save_text: true,
+    });
+    return {
+      entryId: result.entry_id,
+      insight: result.seed_insight,
+    };
   }
 
-  const body: SessionData = {
-    actionType: session.actionType,
-    surfaceText: session.surfaceText,
-    innerText: session.innerText,
-    meaningText: session.meaningText,
-  };
-  
-  const res = await fetch(`${base}/journal/insight`, {
-    method:  'POST',
-    headers,
-    body:    JSON.stringify(body),
+  // Demo / unauthenticated
+  const result = await demoSeedInsight({
+    surface_text: session.surfaceText,
+    inner_reaction_text: session.innerText,
+    meaning_text: session.meaningText,
   });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail ?? `Server error ${res.status}`);
-  }
-
-  const data: InsightResponse = await res.json();
-
   return {
-    entryId: data.entry_id,
-    insight: {
-      mirror:  data.mirror,
-      reframe: data.reframe,
-      relief:  data.relief,
-    },
+    entryId: null,
+    insight: result.seed_insight,
   };
 }

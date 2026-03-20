@@ -40,7 +40,10 @@ async def demo_seed_insight(data: DemoRequest, request: Request):
     Лимит: .env-д DEMO_DAILY_LIMIT (default: 5).
     """
     limit = get_settings().demo_daily_limit
-    used = _increment_and_check(request.client.host, limit)
+    # TODO: Лимит шалгах — Redis ашиглан IP-р өдөрт хэдэн удаа ашигласан тоог хянах.
+    # used = _increment_and_check(request.client.host, limit)
+    used = 0
+
 
     llm = get_llm_service()
     seed = await llm.generate_seed_insight(
