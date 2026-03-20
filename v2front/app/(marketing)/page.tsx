@@ -1,13 +1,16 @@
-'use client';
+'use client'
 
-import { Sunrise, ArrowRight, Eye, Zap, Sparkles, Brain, Heart, BookOpen } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { MainHeader } from '@/components/shared/MainHeader';
+import { Sunrise, ArrowRight, Eye, Zap, Sparkles, Brain, Heart, BookOpen } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { MainHeader } from '@/components/shared/MainHeader'
+import { ProblemCard } from './_components/ProblemCard'
+import { HowItWorksCard } from './_components/HowItWorksCard'
+import { FeatureCard } from './_components/FeatureCard'
+import { WhoForItem, WhoNotForItem } from './_components/WhoForItems'
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <MainHeader />
 
       <main>
@@ -21,22 +24,22 @@ export default function LandingPage() {
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
                 Таны тэмдэглэл
                 <br />
-                <span className="text-muted-foreground">
-                  таны сэтгэл санааны толь.
-                </span>
+                <span className="text-muted-foreground">таны сэтгэл санааны толь.</span>
               </h1>
               <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-                Өдөр бүрийн бодлоо тэмдэглэж, сэтгэл хөдлөл, хэрэгцээгээ ойлго. 
+                Өдөр бүрийн бодлоо тэмдэглэж, сэтгэл хөдлөл, хэрэгцээгээ ойлго.
                 MindSteps танд давтагдах хэв маягийг илрүүлж, ухамсартай амьдрахад туслана.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
               <Button asChild size="lg" className="w-full sm:w-auto">
-                <a href="/quick">Үнэгүй турших <ArrowRight className="w-4 h-4 ml-2" /></a>
+                <a href="/quick">
+                  Үнэгүй турших <ArrowRight className="w-4 h-4 ml-2" />
+                </a>
               </Button>
               <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                <a href="/join">Нэгдэх</a>
+                <a href="/login">Нэвтрэх</a>
               </Button>
             </div>
           </div>
@@ -49,11 +52,13 @@ export default function LandingPage() {
               <div className="space-y-3 md:space-y-4">
                 <h2 className="text-3xl md:text-4xl font-bold leading-tight">
                   Өнөөдрийн бодол өчигдрийн бодлын{' '}
-                  <span className="underline decoration-orange-500 decoration-2 underline-offset-4">90%</span>
+                  <span className="underline decoration-orange-500 decoration-2 underline-offset-4">
+                    90%
+                  </span>
                   -ийг агуулдаг
                 </h2>
                 <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                  Тоолж барамгүй олон удаа давтагдаад байгаа энэ бодлыг чи мэдэх үү? 
+                  Тоолж барамгүй олон удаа давтагдаад байгаа энэ бодлыг чи мэдэх үү?
                   Хэрвээ санахгүй байгаа бол та өөрийнхөө талаар тийм ч сайн мэддэггүй гэсэн үг.
                 </p>
               </div>
@@ -85,7 +90,6 @@ export default function LandingPage() {
             <div className="text-center mb-12 md:mb-16">
               <h2 className="text-3xl md:text-4xl font-bold">Хэрхэн ажилладаг вэ?</h2>
             </div>
-
             <div className="grid md:grid-cols-3 gap-8 md:gap-12">
               <HowItWorksCard
                 step="01"
@@ -106,7 +110,6 @@ export default function LandingPage() {
                 description="Бодол, мэдрэмждээ шууд хариу үйлдэл хийхгүй байх орон зай бий болгоно"
               />
             </div>
-
           </div>
         </section>
 
@@ -116,7 +119,6 @@ export default function LandingPage() {
             <div className="text-center mb-12 md:mb-16">
               <h2 className="text-3xl md:text-4xl font-bold">Юу хийж болох вэ?</h2>
             </div>
-
             <div className="grid md:grid-cols-3 gap-6 md:gap-8">
               <FeatureCard
                 icon={Brain}
@@ -134,7 +136,6 @@ export default function LandingPage() {
                 description="Өөрийгөө буруутгахгүй ойлгох."
               />
             </div>
-
           </div>
         </section>
 
@@ -142,7 +143,9 @@ export default function LandingPage() {
         <section className="border-t bg-muted/30">
           <div className="container max-w-4xl mx-auto px-4 py-16 md:py-24">
             <div className="text-center mb-12 md:mb-16">
-              <p className="text-sm text-muted-foreground uppercase tracking-wider mb-3 md:mb-4">Хэнд зориулсан</p>
+              <p className="text-sm text-muted-foreground uppercase tracking-wider mb-3 md:mb-4">
+                Хэнд зориулсан
+              </p>
               <h2 className="text-3xl md:text-4xl font-bold">Энэ систем танд тохирох уу?</h2>
             </div>
 
@@ -156,7 +159,9 @@ export default function LandingPage() {
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-muted-foreground">✕ Зориулагдаагүй</h3>
+                <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-muted-foreground">
+                  ✕ Зориулагдаагүй
+                </h3>
                 <WhoNotForItem text="Сэтгэцийн эмчилгээ хийлгэж байгаа" />
                 <WhoNotForItem text="16 хүрээгүй хүүхдүүд" />
                 <WhoNotForItem text="Шуурхай, богино хугацаанд бүхнийг шийдэхийг хүсэж байгаа" />
@@ -166,10 +171,10 @@ export default function LandingPage() {
 
             <div className="mt-8 md:mt-12 p-4 md:p-6 border rounded-lg bg-background">
               <p className="text-xs md:text-sm text-muted-foreground text-center leading-relaxed">
-                <strong className="text-foreground">Чухал анхааруулга:</strong> <br/>
-                  MindSteps нь сэтгэцийн эмчилгээний орлуулагч биш.
-                  Хэрэв та ноцтой сэтгэл санааны хямралтай тулгарч байгаа бол
-                  мэргэжлийн эмч, сэтгэл зүйчид хандахыг зөвлөж байна.
+                <strong className="text-foreground">Чухал анхааруулга:</strong>
+                <br />
+                MindSteps нь сэтгэцийн эмчилгээний орлуулагч биш. Хэрэв та ноцтой сэтгэл санааны
+                хямралтай тулгарч байгаа бол мэргэжлийн эмч, сэтгэл зүйчид хандахыг зөвлөж байна.
               </p>
             </div>
           </div>
@@ -185,18 +190,18 @@ export default function LandingPage() {
                   Өөрийгөө илүү тодорхой харж эхэлье
                 </h2>
                 <p className="text-base md:text-lg text-muted-foreground">
-                  Эхний алхмаа үнэгүй хийгээд үз.
-                  Хэрэв энэ орон зай танд тохирвол,
-                  илүү гүн шатанд нэгдэх боломж нээлттэй.
+                  Эхний алхмаа үнэгүй хийгээд үз. Хэрэв энэ орон зай танд тохирвол, илүү гүн
+                  шатанд нэгдэх боломж нээлттэй.
                 </p>
               </div>
-
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
                 <Button asChild size="lg" className="w-full sm:w-auto">
-                  <a href="/demo">Үнэгүй турших <ArrowRight className="w-4 h-4 ml-2" /></a>
+                  <a href="/demo">
+                    Үнэгүй турших <ArrowRight className="w-4 h-4 ml-2" />
+                  </a>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                  <a href="/join">Нэгдэх</a>
+                  <a href="/login">Нэвтрэх</a>
                 </Button>
               </div>
             </div>
@@ -212,92 +217,15 @@ export default function LandingPage() {
               <Sunrise className="w-5 h-5 text-orange-500" />
               <span className="font-semibold">MindSteps</span>
             </div>
-            
             <div className="flex gap-6 text-sm text-muted-foreground">
               <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
               <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
               <a href="/join" className="hover:text-foreground transition-colors">Join</a>
             </div>
-
             <p className="text-sm text-muted-foreground">© 2026 MindSteps</p>
           </div>
         </div>
       </footer>
     </div>
-  );
-}
-
-// Component: Problem Card
-function ProblemCard({ icon: Icon, title, description }: {
-  icon: any;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="flex items-start gap-4 group">
-      <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-        <Icon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-      </div>
-      <div className="space-y-1">
-        <h4 className="font-semibold text-sm md:text-base">{title}</h4>
-        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-// Component: How It Works Card
-function HowItWorksCard({ step, icon: Icon, title, description }: {
-  step: string;
-  icon: any;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="space-y-4">
-      <div className="text-4xl font-light text-muted-foreground/40">{step}</div>
-      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-        <Icon className="w-6 h-6 text-primary" />
-      </div>
-      <h3 className="text-xl font-bold uppercase tracking-wide">{title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-    </div>
-  );
-}
-
-// Component: Feature Card
-function FeatureCard({ icon: Icon, title, description }: {
-  icon: any;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="p-6 border rounded-lg hover:border-primary/50 transition-colors group">
-      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-        <Icon className="w-6 h-6 text-primary" />
-      </div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-    </div>
-  );
-}
-
-// Component: Who For Item
-function WhoForItem({ text }: { text: string }) {
-  return (
-    <div className="flex items-start gap-3">
-      <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-      <p className="text-sm text-muted-foreground">{text}</p>
-    </div>
-  );
-}
-
-// Component: Who Not For Item
-function WhoNotForItem({ text }: { text: string }) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="w-5 h-5 flex-shrink-0 mt-0.5 text-muted-foreground/40">✕</div>
-      <p className="text-sm text-muted-foreground">{text}</p>
-    </div>
-  );
+  )
 }
