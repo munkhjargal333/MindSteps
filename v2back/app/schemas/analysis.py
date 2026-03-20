@@ -35,10 +35,10 @@ class HawkinsResult(BaseModel):
 # ── Seed Insight ─────────────────────────────────────────────────────────────
 
 class SeedInsightData(BaseModel):
-    mirror: str
-    reframe: str
-    relief: str
-    summary: str
+    mirror: str = ""
+    reframe: str = ""
+    relief: str = ""
+    summary: str = ""
 
 
 class SeedInsightResponse(SeedInsightData):

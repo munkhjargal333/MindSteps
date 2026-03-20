@@ -1,13 +1,5 @@
-"""
-LlmService — Seed Insight болон Analysis тусдаа дуудалттай.
-
-Урсгал:
-  POST /entries
-    ├── generate_seed_insight()  → шууд (sync) → хэрэглэгчид буцаана
-    └── [queue] → run_analysis() → async → ValueGraph шинэчилнэ
-"""
-
 import json
+import time
 import logging
 from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -29,24 +21,27 @@ class LlmService:
             base_url=base if "openai.com" not in base else None,
         )
 
-    # ── Seed Insight (sync — шууд буцаана) ───────────────────────────────────
+    # ── Seed Insight ──────────────────────────────────────────────────────────
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=8))
+    @retry(stop=stop_after_attempt(1), wait=wait_exponential(min=2, max=8))
     async def generate_seed_insight(
         self,
         surface: str,
         inner: str,
         meaning: str,
     ) -> SeedInsightData:
-        """
-        Хэрэглэгчийн тэмдэглэлд Seed Insight үүсгэнэ.
-        Шууд буцаах учир хурд чухал — хялбар промпт ашиглана.
-        """
         messages = prompt_builder.build_seed_messages(surface, inner, meaning)
-        raw = await self._complete(messages)
-        return SeedInsightData(**_parse_json(raw))
+        raw = await self._complete(messages, caller="seed_insight")
 
-    # ── Analysis (async — queue дамжина) ─────────────────────────────────────
+        parsed = _parse_json(raw)
+
+        if not parsed.get("summary"):
+            parsed["summary"] = parsed.get("mirror", "")[:120]
+            _log.warning("⚠️  summary дутуу — mirror-ээс авлаа")
+
+        return SeedInsightData(**parsed)
+
+    # ── Analysis ──────────────────────────────────────────────────────────────
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=8))
     async def run_analysis(
@@ -56,14 +51,10 @@ class LlmService:
         meaning: str,
         ewma_previous: float | None = None,
     ) -> LlmAnalysisResult:
-        """
-        Маслоу + Плутчик + Хокинс шинжилгээ.
-        Worker-аар async дуудагдана.
-        """
         messages = prompt_builder.build_analysis_messages(
             surface, inner, meaning, ewma_previous
         )
-        raw = await self._complete(messages)
+        raw = await self._complete(messages, caller="analysis")
         data = _parse_json(raw)
         prompt_builder.apply_ewma(data, ewma_previous)
         return LlmAnalysisResult(**data)
@@ -74,16 +65,17 @@ class LlmService:
     async def generate_deep_insight(
         self, graph_summary: dict, entry_count: int
     ) -> dict:
-        """ValueGraph дүн шинжилгээнд тулгуурлан Deep Insight үүсгэнэ."""
         messages = prompt_builder.build_deep_insight_messages(
             graph_summary, entry_count
         )
-        raw = await self._complete(messages)
+        raw = await self._complete(messages, caller="deep_insight")
         return _parse_json(raw)
 
     # ── Private ───────────────────────────────────────────────────────────────
 
-    async def _complete(self, messages: list[dict]) -> str:
+    async def _complete(self, messages: list[dict], caller: str = "llm") -> str:
+        start = time.perf_counter()
+
         response = await self._client.chat.completions.create(
             model=_settings.llm_model,
             messages=messages,
@@ -91,7 +83,23 @@ class LlmService:
             max_tokens=_settings.llm_max_tokens,
             response_format={"type": "json_object"},
         )
-        return response.choices[0].message.content
+
+        print(response)  # Debug: full response object
+        elapsed = time.perf_counter() - start
+        u = response.usage
+
+        _log.info(
+            f"🤖 [{caller}] model={_settings.llm_model} | "
+            f"prompt={u.prompt_tokens} | "
+            f"completion={u.completion_tokens} | "
+            f"total={u.total_tokens} | "
+            f"time={elapsed:.2f}s"
+        )
+
+        content = response.choices[0].message.content
+        _log.debug(f"📥 [{caller}] raw response: {content}")
+
+        return content
 
 
 def _parse_json(raw: str) -> dict:
@@ -103,8 +111,6 @@ def _parse_json(raw: str) -> dict:
         text = "\n".join(lines[1:end])
     return json.loads(text.strip())
 
-
-# ── Singleton ─────────────────────────────────────────────────────────────────
 
 _instance: LlmService | None = None
 
