@@ -26,7 +26,7 @@ interface Props {
 
 export function ThoughtFlow({ view = 'demo', initialAction, onBack, onUpgrade }: Props) {
   const { apiBase, token } = useThoughtContext();
-  const flow = useThoughtFlow({ apiBase });
+  const flow = useThoughtFlow();
 
   // initialAction байвал mount дээр selectAction дуудна
   useEffect(() => {
