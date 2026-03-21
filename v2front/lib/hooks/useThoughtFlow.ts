@@ -3,19 +3,20 @@
 import { useState, useCallback, useRef } from 'react';
 import type { QuickActionType, SessionData, FlowStep } from '../../types/types';
 import type { AnalyzeResult } from '@/lib/api/api';
-import { analyzeSession, type ApiConfig } from '@/lib/api/api';
+import { analyzeSession } from '@/lib/api/api';
+import { useThoughtContext, type ThoughtContextValue } from '@/contexts/context';
 
 // ─── State ────────────────────────────────────────────────────
 
 type StepData = Omit<SessionData, 'actionType'>;
 
 interface ThoughtFlowState {
-  step: FlowStep;
+  step:       FlowStep;
   actionType: QuickActionType | null;
-  data: StepData;
-  analyzing: boolean;
-  result: AnalyzeResult | null;
-  error: string | null;
+  data:       StepData;
+  analyzing:  boolean;
+  result:     AnalyzeResult | null;
+  error:      string | null;
 }
 
 const EMPTY_DATA: StepData = {
@@ -26,7 +27,9 @@ const EMPTY_DATA: StepData = {
 
 // ─── Hook ─────────────────────────────────────────────────────
 
-export function useThoughtFlow(config: ApiConfig) {
+export function useThoughtFlow() {
+  const ctx = useThoughtContext();
+
   const [state, setState] = useState<ThoughtFlowState>({
     step:       1,
     actionType: null,
@@ -36,9 +39,9 @@ export function useThoughtFlow(config: ApiConfig) {
     error:      null,
   });
 
-  // Keep config ref fresh so runAnalysis always uses latest token
-  const configRef = useRef(config);
-  configRef.current = config;
+  // Render бүрт шинэ ctx авна
+  const configRef = useRef<ThoughtContextValue>(ctx);
+  configRef.current = ctx;
 
   const selectAction = useCallback((type: QuickActionType) => {
     setState((s) => ({

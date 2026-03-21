@@ -43,7 +43,7 @@ class LlmService:
 
     # ── Analysis ──────────────────────────────────────────────────────────────
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=8))
+    @retry(stop=stop_after_attempt(1), wait=wait_exponential(min=2, max=8))
     async def run_analysis(
         self,
         surface: str,
@@ -61,7 +61,7 @@ class LlmService:
 
     # ── Deep Insight ──────────────────────────────────────────────────────────
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=2, max=8))
+    @retry(stop=stop_after_attempt(1), wait=wait_exponential(min=2, max=8))
     async def generate_deep_insight(
         self, graph_summary: dict, entry_count: int
     ) -> dict:
@@ -84,7 +84,6 @@ class LlmService:
             response_format={"type": "json_object"},
         )
 
-        print(response)  # Debug: full response object
         elapsed = time.perf_counter() - start
         u = response.usage
 

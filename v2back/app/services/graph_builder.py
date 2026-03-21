@@ -24,10 +24,14 @@ class GraphBuilder:
             category = item.get("category")
             for value_dict in item.get("values", []):
                 for value, confidence in value_dict.items():
-                    node_id = self._upsert_node(
-                        user_id, category, value, confidence
-                    )
-                    self._upsert_emotion(node_id, entry_id, analysis)
+                    try:
+                        confidence = float(confidence)
+                    except (TypeError, ValueError):
+                        confidence = 0.0
+
+                    node_id = self._upsert_node(user_id, category, value, confidence)
+                    self._insert_emotion_tracker(node_id, entry_id, analysis)
+                    self._update_dominant_emotion(node_id)
 
     def fetch_graph(self, user_id: str) -> dict:
         """v_user_graph view-г ашиглан React Flow граф буцаана."""
@@ -123,49 +127,97 @@ class GraphBuilder:
         )
         return result.data[0]["id"]
 
-    def _upsert_emotion(
+    def _insert_emotion_tracker(
         self,
         node_id: str,
         entry_id: str,
         analysis: LlmAnalysisResult,
     ) -> None:
+        """emotions_tracker-т шинэ мөр нэмнэ."""
         p = analysis.plutchik
-        tracker = {
-            "plutchik_primary": p.primary,
-            "primary_score": p.primary_score,
-            "plutchik_dyad": p.dyad,
-            "dyad_score": p.dyad_score,
-        }
-        dominant = {
-            **tracker,
-            "dominant_primary": p.primary,
-            "dominant_primary_score": p.primary_score,
-            "dominant_dyad": p.dyad,
-            "dominant_dyad_score": p.dyad_score,
-        }
 
         existing = (
             self._db.table("emotions")
-            .select("id, total_entries")
+            .select("id")
             .eq("value_node_id", node_id)
             .execute()
         ).data
 
         if existing:
             emotion_id = existing[0]["id"]
-            self._db.table("emotions").update(
-                {**dominant, "total_entries": existing[0]["total_entries"] + 1}
-            ).eq("id", emotion_id).execute()
         else:
             emotion_id = (
                 self._db.table("emotions")
-                .insert({"value_node_id": node_id, **dominant, "total_entries": 1})
+                .insert({"value_node_id": node_id, "total_entries": 0})
                 .execute()
             ).data[0]["id"]
 
-        self._db.table("emotions_tracker").insert(
-            {"emotion_id": emotion_id, "entry_id": entry_id, **tracker}
-        ).execute()
+        self._db.table("emotions_tracker").insert({
+            "emotion_id": emotion_id,
+            "entry_id": entry_id,
+            "plutchik_primary": p.primary,
+            "primary_score": p.primary_score,
+            "plutchik_dyad": p.dyad,
+            "dyad_score": p.dyad_score,
+        }).execute()
+
+    def _update_dominant_emotion(self, node_id: str) -> None:
+        """emotions_tracker-с dominant утгыг тооцоолж emotions шинэчилнэ."""
+        emotion = (
+            self._db.table("emotions")
+            .select("id")
+            .eq("value_node_id", node_id)
+            .execute()
+        ).data
+
+        if not emotion:
+            return
+
+        emotion_id = emotion[0]["id"]
+
+        rows = (
+            self._db.table("emotions_tracker")
+            .select("plutchik_primary, primary_score, plutchik_dyad, dyad_score")
+            .eq("emotion_id", emotion_id)
+            .execute()
+        ).data or []
+
+        if not rows:
+            return
+
+        # Primary dominant тооцно
+        primary_totals: dict[str, float] = {}
+        for r in rows:
+            key = r["plutchik_primary"]
+            primary_totals[key] = primary_totals.get(key, 0) + r["primary_score"]
+
+        dominant_primary = max(primary_totals, key=primary_totals.__getitem__)
+        dominant_primary_score = round(
+            primary_totals[dominant_primary] / len(rows), 3
+        )
+
+        # Dyad dominant тооцно
+        dyad_totals: dict[str, float] = {}
+        for r in rows:
+            if r.get("plutchik_dyad") and r.get("dyad_score"):
+                dyad_totals[r["plutchik_dyad"]] = (
+                    dyad_totals.get(r["plutchik_dyad"], 0) + r["dyad_score"]
+                )
+
+        dominant_dyad = (
+            max(dyad_totals, key=dyad_totals.__getitem__) if dyad_totals else None
+        )
+        dominant_dyad_score = (
+            round(dyad_totals[dominant_dyad] / len(rows), 3) if dominant_dyad else None
+        )
+
+        self._db.table("emotions").update({
+            "dominant_primary": dominant_primary,
+            "dominant_primary_score": dominant_primary_score,
+            "dominant_dyad": dominant_dyad,
+            "dominant_dyad_score": dominant_dyad_score,
+            "total_entries": len(rows),
+        }).eq("id", emotion_id).execute()
 
 
 # ── Module-level helper ───────────────────────────────────────────────────────

@@ -34,7 +34,7 @@ export default function LandingPage() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
               <Button asChild size="lg" className="w-full sm:w-auto">
-                <a href="/quick">
+                <a href="/demo">
                   Үнэгүй турших <ArrowRight className="w-4 h-4 ml-2" />
                 </a>
               </Button>

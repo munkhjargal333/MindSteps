@@ -17,7 +17,7 @@ from app.schemas.analysis import SeedInsightData
 from app.services.auth_service import get_current_user
 from app.services.journal_service import JournalService
 from app.services.llm_service import get_llm_service
-from app.db.supabase import get_anon_client
+from app.db.supabase import get_admin_client
 from app.db.redis_client import get_analysis_queue, get_deep_insight_queue
 from pydantic import BaseModel
 
@@ -31,7 +31,7 @@ class EntryCreateResponse(BaseModel):
 
 
 def _journal() -> JournalService:
-    return JournalService(get_anon_client())
+    return JournalService(get_admin_client())
 
 
 # ── CRUD ─────────────────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ async def create_entry(
     count = journal.count_user_entries(user_id)
     if journal.should_trigger_deep_insight(count):
         get_deep_insight_queue().enqueue(
-            "app.workers.jobs.run_deep_insight",
+            "app.workers.jobs.process_deep_insight",
             user_id=user_id,
             job_timeout=300,
         )
@@ -124,7 +124,7 @@ def _enqueue_analysis(
     entry_id: str, user_id: str, data: EntryCreateRequest
 ) -> None:
     get_analysis_queue().enqueue(
-        "app.workers.jobs.run_entry_analysis",
+        "app.workers.jobs.run_analysis_job",
         entry_id=entry_id,
         user_id=user_id,
         entry_text={

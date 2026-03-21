@@ -3,15 +3,20 @@
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from supabase import Client
 from app.services.auth_service import get_current_user
 from app.services.journal_service import JournalService
-from app.db.supabase import get_anon_client
+from app.db.supabase import get_admin_client
 
 router = APIRouter(tags=["Граф ба Insight"])
 
 
+def _db() -> Client:
+    return get_admin_client()
+
+
 def _get_journal_service() -> JournalService:
-    return JournalService(get_anon_client())
+    return JournalService(get_admin_client())
 
 
 @router.get("/graph")
@@ -33,9 +38,9 @@ async def get_value_graph(
 @router.get("/insights/deep")
 async def list_deep_insights(
     user: dict = Depends(get_current_user),
+    db: Client = Depends(_db),
 ):
     """Хэрэглэгчийн Deep Insight жагсаалт."""
-    db = get_anon_client()
     result = (
         db.table("deep_insights")
         .select("*")
@@ -51,10 +56,9 @@ async def list_deep_insights(
 async def get_seed_insight(
     entry_id: str,
     user: dict = Depends(get_current_user),
+    db: Client = Depends(_db),
 ):
     """Тэмдэглэлийн Seed Insight (mirror, reframe, relief, summary)."""
-    db = get_anon_client()
-
     entry = (
         db.table("journal_entries")
         .select("id")
@@ -83,9 +87,12 @@ async def get_seed_insight(
 async def get_emotion_stats(
     days: int = Query(30, ge=1, le=365),
     user: dict = Depends(get_current_user),
+    db: Client = Depends(_db),
 ):
     """Плутчикийн сэтгэл хөдлөлийн хэв маяг (сүүлийн N хоног)."""
-    db = get_anon_client()
+    from datetime import datetime, timedelta, timezone
+    since = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+
     result = (
         db.table("journal_analyses")
         .select(
@@ -94,11 +101,8 @@ async def get_emotion_stats(
             "journal_entries!inner(user_id, created_at)"
         )
         .eq("journal_entries.user_id", user["id"])
-        .gte(
-            "journal_entries.created_at",
-            f"now() - interval '{days} days'",
-        )
-        .order("journal_entries.created_at", desc=True)
+        .gte("processed_at", since)
+        .order("processed_at", desc=True)
         .execute()
     )
     return result.data

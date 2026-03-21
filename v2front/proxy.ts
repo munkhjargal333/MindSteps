@@ -1,35 +1,41 @@
+// middleware.ts (proxy.ts-ийн дэргэд)
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { can, type Permission, type Tier } from '@/lib/permissions'
 
 const PUBLIC_PATHS = [
-  '/',
-  '/login',
-  '/terms',
-  '/privacy',
-  '/unauthorized',
-  '/join',
-  '/about',
-  '/demo',
+  '/', '/login', '/terms', '/privacy',
+  '/unauthorized', '/join', '/about', '/demo',
 ]
+
+// Аль route ямар permission шаардах
+const PROTECTED_ROUTES: { path: string; permission: Permission }[] = [
+  { path: '/insights', permission: 'view_insights' },
+  { path: '/emotions', permission: 'view_emotions' },
+  { path: '/graph',    permission: 'view_graph'    },
+]
+
+function resolveTier(plan?: string, role?: string): Tier {
+  if (role === 'admin')    return 'admin'
+  if (plan === 'premium')  return 'premium'
+  if (plan === 'pro')      return 'pro'
+  return 'free'
+}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
-  // Public эсвэл auth callback path шалгах
-  const isPublicPath = PUBLIC_PATHS.some(path => pathname === path) || 
+
+  const isPublicPath = PUBLIC_PATHS.some(p => pathname === p) ||
                        pathname.startsWith('/auth/')
-  
-  // Skip middleware for service worker and PWA files
-  if (pathname.startsWith('/sw.js') || 
+
+  if (pathname.startsWith('/sw.js') ||
       pathname.startsWith('/workbox') ||
       pathname === '/manifest.json') {
     return NextResponse.next()
   }
-  
+
   let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request: { headers: request.headers },
   })
 
   const supabase = createServerClient(
@@ -42,42 +48,47 @@ export async function proxy(request: NextRequest) {
         },
         set(name: string, value: string, options: CookieOptions) {
           request.cookies.set({ name, value, ...options })
-          response = NextResponse.next({
-            request: { headers: request.headers },
-          })
+          response = NextResponse.next({ request: { headers: request.headers } })
           response.cookies.set({ name, value, ...options })
         },
         remove(name: string, options: CookieOptions) {
           request.cookies.set({ name, value: '', ...options })
-          response = NextResponse.next({
-            request: { headers: request.headers },
-          })
+          response = NextResponse.next({ request: { headers: request.headers } })
           response.cookies.set({ name, value: '', ...options })
         },
       },
     }
   )
 
-  // Session шалгах
   const { data: { user }, error } = await supabase.auth.getUser()
 
-  // Debug logging (development only)
   if (process.env.NODE_ENV === 'development') {
-    const status = user ? '✅ User' : '❌ No user';
-    const errorMsg = error ? `(Error: ${error.message})` : '';
-    console.log(`[MW] ${pathname} → ${status} ${errorMsg}`)
+    console.log(`[MW] ${pathname} → ${user ? '✅' : '❌'} ${error?.message ?? ''}`)
   }
 
-  // Protected route дээр session байхгүй бол login руу
+  // 1. Auth шалгах
   if (!isPublicPath && !user) {
-    const redirectUrl = new URL('/login', request.url)
-    return NextResponse.redirect(redirectUrl)
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Login хуудас дээр session байвал dashboard руу
   if (pathname === '/login' && user) {
-    const redirectUrl = new URL('/quick', request.url)
-    return NextResponse.redirect(redirectUrl)
+    return NextResponse.redirect(new URL('/quick', request.url))
+  }
+
+  // 2. Tier/permission шалгах (зөвхөн нэвтэрсэн хэрэглэгчид)
+  if (user) {
+    const meta = user.user_metadata
+    const tier = resolveTier(meta?.plan, meta?.role)
+
+    const matched = PROTECTED_ROUTES.find(r => pathname.startsWith(r.path))
+
+    if (matched && !can(tier, matched.permission)) {
+      // /unauthorized?from=/graph гэх мэт redirect
+      const url = new URL('/unauthorized', request.url)
+      url.searchParams.set('from', pathname)
+      url.searchParams.set('tier', tier)
+      return NextResponse.redirect(url)
+    }
   }
 
   return response
@@ -85,14 +96,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico, manifest.json (metadata files)
-     * - Images (svg, png, jpg, etc.)
-     * - Service Worker (sw.js, workbox, etc.)
-     */
     '/((?!_next/static|_next/image|favicon.ico|manifest.json|sw.js|workbox|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }

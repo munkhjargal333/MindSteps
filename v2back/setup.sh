@@ -5,6 +5,11 @@ echo "================================"
 echo "  MindSteps Server Setup"
 echo "================================"
 
+# OS тодорхойлох
+. /etc/os-release
+OS_ID=$ID
+echo "  Илэрсэн OS: $PRETTY_NAME"
+
 # 1. System update
 echo ""
 echo "[ 1/7 ] System update..."
@@ -24,12 +29,20 @@ sudo apt-get install -y -qq \
 echo ""
 echo "[ 3/7 ] Docker суулгаж байна..."
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+
+# Ubuntu эсвэл Debian гэж OS-г ялгана
+if [ "$OS_ID" = "ubuntu" ]; then
+  DOCKER_DISTRO="ubuntu"
+else
+  DOCKER_DISTRO="debian"
+fi
+
+curl -fsSL https://download.docker.com/linux/${DOCKER_DISTRO}/gpg | \
   sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-  https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | \
+  https://download.docker.com/linux/${DOCKER_DISTRO} ${VERSION_CODENAME} stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 sudo apt-get update -qq
@@ -46,13 +59,12 @@ sudo systemctl start docker
 
 echo "  Docker $(docker --version)"
 
-# 4. Oracle idle-аас хамгаалах
+# 4. Keepalive
 echo ""
 echo "[ 4/7 ] Keepalive тохируулж байна..."
 sudo sysctl vm.overcommit_memory=1
 echo 'vm.overcommit_memory = 1' | sudo tee -a /etc/sysctl.conf
 
-# Cron keepalive
 (crontab -l 2>/dev/null; echo "*/5 * * * * curl -s http://localhost:8000/health > /dev/null 2>&1") | crontab -
 (crontab -l 2>/dev/null; echo "*/3 * * * * ping -c 1 8.8.8.8 > /dev/null 2>&1") | crontab -
 echo "  Keepalive cron бэлэн"
@@ -72,16 +84,23 @@ fi
 # 6. .env үүсгэх
 echo ""
 echo "[ 6/7 ] .env тохиргоо..."
+cd ~/MindSteps/v2back
 if [ ! -f ".env" ]; then
-  cp .env.example .env
-  echo "  .env үүсгэгдлээ — nano .env-ээр утгуудаа оруул"
+  if [ -f ".env.example" ]; then
+    cp .env.example .env
+    echo "  .env үүсгэгдлээ — nano .env-ээр утгуудаа оруул"
+  else
+    touch .env
+    echo "  Хоосон .env үүсгэгдлээ — nano .env-ээр утгуудаа оруул"
+  fi
 else
   echo "  .env аль хэдийн байна"
 fi
 
 # 7. Docker image татах
 echo ""
-echo "[ 7/7 ] Docker image-уудыг татаж байна..."
+echo "[ 7/7 ] Docker image татаж байна..."
+cd ~/MindSteps/v2back
 docker compose pull 2>/dev/null || true
 docker pull redis:7-alpine
 
@@ -91,8 +110,8 @@ echo "  Бүгд бэлэн болоо!"
 echo "================================"
 echo ""
 echo "Дараагийн алхам:"
-echo "  1. nano ~/MindSteps/.env   ← API key-уудаа оруул"
-echo "  2. cd ~/MindSteps"
+echo "  1. nano ~/MindSteps/v2back/.env   ← API key-уудаа оруул"
+echo "  2. cd ~/MindSteps/v2back"
 echo "  3. docker compose up --build -d"
 echo "  4. docker compose logs -f"
 echo ""

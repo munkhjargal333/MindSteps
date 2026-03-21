@@ -1,12 +1,6 @@
 import type { SessionData, SeedInsight } from '../../types/types';
+import type { ThoughtContextValue } from '@/contexts/context';
 import { createEntry, demoSeedInsight } from './journalBackend';
-
-// ─── Config ───────────────────────────────────────────────────
-
-export interface ApiConfig {
-  apiBase?: string;
-  token?: string | null;
-}
 
 // ─── Result ───────────────────────────────────────────────────
 
@@ -21,7 +15,7 @@ export interface AnalyzeResult {
 
 export async function analyzeSession(
   session: SessionData,
-  config: ApiConfig,
+  config: ThoughtContextValue,
 ): Promise<AnalyzeResult> {
   if (config.token) {
     const result = await createEntry(config.token, {
