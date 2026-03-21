@@ -80,7 +80,7 @@ def run_analysis_job(
     try:
         ewma = journal.get_user_ewma(user_id)
         result = run_async(
-            get_llm_service().analyze_entry(
+            get_llm_service().run_analysis(
                 ewma_previous=ewma, **entry_text
             )
         )
@@ -91,6 +91,8 @@ def run_analysis_job(
                 redis, entry_id, "crisis",
                 "Мэргэжлийн тусламж авахыг зөвлөж байна",
             )
+
+        print(f"Analysis result: {result}")
 
         journal.save_analysis(entry_id, result)
         journal.update_value_nodes(user_id, result, entry_id)

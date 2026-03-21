@@ -53,7 +53,7 @@ class LlmAnalysisResult(BaseModel):
     maslow: list[dict]
     plutchik: PlutchikResult
     hawkins: HawkinsResult
-    seed_insight: SeedInsightData
+    # seed_insight: SeedInsightData
 
 
 # ── Deep Insight ─────────────────────────────────────────────────────────────

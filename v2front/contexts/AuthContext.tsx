@@ -160,10 +160,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       if (error) {
-        // Whitelist-д байхгүй email
         if (error.message.includes('not authorized') || 
             error.message.includes('Signup Error')) {
-          router.push('/join');
+          router.push('/login');
           return;
         }
         throw error;

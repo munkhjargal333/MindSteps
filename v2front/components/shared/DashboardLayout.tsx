@@ -3,30 +3,29 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
 import {
-  Sunrise,
-  BookOpen,
-  BarChart2,
-  Sparkles,
-  Network,
-  Settings,
-  LogOut,
-  Zap,
-  Menu,
-  X,
+  Sunrise, BookOpen, BarChart2, Sparkles,
+  Network, Settings, LogOut, Zap, Menu, X, Lock,
 } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { useThoughtContext } from '@/contexts/context';
+import { can, TIER_LABEL, type Permission } from '@/lib/permissions';
 
-const NAV_ITEMS = [
-  { href: '/quick',     label: 'Тэмдэглэл',   icon: Zap        },
-  { href: '/entries',   label: 'Бичлэгүүд',   icon: BookOpen   },
-  { href: '/insights',  label: 'Insight',      icon: Sparkles   },
-  { href: '/emotions',  label: 'Сэтгэл',       icon: BarChart2  },
-  { href: '/graph',     label: 'Граф',         icon: Network    },
-] as const;
+const NAV_ITEMS: {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  permission?: Permission;
+}[] = [
+  { href: '/quick',    label: 'Тэмдэглэл', icon: Zap                              },
+  { href: '/entries',  label: 'Бичлэгүүд', icon: BookOpen                         },
+  { href: '/insights', label: 'Зөвлөмж',   icon: Sparkles, permission: 'view_insights' },
+  { href: '/emotions', label: 'Сэтгэл',    icon: BarChart2, permission: 'view_emotions' },
+  { href: '/graph',    label: 'Граф',       icon: Network,  permission: 'view_graph'    },
+];
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -35,9 +34,69 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { tier } = useThoughtContext();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isAdmin = user?.user_metadata?.role === 'admin';
+  const isAdmin = tier === 'admin';
+
+  function NavLink({
+    href,
+    label,
+    icon: Icon,
+    permission,
+    mobile = false,
+    onClick,
+  }: {
+    href: string;
+    label: string;
+    icon: React.ElementType;
+    permission?: Permission;
+    mobile?: boolean;
+    onClick?: () => void;
+  }) {
+    const allowed = !permission || can(tier, permission);
+    const active = pathname === href || pathname.startsWith(`${href}/`);
+    const requiredTier = permission
+      ? Object.entries({ view_graph: 'premium', view_insights: 'pro', view_emotions: 'pro' })
+          .find(([k]) => k === permission)?.[1]
+      : undefined;
+
+    const base = mobile
+      ? 'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors'
+      : 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors';
+
+    if (!allowed) {
+      return (
+        <div
+          className={cn(base, 'text-muted-foreground/40 cursor-not-allowed select-none')}
+          title={`${TIER_LABEL[requiredTier ?? ''] ?? 'PRO'} шаардлагатай`}
+        >
+          <Icon size={mobile ? 16 : 16} className="shrink-0" />
+          <span className="flex-1">{label}</span>
+          <span className="flex items-center gap-1 text-[10px] bg-muted px-1.5 py-0.5 rounded font-semibold tracking-wide">
+            <Lock size={9} />
+            {TIER_LABEL[requiredTier ?? ''] ?? 'PRO'}
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        href={href}
+        onClick={onClick}
+        className={cn(
+          base,
+          active
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground hover:text-foreground hover:bg-muted/60',
+        )}
+      >
+        <Icon size={16} className="shrink-0" />
+        {label}
+      </Link>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -51,24 +110,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || pathname.startsWith(`${href}/`);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
-                  active
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                )}
-              >
-                <Icon size={16} />
-                {label}
-              </Link>
-            );
-          })}
+          {NAV_ITEMS.map((item) => (
+            <NavLink key={item.href} {...item} />
+          ))}
 
           {isAdmin && (
             <Link
@@ -77,7 +121,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
                 pathname.startsWith('/admin')
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/60',
               )}
             >
               <Settings size={16} />
@@ -103,6 +147,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {user?.email && (
             <p className="text-[11px] text-muted-foreground/60 px-3 truncate">{user.email}</p>
           )}
+          {/* Tier badge */}
+          <p className="text-[11px] text-muted-foreground/50 px-3 uppercase tracking-widest">
+            {tier}
+          </p>
         </div>
       </aside>
 
@@ -135,25 +183,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             className="absolute top-14 inset-x-0 bg-card border-b shadow-lg px-4 py-3 space-y-1"
             onClick={(e) => e.stopPropagation()}
           >
-            {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-              const active = pathname === href || pathname.startsWith(`${href}/`);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors',
-                    active
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
-                  )}
-                >
-                  <Icon size={16} />
-                  {label}
-                </Link>
-              );
-            })}
+            {NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.href}
+                {...item}
+                mobile
+                onClick={() => setMobileOpen(false)}
+              />
+            ))}
             {isAdmin && (
               <Link
                 href="/admin"

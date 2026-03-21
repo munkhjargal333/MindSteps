@@ -135,10 +135,10 @@ class JournalService:
             self._db.table("journal_analyses")
             .select(
                 "hawkins_level,"
-                "journal_entries!inner(user_id, created_at)"
+                "journal_entries!inner(user_id)"
             )
             .eq("journal_entries.user_id", user_id)
-            .order("journal_entries.created_at", desc=True)
+            .order("processed_at", desc=True)  # ← засвар
             .limit(10)
             .execute()
         ).data or []
