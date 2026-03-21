@@ -31,7 +31,6 @@ def publish(
         data["data"] = payload
     redis.publish(channel, json.dumps(data, ensure_ascii=False))
 
-
 def _to_float(v) -> float:
     try:
         return float(v)
@@ -48,38 +47,6 @@ def top_maslow_categories(maslow: list, limit: int = 2) -> list[str]:
                 _to_float(v)
                 for d in item.get("values", [])
                 for v in d.values()
-            ),
-        )
-        for item in maslow
-    ]
-    scored.sort(key=lambda x: x[1], reverse=True)
-    return [c for c, _ in scored[:limit]]
-    """Хамгийн өндөр confidence-тай N Maslow category буцаана."""
-    scored = [
-        (
-            item.get("category", ""),
-            sum(
-                float(v)
-                for d in item.get("values", [])
-                for v in d.values()
-                if v is not None
-                try float(v) except (TypeError, ValueError) 0.0
-            ),
-        )
-        for item in maslow
-    ]
-    scored.sort(key=lambda x: x[1], reverse=True)
-    return [c for c, _ in scored[:limit]]
-    """Хамгийн өндөр confidence-тай N Maslow category буцаана."""
-    scored = [
-        (
-            item.get("category", ""),
-            sum(
-                float(v)
-                for d in item.get("values", [])
-                for v in d.values()
-                if v is not None
-                try float(v) except (TypeError, ValueError) 0.0
             ),
         )
         for item in maslow
