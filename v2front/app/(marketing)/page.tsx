@@ -1,12 +1,13 @@
 'use client'
 
+import Link from 'next/link'
 import { Sunrise, ArrowRight, Eye, Zap, Sparkles, Brain, Heart, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MainHeader } from '@/components/shared/MainHeader'
 import { ProblemCard } from './_components/ProblemCard'
 import { HowItWorksCard } from './_components/HowItWorksCard'
 import { FeatureCard } from './_components/FeatureCard'
-import { WhoForItem, WhoNotForItem } from './_components/WhoForItems'
+import { WhoItem } from './_components/WhoItem'
 
 export default function LandingPage() {
   return (
@@ -14,52 +15,74 @@ export default function LandingPage() {
       <MainHeader />
 
       <main>
-        {/* Hero */}
+        {/* ───────────────────────────────────────────
+            HERO
+            A/B варианты:
+              Variant A (одоогийн): "Таны тэмдэглэл / таны сэтгэл санааны толь."
+              Variant B (шинэ):     "Өдөр бүр 90 секунд. / Өөрийгөө ойлгож эхэл."
+            Доорх нь Variant B — илүү конкрет, үйлдэл уриалсан
+        ─────────────────────────────────────────── */}
         <section className="container max-w-3xl mx-auto px-4 py-20 md:py-32">
           <div className="text-center space-y-6 md:space-y-8">
             <div className="space-y-3">
               <p className="text-lg uppercase tracking-wider text-amber-500 dark:text-amber-400 font-semibold">
                 Ухаалаг тэмдэглэлийн дэвтэр
               </p>
+
+              {/* VARIANT B HEADLINE — shorter, action-oriented */}
               <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-                Таны тэмдэглэл
+                Өдөр бүр 90 секунд.
                 <br />
-                <span className="text-muted-foreground">таны сэтгэл санааны толь.</span>
+                <span className="text-muted-foreground">Өөрийгөө ойлгож эхэл.</span>
               </h1>
+
+              {/* VARIANT B SUBTITLE — юу хийх / яагаад / ямар үр дүн гурвыг нэг мөрөнд */}
               <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-                Өдөр бүрийн бодлоо тэмдэглэж, сэтгэл хөдлөл, хэрэгцээгээ ойлго.
-                MindSteps танд давтагдах хэв маягийг илрүүлж, ухамсартай амьдрахад туслана.
+                Давтагддаг бодол, мэдрэмж, дотоод хэрэгцээгээ бич.
+                MindSteps хэв маягийг илрүүлж, яагаад гэдгийг тайлбарлана.
               </p>
             </div>
 
+            {/* CTA хос — primary нь demo, secondary нь нэвтрэх */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
               <Button asChild size="lg" className="w-full sm:w-auto">
-                <a href="/demo">
-                  Үнэгүй турших <ArrowRight className="w-4 h-4 ml-2" />
-                </a>
+                <Link href="/demo" prefetch>
+                  Үнэгүй эхлэх <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                <a href="/login">Нэвтрэх</a>
+                <Link href="/login">Нэвтрэх</Link>
               </Button>
             </div>
+
+            {/* Friction бууруулах micro-copy */}
+            <p className="text-xs text-muted-foreground">
+              Бүртгэл шаардахгүй · Үнэгүй · 90 секунд
+            </p>
           </div>
         </section>
 
-        {/* Problem Statement */}
+        {/* ───────────────────────────────────────────
+            PROBLEM STATEMENT
+            Одоогийнх аль хэдийн маш сайн (9.5/10).
+            Гарчгийг бага зэрэг хурцалсан; cards-ийг хэвээр орхив.
+        ─────────────────────────────────────────── */}
         <section className="border-t">
           <div className="container max-w-4xl mx-auto px-4 py-16 md:py-24">
             <div className="max-w-2xl mx-auto space-y-8 md:space-y-12">
               <div className="space-y-3 md:space-y-4">
+                {/* HOOK — тоог тод байлгав, асуултыг илүү шууд болгов */}
                 <h2 className="text-3xl md:text-4xl font-bold leading-tight">
-                  Өнөөдрийн бодол өчигдрийн бодлын{' '}
+                  Өнөөдрийн бодлын{' '}
                   <span className="underline decoration-orange-500 decoration-2 underline-offset-4">
                     90%
-                  </span>
-                  -ийг агуулдаг
+                  </span>{' '}
+                  өчигдрийн давталт.
                 </h2>
                 <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                  Тоолж барамгүй олон удаа давтагдаад байгаа энэ бодлыг чи мэдэх үү?
-                  Хэрвээ санахгүй байгаа бол та өөрийнхөө талаар тийм ч сайн мэддэггүй гэсэн үг.
+                  Ижил бодол. Ижил мэдрэмж. Ижил хариу үйлдэл.
+                  Хэрвээ энэ давталт байгааг мэдэхгүй байгаа бол —
+                  өөрийнхөө талаар тийм ч ихийг мэдэхгүй байна.
                 </p>
               </div>
 
@@ -84,62 +107,92 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* How It Works */}
+        {/* ───────────────────────────────────────────
+            HOW IT WORKS
+            Одоогийнх generic (8/10).
+            Алхам бүрийг товч, үйл үгтэй болгов.
+            Хугацааны indicator нэмсэн нь "90 секунд" messaging-тэй уялдана.
+        ─────────────────────────────────────────── */}
         <section className="border-t bg-muted/30">
           <div className="container max-w-5xl mx-auto px-4 py-16 md:py-24">
-            <div className="text-center mb-12 md:mb-16">
+            <div className="text-center mb-12 md:mb-16 space-y-2">
               <h2 className="text-3xl md:text-4xl font-bold">Хэрхэн ажилладаг вэ?</h2>
+              {/* Sub-headline нэмж context өгөв */}
+              <p className="text-muted-foreground text-base">
+                Өдөр бүр 4 алхам. Нийт 90 секунд.
+              </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
               <HowItWorksCard
-                step="01"
+                step={1}
                 icon={Eye}
-                title="Ажиглах"
-                description="Өдөр бүр давтагддаг бодол, мэдрэмжээ товч тэмдэглэх. 90 секунд хангалттай"
+                title="Бич"
+                description="Өдрийн давтагдаж байсан бодол, мэдрэмжийг товч тэмдэглэ. 90 секунд хангалттай."
               />
               <HowItWorksCard
-                step="02"
+                step={2}
                 icon={Zap}
-                title="Холбох"
-                description="Давтагдаж байгаа зүйлс хоорондоо хэрхэн холбогдож байгааг анзаарах"
+                title="Давталтыг ол"
+                description="MindSteps тэмдэглэлүүдийн хооронд ямар хэв маяг байгааг автоматаар харуулна."
               />
               <HowItWorksCard
-                step="03"
+                step={3}
                 icon={Sparkles}
-                title="Орон зай"
-                description="Бодол, мэдрэмждээ шууд хариу үйлдэл хийхгүй байх орон зай бий болгоно"
+                title="Шалтгааныг хар"
+                description="Яагаад тэр мэдрэмж үүсдэг, ямар хэрэгцээ цаана байгааг ойлгож эхэл."
+              />
+              <HowItWorksCard
+                step={4}
+                icon={Brain}
+                title="Өөрчлөгдөж эхэл"
+                description="Хэв маягаа мэдсэн тэр мөчөөс автомат биш, ухамсартай хариу үйлдэл гаргаж эхэлнэ."
               />
             </div>
           </div>
         </section>
 
-        {/* Features */}
+        {/* ───────────────────────────────────────────
+            FEATURES
+            Гарчгийг "Ямар үр дүнтэй вэ?" → "Та юу ойлгож эхлэх вэ?"
+            Card copy-г outcomes-oriented болгов (feature → benefit).
+        ─────────────────────────────────────────── */}
         <section className="border-t">
           <div className="container max-w-5xl mx-auto px-4 py-16 md:py-24">
-            <div className="text-center mb-12 md:mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold">Юу хийж болох вэ?</h2>
+            <div className="text-center mb-12 md:mb-16 space-y-2">
+              {/* VARIANT B SECTION TITLE */}
+              <h2 className="text-3xl md:text-4xl font-bold">Та юу ойлгож эхлэх вэ?</h2>
+              <p className="text-muted-foreground text-base">
+                Зөвхөн тэмдэглэл биш — өөрийнхөө зургийг бүтнээр нь хар.
+              </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
               <FeatureCard
                 icon={Brain}
-                title="Тодорхой байдал"
-                description="Толгойд эргэлддэг бодлуудаа цэгцтэй харах."
+                title="Ямар бодол давтагдаж байгааг"
+                description="Тэмдэглэлүүдийг нэгтгэж, гурав ч, арав ч давтагдсан хэв маягийг нүдэнд үзүүлнэ."
               />
               <FeatureCard
-                icon={Eye}
-                title="Автомат биш, сонголттой болох"
-                description="Автомат биш, сонголттой болох."
+                icon={Heart}
+                title="Яагаад уурлаж, гуниглаж байгааг"
+                description="Сэтгэл хөдлөлийн триггер — тодорхой нөхцөл, хүн, цаг — харагдаж эхэлнэ."
+              />
+              <FeatureCard
+                icon={Sparkles}
+                title="Цаана нь ямар хэрэгцээ байгааг"
+                description="Уур, айдас, гунигийн цаана ямар биелэгдээгүй хэрэгцээ байдгийг тодруулна."
               />
               <FeatureCard
                 icon={BookOpen}
-                title="Өөрийгөө буруутгахгүй ойлгох"
-                description="Өөрийгөө буруутгахгүй ойлгох."
+                title="Бодол яагаад тойрч байгааг"
+                description="Шийдэгдээгүй асуудлууд бичигдэх тусам тодорхой болж, тойрох нь зогсдог."
               />
             </div>
           </div>
         </section>
 
-        {/* Who It's For */}
+        {/* ───────────────────────────────────────────
+            WHO IT'S FOR — 10/10, хэвээр үлдээв
+        ─────────────────────────────────────────── */}
         <section className="border-t bg-muted/30">
           <div className="container max-w-4xl mx-auto px-4 py-16 md:py-24">
             <div className="text-center mb-12 md:mb-16">
@@ -152,20 +205,20 @@ export default function LandingPage() {
             <div className="grid md:grid-cols-2 gap-6 md:gap-8">
               <div className="space-y-4">
                 <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6">✓ Зориулагдсан</h3>
-                <WhoForItem text="Амьдралын утга хайж байгаа хүмүүс" />
-                <WhoForItem text="Өөрийгөө таних хүсэлтэй" />
-                <WhoForItem text="Зан төлөв, бодлын хэв маягаа үнэхээр ойлгомоор байгаа" />
-                <WhoForItem text="16-аас дээш насны хүмүүс" />
+                <WhoItem variant="for" text="Амьдралын утга хайж байгаа хүмүүс" />
+                <WhoItem variant="for" text="Өөрийгөө таних хүсэлтэй" />
+                <WhoItem variant="for" text="Зан төлөв, бодлын хэв маягаа үнэхээр ойлгомоор байгаа" />
+                <WhoItem variant="for" text="16-аас дээш насны хүмүүс" />
               </div>
 
               <div className="space-y-4">
                 <h3 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-muted-foreground">
                   ✕ Зориулагдаагүй
                 </h3>
-                <WhoNotForItem text="Сэтгэцийн эмчилгээ хийлгэж байгаа" />
-                <WhoNotForItem text="16 хүрээгүй хүүхдүүд" />
-                <WhoNotForItem text="Шуурхай, богино хугацаанд бүхнийг шийдэхийг хүсэж байгаа" />
-                <WhoNotForItem text="Хүчтэй сэтгэл хөдлөлийн хямрал дунд байгаа" />
+                <WhoItem variant="not" text="Сэтгэцийн эмчилгээ хийлгэж байгаа" />
+                <WhoItem variant="not" text="16 хүрээгүй хүүхдүүд" />
+                <WhoItem variant="not" text="Шуурхай, богино хугацаанд бүхнийг шийдэхийг хүсэж байгаа" />
+                <WhoItem variant="not" text="Хүчтэй сэтгэл хөдлөлийн хямрал дунд байгаа" />
               </div>
             </div>
 
@@ -180,49 +233,69 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* CTA */}
+        {/* ───────────────────────────────────────────
+            CTA
+            Одоогийнх poetic (9/10).
+            Variant B: тоог дахин давтаж urgency + specificity нэмэв.
+            "Үнэгүй эхлэх" нь "Үнэгүй турших"-аас илүү commitment feel-тэй.
+        ─────────────────────────────────────────── */}
         <section className="border-t">
-          <div className="container max-w-2xl mx-auto px-4 py-20 md:py-32 text-center">
-            <div className="space-y-6 md:space-y-8">
-              <div>
-                <Sunrise className="w-10 h-10 md:w-12 md:h-12 text-orange-500 mx-auto mb-4 md:mb-6" />
-                <h2 className="text-3xl md:text-5xl font-bold mb-3 md:mb-4">
-                  Өөрийгөө илүү тодорхой харж эхэлье
+          <div className="container max-w-3xl mx-auto px-4 py-20 md:py-32">
+            <div className="text-center space-y-6 md:space-y-8">
+              <div className="space-y-3">
+                <p className="text-lg uppercase tracking-wider text-amber-500 dark:text-amber-400 font-semibold">
+                  Эхлэх цаг нь болсон
+                </p>
+
+                {/* VARIANT B CTA HEADLINE — тоог ашиглаж specificity өгөв */}
+                <h2 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
+                  Өөрийгөө ойлгоход
+                  <br />
+                  <span className="text-muted-foreground">90 секунд хангалттай.</span>
                 </h2>
-                <p className="text-base md:text-lg text-muted-foreground">
-                  Эхний алхмаа үнэгүй хийгээд үз. Хэрэв энэ орон зай танд тохирвол, илүү гүн
-                  шатанд нэгдэх боломж нээлттэй.
+
+                {/* VARIANT B CTA SUBTITLE — outcome + action */}
+                <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+                  Өдөр бүр нэг тэмдэглэл.
+                  Долоо хоногт давтагдах хэв маяг.
+                  Сараар — өөрийгөө шинээр харах.
                 </p>
               </div>
+
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
                 <Button asChild size="lg" className="w-full sm:w-auto">
-                  <a href="/demo">
-                    Үнэгүй турших <ArrowRight className="w-4 h-4 ml-2" />
-                  </a>
+                  <Link href="/demo" prefetch>
+                    Үнэгүй эхлэх <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                  <a href="/login">Нэвтрэх</a>
+                  <Link href="/login">Нэвтрэх</Link>
                 </Button>
               </div>
+
+              {/* Friction бууруулах micro-copy */}
+              <p className="text-xs text-muted-foreground">
+                Бүртгэл шаардахгүй · Кредит карт шаардахгүй · Хэдийд ч зогсоож болно
+              </p>
             </div>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
+      {/* Footer — хэвээр */}
       <footer className="border-t bg-background">
         <div className="container max-w-5xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
-              <Sunrise className="w-5 h-5 text-orange-500" />
+              <Sunrise className="w-5 h-5 text-orange-500" aria-hidden="true" />
               <span className="font-semibold">MindSteps</span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
-              <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
-              <a href="/join" className="hover:text-foreground transition-colors">Join</a>
+              <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+              <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+              <Link href="/join" className="hover:text-foreground transition-colors">Join</Link>
             </div>
-            <p className="text-sm text-muted-foreground">© 2026 MindSteps</p>
+            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} MindSteps</p>
           </div>
         </div>
       </footer>

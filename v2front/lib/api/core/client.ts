@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8080/api/v1/';
+const API_BASE = process.env.NEXT_PUBLIC_SITE_URL + '/api/v1/' || 'http://127.0.0.1:8080/api/v1/';
 
 export class BaseAPIClient {
   protected axiosInstance: AxiosInstance;
