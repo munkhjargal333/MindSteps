@@ -27,17 +27,6 @@ export interface ActionConfig {
 export const ALL_ACTIONS: ActionConfig[] = [
   // ── FREE (4) ──────────────────────────────────────────────
   {
-    type: 'gratitude',
-    label: 'Талархал',
-    sub: 'Сайхныг олж харах',
-    insightLabel: 'Гүн талархах',
-    icon: Heart,
-    tier: 'free',
-    color: 'text-rose-500 dark:text-rose-400',
-    bg: 'bg-rose-50 dark:bg-rose-950/20',
-    ring: 'ring-rose-200 dark:ring-rose-800',
-  },
-  {
     type: 'stress',
     label: 'Стресс',
     sub: 'Түгшүүрээ багасгах',
@@ -70,6 +59,17 @@ export const ALL_ACTIONS: ActionConfig[] = [
     bg: 'bg-sky-50 dark:bg-sky-950/20',
     ring: 'ring-sky-200 dark:ring-sky-800',
   },
+  {
+    type: 'fear',
+    label: 'Айдас',
+    sub: 'Аюулгүй болгох',
+    insightLabel: 'Айдасыг нэрлэх',
+    icon: Shield,
+    tier: 'pro',
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bg: 'bg-indigo-50 dark:bg-indigo-950/20',
+    ring: 'ring-indigo-200 dark:ring-indigo-800',
+  },
 
 
   // ── PRO (4+, нэмэгдэх боломжтой) ─────────────────────────
@@ -79,7 +79,7 @@ export const ALL_ACTIONS: ActionConfig[] = [
     sub: 'Чиглэлээ тодорхойлох',
     insightLabel: 'Утга учир харах',
     icon: Target,
-    tier: 'pro',
+    tier: 'free',
     color: 'text-violet-600 dark:text-violet-400',
     bg: 'bg-violet-50 dark:bg-violet-950/20',
     ring: 'ring-violet-200 dark:ring-violet-800',
@@ -96,16 +96,17 @@ export const ALL_ACTIONS: ActionConfig[] = [
     ring: 'ring-teal-200 dark:ring-teal-800',
   },
   {
-    type: 'fear',
-    label: 'Айдас',
-    sub: 'Аюулгүй болгох',
-    insightLabel: 'Айдасыг нэрлэх',
-    icon: Shield,
+    type: 'gratitude',
+    label: 'Талархал',
+    sub: 'Сайхныг олж харах',
+    insightLabel: 'Гүн талархах',
+    icon: Heart,
     tier: 'pro',
-    color: 'text-indigo-600 dark:text-indigo-400',
-    bg: 'bg-indigo-50 dark:bg-indigo-950/20',
-    ring: 'ring-indigo-200 dark:ring-indigo-800',
+    color: 'text-rose-500 dark:text-rose-400',
+    bg: 'bg-rose-50 dark:bg-rose-950/20',
+    ring: 'ring-rose-200 dark:ring-rose-800',
   },
+
   {
     type: 'joy',
     label: 'Баяр',
@@ -173,18 +174,33 @@ export const STEP_CONFIG: Record<string, StepCopy> = {
     },
   },
 
-  gratitude: {
+  fear: {
     surface: {
-      q: 'Өнөөдөр жижиг ч гэсэн чамд талархмаар, сайхан санагдсан зүйл юу байв?',
-      placeholder: 'дулаахан яриа, амттай хоол, бүтсэн ажил, хэн нэгний тусламж...',
+      q: 'Сүүлийн үед зүрхийг чинь шахаад, дахин дахин санаанд орж ирдэг айдас юу байна?',
+      placeholder: 'хэн нэгнийг алдах, бүтэлгүйтэх, хяналтаасаа гарах, нэг л өдөр бүх зүйл нурах...',
     },
     inner: {
-      q: 'Тэр сайхан мэдрэмж төрөх үед чи үүнийгээ хэрхэн илэрхийлсэн/хүлээж авсан бэ?',
-      placeholder: 'инээмсэглэх, хүнд баярлалаа гэж хэлэх, гүнзгий амьсгаа авах, дотроо хадгалах...',
+      q: 'Тэр айдас дөхөж ирэх үед чи ихэвчлэн өөрийгөө аргалахын тулд юу хийхийг оролддог вэ?',
+      placeholder: 'хэт их бэлтгэх, тооцоолох, бодохоос зайлсхийх, хүнд хэлэхгүй дотроо тээх...',
     },
     meaning: {
-      q: 'Энэ үйл явдал чамд амьдралд чинь аль хэдийнэ байгаа ямар үнэ цэнийг сануулж байна вэ?',
-      placeholder: 'би хангалттай байгаагаа, хайрлагдаж байгаагаа, эрүүл байгаагаа...',
+      q: 'Яг үнэндээ тэрхүү айдасны цаана чи юуг аюулгүй, бүрэн байгаасай гэж хүсэж байгаа юм шиг санагддаг вэ?',
+      placeholder: 'өөртөө итгэх, хайртай хүмүүсээ хамгаалах, ирээдүйгээ мэдэх, буруу гарахгүй байх...',
+    },
+  },
+
+  purpose: {
+    surface: {
+      q: 'Сүүлийн үед юуг учиргүй гэж мэдэрч байна?',
+      placeholder: 'ажил, өдөр, зүтгэл...',
+    },
+    inner: {
+      q: 'Тэр үед чи ихэвчлэн юу хийхийг оролддог вэ?',
+      placeholder: 'завгүй болох, гадагш хайх, хэт бодох...',
+    },
+    meaning: {
+      q: 'Чамд яг ямар амьдрал утга учиртай санагдаж байгаа юм шиг байна вэ?',
+      placeholder: 'үр дүн, хувь нэмэр, өсөлт...',
     },
   },
 
@@ -203,20 +219,22 @@ export const STEP_CONFIG: Record<string, StepCopy> = {
     },
   },
 
-  purpose: {
+  gratitude: {
     surface: {
-      q: 'Сүүлийн үед юуг учиргүй гэж мэдэрч байна?',
-      placeholder: 'ажил, өдөр, зүтгэл...',
+      q: 'Өнөөдөр жижиг ч гэсэн чамд талархмаар, сайхан санагдсан зүйл юу байв?',
+      placeholder: 'дулаахан яриа, амттай хоол, бүтсэн ажил, хэн нэгний тусламж...',
     },
     inner: {
-      q: 'Тэр үед чи ихэвчлэн юу хийхийг оролддог вэ?',
-      placeholder: 'завгүй болох, гадагш хайх, хэт бодох...',
+      q: 'Тэр сайхан мэдрэмж төрөх үед чи үүнийгээ хэрхэн илэрхийлсэн/хүлээж авсан бэ?',
+      placeholder: 'инээмсэглэх, хүнд баярлалаа гэж хэлэх, гүнзгий амьсгаа авах, дотроо хадгалах...',
     },
     meaning: {
-      q: 'Чамд яг ямар амьдрал утга учиртай санагдаж байгаа юм шиг байна вэ?',
-      placeholder: 'үр дүн, хувь нэмэр, өсөлт...',
+      q: 'Энэ үйл явдал чамд амьдралд чинь аль хэдийнэ байгаа ямар үнэ цэнийг сануулж байна вэ?',
+      placeholder: 'би хангалттай байгаагаа, хайрлагдаж байгаагаа, эрүүл байгаагаа...',
     },
   },
+
+
   values: {
     surface: {
       q: 'Сүүлд ямар зүйл буруу мэт санагдаж байсан бэ?',
@@ -231,20 +249,7 @@ export const STEP_CONFIG: Record<string, StepCopy> = {
       placeholder: 'үнэнч байдал, шударга байдал, хайр...',
     },
   },
-  fear: {
-    surface: {
-      q: 'Сүүлийн үед толгой эргүүлээд байгаа зүйл юу байна?',
-      placeholder: 'ирээдүй, алдах, буруутгах...',
-    },
-    inner: {
-      q: 'Тэр үед чи ихэвчлэн юу хийхийг оролддог вэ?',
-      placeholder: 'бэлтгэх, тооцох, зайлсхийх, хяналт...',
-    },
-    meaning: {
-      q: 'Чи яг юу аюулгүй байгаасай гэж хүсээд байгаа юм шиг санагддаг вэ?',
-      placeholder: 'өөрийгөө, хүмүүсээ, ирээдүйгээ...',
-    },
-  },
+
   joy: {
     surface: {
       q: 'Сүүлд юу чамайг гэнэт баярлуулсан бэ?',
@@ -273,21 +278,21 @@ export const INSIGHT_CARDS = [
   {
     key: 'mirror'  as const,
     label: 'Mirror',
-    sub: 'Чиний хэлснийг тусгавал',
+    sub: '🫂 Чи дангаараа биш',
     dot: 'bg-blue-400',
     bg: 'bg-blue-50/60 dark:bg-blue-950/15',
   },
   {
     key: 'reframe' as const,
     label: 'Reframe',
-    sub: 'Өнцгийг эргүүлэвэл',
+    sub: '🌀 Өөр өнцгөөс харвал',
     dot: 'bg-violet-400',
     bg: 'bg-violet-50/60 dark:bg-violet-950/15',
   },
   {
     key: 'relief'  as const,
     label: 'Relief',
-    sub: 'Ачааг хөнгөлөвөл',
+    sub: '🌱 Дотоод хүч чинь байсаар',
     dot: 'bg-emerald-400',
     bg: 'bg-emerald-50/60 dark:bg-emerald-950/15',
   },

@@ -11,7 +11,6 @@ interface Props {
   analyzing: boolean;
   result: AnalyzeResult | null;
   error: string | null;
-  /** Эх component-с runAnalysis дуудагдана (useEffect trigger) */
   onMount: (session: SessionData) => void;
 }
 
@@ -25,24 +24,33 @@ export function SeedInsightStep({
   useEffect(() => {
     onMount(session);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Зөвхөн нэг удаа mount дээр
+  }, []);
 
   const actionCfg = ACTION_MAP[session.actionType];
   const Icon = actionCfg.icon;
 
   return (
     <div className="space-y-8">
+
       {/* Header */}
-      <div className="space-y-1.5">
-        {/* <div className={cn(
-          'inline-flex items-center gap-2 px-3 py-1.5 rounded-full',
-          'text-[11px] font-bold uppercase tracking-widest',
-          actionCfg.bg, actionCfg.color,
-        )}>
-          <Icon size={11} />
-          {actionCfg.label}
-        </div> */}
-        <h2 className="text-xl font-bold">Seed Insight</h2>
+      <div className="relative flex flex-col items-center text-center gap-3 pt-2 pb-1">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full bg-primary/8 blur-2xl pointer-events-none" />
+
+        <div className="space-y-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-yellow-500/70">
+            Дотоод түлхэц
+          </p>
+          <h2 className="text-xl font-bold tracking-tight text-foreground/90 leading-snug">
+            Таны туршлагаас<br />
+            <span className="text-primary/70">харагдаж буй зүйл</span>
+          </h2>
+        </div>
+
+        <div className="flex items-center gap-2 w-full max-w-[140px]">
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent to-muted-foreground/15" />
+          <div className="w-1 h-1 rounded-full bg-muted-foreground/20" />
+          <div className="flex-1 h-px bg-gradient-to-l from-transparent to-muted-foreground/15" />
+        </div>
       </div>
 
       {/* Loading skeleton */}
@@ -88,9 +96,6 @@ export function SeedInsightStep({
             >
               <div className="flex items-center gap-2 mb-3">
                 <div className={cn('w-2 h-2 rounded-full', card.dot)} />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-                  {card.label}
-                </span>
                 <span className="text-[10px] text-muted-foreground/40">· {card.sub}</span>
               </div>
               <p className="text-sm leading-relaxed text-foreground/80">
@@ -100,14 +105,6 @@ export function SeedInsightStep({
           ))}
         </div>
       )}
-
-      {/* Footer */}
-      {/* <div className="pt-2 border-t border-dashed border-muted-foreground/10">
-        <p className="text-[11px] text-center text-muted-foreground/40 italic leading-relaxed">
-          "Бодол бол үүл шиг ирээд өнгөрнө.<br />
-          Харин та бол тэр үүлсийг ажиглаж буй тэнгэр."
-        </p>
-      </div> */}
     </div>
   );
 }

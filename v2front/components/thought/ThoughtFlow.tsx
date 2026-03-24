@@ -87,7 +87,6 @@ export function ThoughtFlow({ view = 'demo', initialAction, onBack, onUpgrade }:
   // ── Steps 1–3 ────────────────────────────────────────────────
   return (
     <div className="w-full max-w-md mx-auto px-4 py-4 space-y-4">
-      <ActionBadge type={flow.actionType} />
       <StepIndicator current={flow.step} />
 
       <div className="min-h-[320px]">
