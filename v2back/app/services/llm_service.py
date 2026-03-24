@@ -167,15 +167,42 @@ class LlmService:
         return content
 
 
-def _parse_json(raw: str) -> dict:
-    """Markdown code block цэвэрлэж JSON parse хийнэ."""
-    text = raw.strip()
-    if text.startswith("```"):
-        lines = text.splitlines()
-        end = -1 if lines[-1].strip() == "```" else len(lines)
-        text = "\n".join(lines[1:end])
-    return json.loads(text.strip())
+import re  # Файлын хамгийн дээр import re нэмэхээ мартав аа!
 
+def _parse_json(raw: str) -> dict:
+    """Markdown болон илүүдэл текстийг цэвэрлэж JSON parse хийнэ."""
+    if not raw:
+        _log.error("❌ LLM-ээс хоосон хариу ирлээ")
+        return {}
+
+    text = raw.strip()
+
+    # 1. Хэрэв Markdown блок дотор (```json ... ```) байвал сугалж авах
+    if "```" in text:
+        # Регуляр илэрхийллээр хамгийн гадна талын { } хоорондохыг авна
+        match = re.search(r"({.*})", text, re.DOTALL)
+        if match:
+            text = match.group(1)
+        else:
+            # Хэрэв match олдохгүй бол хуучин аргаараа мөр мөрөөр нь цэвэрлэх
+            lines = text.splitlines()
+            content_lines = [l for l in lines if not l.strip().startswith("```")]
+            text = "".join(content_lines)
+
+    try:
+        return json.loads(text.strip())
+    except json.JSONDecodeError as e:
+        _log.error(f"❌ JSON Decode Error: {e} | Raw text: {text[:200]}...")
+        
+        # 2. Хэрэв JSON эвдэрсэн бол (жишээ нь төгсгөл дутуу) засах оролдлого
+        # Энэ нь 'Unterminated string' алдаанд тусална
+        try:
+            # Хаагаагүй хаалт байгаа эсэхийг шалгаад нэмэх (энгийн нөхцөлд)
+            if text.count('{') > text.count('}'):
+                text += '}'
+            return json.loads(text.strip())
+        except:
+            raise e # Хэрэв засагдахгүй бол үндсэн алдаагаа шиднэ
 
 _instance: LlmService | None = None
 
