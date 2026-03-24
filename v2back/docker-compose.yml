@@ -7,11 +7,13 @@ services:
     env_file: .env
     environment:
       REDIS_URL: redis://redis:6379/0
+      GOOGLE_APPLICATION_CREDENTIALS: /app/gcp-key.json
     depends_on:
       redis:
         condition: service_healthy
     volumes:
       - .:/app
+      - ./mind-step-key.json:/app/gcp-key.json:ro
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
 
@@ -20,11 +22,13 @@ services:
     env_file: .env
     environment:
       REDIS_URL: redis://redis:6379/0
+      GOOGLE_APPLICATION_CREDENTIALS: /app/gcp-key.json
     depends_on:
       redis:
         condition: service_healthy
     volumes:
       - .:/app
+      - ./mind-step-key.json:/app/gcp-key.json:ro
     command: python worker.py
     restart: unless-stopped
 
@@ -39,7 +43,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # Dev-д RQ ажлуудыг визуалаар харах (optional)
   rq-dashboard:
     image: eoranged/rq-dashboard
     ports:
