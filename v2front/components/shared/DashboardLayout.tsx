@@ -20,6 +20,7 @@ const NAV_ITEMS: {
   icon: React.ElementType;
   permission?: Permission;
 }[] = [
+  { href: '/home',    label: 'Нүүр', icon: Zap                              },
   { href: '/quick',    label: 'Тэмдэглэл', icon: Zap                              },
   { href: '/entries',  label: 'Бичлэгүүд', icon: BookOpen                         },
   { href: '/insights', label: 'Зөвлөмж',   icon: Sparkles, permission: 'view_insights' },
