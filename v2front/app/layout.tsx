@@ -15,15 +15,15 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Mindful - Тэмдэглэл ба Бясалгалын Платформ',
-    template: '%s | Mindful'
+    default: 'Ухаалаг тэмдэглэлийн дэвтэр',
+    template: '%s | Mind-steps'
   },
-  description: 'Өөрийгөө таних аялалд чиглэсэн мэдлэг, бясалгал, тэмдэглэлийн платформ',
+  description: 'Сэтгэлзүйн туслах платформ',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Mindful',
+    title: 'Mind-steps',
   },
   icons: {
     icon: [
