@@ -31,7 +31,8 @@ app.middleware("http")(apply_rate_limit)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_settings.cors_origins_list,
+    # allow_origins=_settings.cors_origins_list,
+    allow_origins= ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
