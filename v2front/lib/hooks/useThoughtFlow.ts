@@ -27,7 +27,7 @@ const EMPTY_DATA: StepData = {
 
 // ─── Hook ─────────────────────────────────────────────────────
 
-export function useThoughtFlow() {
+export function useThoughtFlow(onBack?: () => void) {  // ← энд нэмнэ
   const ctx = useThoughtContext();
 
   const [state, setState] = useState<ThoughtFlowState>({
@@ -78,11 +78,12 @@ export function useThoughtFlow() {
   const back = useCallback(() => {
     setState((s) => {
       if (s.step === 1 || s.step === 4) {
-        return { ...s, step: 1, actionType: null, data: EMPTY_DATA, result: null, error: null };
+        onBack?.(); // Нүүр хуудас руу буцна
+        return s;   // State өөрчлөхгүй
       }
       return { ...s, step: (s.step - 1) as FlowStep };
     });
-  }, []);
+  }, [onBack]);
 
   const reset = useCallback(() => {
     setState({

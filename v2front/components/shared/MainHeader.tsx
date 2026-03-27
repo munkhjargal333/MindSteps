@@ -30,7 +30,7 @@ export function MainHeader() {
                   <Sparkles size={12} />Pro
                 </span>
               )}
-              <Link href="/quick">
+              <Link href="/home">
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <User className="h-5 w-5" />
                 </Button>

@@ -1,3 +1,8 @@
+import { DashboardLayout } from "@/components/shared/DashboardLayout";
+
 export default function DashboardGroupLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return <>{
+    <DashboardLayout>
+      {children}
+    </DashboardLayout>}</>;
 }

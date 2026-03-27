@@ -39,7 +39,6 @@ export default function EmotionsPage() {
   const maxCount = Math.max(...stats.map((s) => Number(s.count) || 0), 1);
 
   return (
-    <DashboardLayout>
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
@@ -152,6 +151,5 @@ export default function EmotionsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 }

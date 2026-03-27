@@ -140,7 +140,7 @@ export default function EntriesPage() {
   };
 
   return (
-    <DashboardLayout>
+
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -150,7 +150,7 @@ export default function EntriesPage() {
               Нийт {total} бичлэг
             </p>
           </div>
-          <Link href="/quick">
+          <Link href="/home">
             <Button size="sm" className="rounded-xl gap-2">
               <BookOpen size={14} />
               Шинэ
@@ -198,7 +198,7 @@ export default function EntriesPage() {
               </p>
             </div>
             {!search && (
-              <Link href="/quick">
+              <Link href="/home">
                 <Button size="sm" variant="outline" className="rounded-xl">
                   Бичлэг үүсгэх →
                 </Button>
@@ -249,6 +249,5 @@ export default function EntriesPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 }

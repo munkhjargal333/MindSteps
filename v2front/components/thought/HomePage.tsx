@@ -1,7 +1,6 @@
-// HomePage.tsx
 'use client';
 
-import { Sparkles, Lock, LayoutGrid } from 'lucide-react';
+import { Lock, ArrowRight } from 'lucide-react';
 import { FREE_ACTIONS, PRO_ACTIONS } from '../../data/constants';
 import { useThoughtContext } from '../../contexts/context';
 import { QuickActionButton } from './components/QuickActionButton';
@@ -13,29 +12,27 @@ interface Props {
 
 export function HomePage({ onSelectAction, onUpgrade }: Props) {
   const { tier } = useThoughtContext();
+  const isPro = tier === 'pro';
 
   return (
-    <div className="w-full max-w-md mx-auto px-5 py-8 space-y-10">
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400">
-          <div className="w-8 h-8 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-            <Sparkles size={16} />
-          </div>
-          <span className="text-sm font-semibold tracking-tight">Өнөөдрийн тусгал</span>
-        </div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Сайн уу? <br/>
-          <span className="text-muted-foreground font-light">Дотоод бодлоо цэгцэлье.</span>
+    <div className="w-full max-w-md mx-auto px-5 py-8 space-y-8">
+
+      {/* Header */}
+      <div className="space-y-1">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          Өнөөдрийн тусгал
+        </p>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Дотоод бодлоо цэгцэлье.
         </h1>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Үндсэн цэс</h2>
-          <LayoutGrid size={14} className="text-muted-foreground/50" />
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
+      {/* Free actions */}
+      <div className="space-y-3">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground px-0.5">
+          Үндсэн
+        </p>
+        <div className="grid grid-cols-2 gap-3">
           {FREE_ACTIONS.map((action) => (
             <QuickActionButton
               key={action.type}
@@ -47,39 +44,67 @@ export function HomePage({ onSelectAction, onUpgrade }: Props) {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">Тун удахгүй</h2>
-        
-        <div className="grid grid-cols-1 gap-3">
-          {PRO_ACTIONS.slice(0, 3).map((action) => {
+      {/* Pro actions */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-0.5">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            {isPro ? 'Pro' : 'Тун удахгүй'}
+          </p>
+          {!isPro && (
+            <button
+              onClick={onUpgrade}
+              className="flex items-center gap-1 text-[11px] font-medium text-violet-500 hover:text-violet-600 transition-colors"
+            >
+              Шинэчлэх <ArrowRight size={11} />
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          {PRO_ACTIONS.slice(0, 4).map((action) => {
             const Icon = action.icon;
+
+            if (isPro) {
+              return (
+                <button
+                  key={action.type}
+                  onClick={() => onSelectAction(action.type)}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl bg-muted/40 hover:bg-muted/70 border border-border transition-colors text-left"
+                >
+                  <div className="p-2 rounded-xl bg-background border border-border text-foreground">
+                    <Icon size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold">{action.label}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{action.sub}</div>
+                  </div>
+                  <ArrowRight size={13} className="text-muted-foreground/40 shrink-0" />
+                </button>
+              );
+            }
+
             return (
               <div
                 key={action.type}
-                className="flex items-center gap-4 p-4 rounded-[1.8rem] bg-muted/30 border border-dashed border-border opacity-70 grayscale-[0.5]"
+                className="flex items-center gap-4 p-4 rounded-2xl bg-muted/20 border border-dashed border-border opacity-60 select-none"
               >
-                <div className="p-2.5 rounded-2xl bg-muted text-muted-foreground">
-                  <Icon size={18} />
+                <div className="p-2 rounded-xl bg-muted text-muted-foreground">
+                  <Icon size={16} />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold flex items-center gap-1.5">
                     {action.label}
-                    <span className="text-[9px] bg-muted px-1.5 py-0.5 rounded-full font-medium">Тун удахгүй</span>
+                    <span className="text-[9px] bg-muted px-1.5 py-0.5 rounded-full">
+                      Тун удахгүй
+                    </span>
                   </div>
-                  <div className="text-[11px] text-muted-foreground">{action.sub}</div>
+                  <div className="text-[11px] text-muted-foreground truncate">{action.sub}</div>
                 </div>
-                <Lock size={12} className="text-muted-foreground/30 mr-2" />
+                <Lock size={11} className="text-muted-foreground/30 shrink-0" />
               </div>
             );
           })}
         </div>
-      </div>
-
-      <div className="pt-4 text-center">
-         <p className="text-[11px] text-muted-foreground/40 italic leading-relaxed">
-           "Бодол гэдэг үүл шиг, ирээд л өнгөрнө. <br/> 
-           Бид зөвхөн ажиглагч нь юм."
-         </p>
       </div>
     </div>
   );

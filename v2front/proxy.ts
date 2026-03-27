@@ -19,8 +19,6 @@ const PROTECTED_ROUTES: { path: string; permission: Permission }[] = [
  * Хэрэглэгч өөрөө засах боломжгүй хэсэг (app_metadata) тул аюулгүй.
  */
 function resolveTierFromAuth(user: any): Tier {
-  // 1. Админ эрх шалгах
-  if (user?.app_metadata?.role === 'admin') return 'admin'
   
   // 2. JWT-ийн app_metadata доторх tier-ийг унших
   const tier = user?.app_metadata?.tier
@@ -76,7 +74,7 @@ export async function proxy(request: NextRequest) {
   const { data: { user }, error } = await supabase.auth.getUser()
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`[MW] ${pathname} | User: ${user?.email ?? 'Guest'} | Tier: ${user?.app_metadata?.tier ?? 'free'}`)
+    console.log(`[MW] ${pathname} | User: ${user?.email ?? 'Guest'} | Tier: ${user?.app_metadata?.tier ?? 'demo'}`)
   }
 
   // 4. Нэвтрээгүй хэрэглэгчийг хамгаалах
@@ -88,7 +86,7 @@ export async function proxy(request: NextRequest) {
 
   // 5. Нэвтэрсэн хэрэглэгч /login руу орохыг оролдвол
   if (pathname === '/login' && user) {
-    return NextResponse.redirect(new URL('/quick', request.url))
+    return NextResponse.redirect(new URL('/home', request.url))
   }
 
   // 6. Tier/Permission шалгах

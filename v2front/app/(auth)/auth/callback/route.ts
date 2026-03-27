@@ -52,7 +52,7 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/join`)
     }
 
-    return NextResponse.redirect(`${origin}/quick`)
+    return NextResponse.redirect(`${origin}/home`)
   } catch {
     return NextResponse.redirect(`${origin}/login?error=server_error`)
   }
