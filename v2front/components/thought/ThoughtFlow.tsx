@@ -3,12 +3,8 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Sparkles, RefreshCw } from 'lucide-react';
-import { useThoughtContext } from '../../contexts/context';
 import { useThoughtFlow } from '../../lib/hooks/useThoughtFlow';
-import { QuickActionHome } from './QuickActionHome';
-import { HomePage } from './HomePage';
 import { StepIndicator } from './components/StepIndicator';
-import { ActionBadge } from './components/ActionBadge';
 import { SurfaceStep } from './components/steps/SurfaceStep';
 import { InnerReactionStep } from './components/steps/InnerReactionStep';
 import { MeaningStep } from './components/steps/MeaningStep';
@@ -17,47 +13,30 @@ import { STEP_CONFIG } from '../../data/constants';
 import type { QuickActionType } from '../../types/types';
 
 interface Props {
-  /** 'home' = pricing, 'quick' = action grid */
-  view?: 'home' | 'demo' | 'quick';
-  initialAction?: QuickActionType;
-  onBack: () => void;
+  initialAction: QuickActionType;
+  onBack: () => void; // Нүүр хуудас руу буцах функц
   onUpgrade?: () => void;
 }
 
-export function ThoughtFlow({ view = 'demo', initialAction, onBack, onUpgrade }: Props) {
-  const { apiBase, token } = useThoughtContext();
-  const flow = useThoughtFlow();
+export function ThoughtFlow({ initialAction, onBack, onUpgrade }: Props) {
+  const flow = useThoughtFlow(onBack); // ← onBack-ийг дамжуулна
 
-  // initialAction байвал mount дээр selectAction дуудна
   useEffect(() => {
-    if (initialAction) flow.selectAction(initialAction);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ── No action selected: home or quick grid ──────────────────
-  if (!flow.actionType) {
-    if (view === 'home') {
-      return (
-        <HomePage
-          onSelectAction={flow.selectAction}
-          onUpgrade={onUpgrade}
-        />
-      );
+    if (initialAction) {
+      flow.selectAction(initialAction);
     }
+  }, [initialAction, flow.selectAction]);
+
+  const cfg = STEP_CONFIG[flow.actionType || '']
+
+  if (!flow.actionType || !cfg) {
     return (
-      <QuickActionHome
-        onSelectAction={flow.selectAction}
-        onUpgrade={onUpgrade}
-      />
-    );
+      <div className="text-center py-10 text-muted-foreground">
+        Алдаа гарлаа. Дахин оролдоно уу.
+      </div>
+    )
   }
 
-  // actionType байхад cfg байх ёстой — байхгүй бол home руу буцна
-  const cfg = STEP_CONFIG[flow.actionType];
-  if (!cfg) {
-    flow.reset();
-    return null;
-  }
 
   const session = { actionType: flow.actionType, ...flow.data };
 
@@ -77,7 +56,7 @@ export function ThoughtFlow({ view = 'demo', initialAction, onBack, onUpgrade }:
             <RefreshCw size={13} className="mr-1.5" /> Дахин
           </Button>
           <Button variant="outline" className="flex-1 rounded-2xl" onClick={onBack}>
-            Нүүр
+            Нүүр хуудас
           </Button>
         </div>
       </div>

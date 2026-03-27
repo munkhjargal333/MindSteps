@@ -32,7 +32,6 @@ export default function InsightsPage() {
   useEffect(() => { load(); }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <DashboardLayout>
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -119,6 +118,5 @@ export default function InsightsPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
   );
 }

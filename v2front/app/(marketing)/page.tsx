@@ -47,7 +47,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/demo" prefetch>
-                  Үнэгүй эхлэх <ArrowRight className="w-4 h-4 ml-2" />
+                  Туршиж үзэх <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
@@ -265,18 +265,13 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
                 <Button asChild size="lg" className="w-full sm:w-auto">
                   <Link href="/demo" prefetch>
-                    Үнэгүй эхлэх <ArrowRight className="w-4 h-4 ml-2" />
+                    Туршиж үзэх <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
                   <Link href="/login">Нэвтрэх</Link>
                 </Button>
               </div>
-
-              {/* Friction бууруулах micro-copy */}
-              <p className="text-xs text-muted-foreground">
-                Бүртгэл шаардахгүй · Кредит карт шаардахгүй · Хэдийд ч зогсоож болно
-              </p>
             </div>
           </div>
         </section>

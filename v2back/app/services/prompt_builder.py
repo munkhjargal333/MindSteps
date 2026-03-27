@@ -300,23 +300,12 @@ physiological | safety | social | esteem | self_actualization
 ## Плутчикийн 8 сэтгэл хөдлөл
 joy | trust | fear | surprise | sadness | disgust | anger | anticipation
 
-## Primary Dyad
-joy+trust=love, trust+fear=submission, fear+surprise=awe,
-surprise+sadness=disapproval, sadness+disgust=remorse,
-disgust+anger=contempt, anger+anticipation=aggressiveness,
-anticipation+joy=optimism
-
-## Secondary Dyad
-joy+fear=guilt, trust+surprise=curiosity, fear+sadness=despair,
-surprise+disgust=disbelief, sadness+anger=envy,
-disgust+anticipation=cynicism, anger+joy=pride, anticipation+trust=hope
-
 ## Хокинсын бүс
 20-50: crisis_flag=true | 75-175: zone=below_200 | 200+: zone=above_200
 
 ## Дүрэм
 - Зөвхөн цэвэр JSON, тайлбар хэрэггүй
-- score: 0.0–1.0 | intensity: low | medium | high
+- score: 0.0–1.0 (confidence that this analysis reflects the user's true emotional state)
 """
 
 _DEEP_INSIGHT_SYSTEM = (
@@ -324,7 +313,6 @@ _DEEP_INSIGHT_SYSTEM = (
     " Монгол хэлээр, зөвхөн JSON буцаана.\n"
     '{"insight_text": "...", "recommendations": ["..."]}'
 )
-
 
 def build_seed_messages(
     surface: str, inner: str, meaning: str
@@ -335,7 +323,6 @@ def build_seed_messages(
         {"role": "user", "content": _entry_text(surface, inner, meaning)},
     ]
 
-
 def build_analysis_messages(
     surface: str,
     inner: str,
@@ -345,13 +332,12 @@ def build_analysis_messages(
     """Maslow + Plutchik + Hawkins. Few-shot жишээтэй."""
     system = _ANALYSIS_SYSTEM
     if ewma:
-        system += f"\n[Хэрэглэгчийн EWMA өмнөх дундаж: {ewma:.1f}]"
+        system += f"\n[Context: User’s recent emotional baseline is around {ewma:.1f} on the Hawkins scale]"
     return [
         {"role": "system", "content": system},
         *ANALYSIS_FEW_SHOT,
         {"role": "user", "content": _entry_text(surface, inner, meaning)},
     ]
-
 
 def build_deep_insight_messages(summary: dict, count: int) -> list[dict]:
     top = json.dumps(summary.get("top_nodes", []), ensure_ascii=False)
@@ -366,7 +352,6 @@ def build_deep_insight_messages(summary: dict, count: int) -> list[dict]:
         {"role": "user", "content": prompt},
     ]
 
-
 def apply_ewma(data: dict, previous: float | None) -> None:
     """Хокинсын EWMA-г шинэчилнэ. data dict-ийг in-place өөрчилнэ."""
     level = data.get("hawkins", {}).get("level")
@@ -378,7 +363,6 @@ def apply_ewma(data: dict, previous: float | None) -> None:
     else:
         updated = float(level)
     data["hawkins"]["ewma_updated"] = updated
-
 
 def _entry_text(surface: str, inner: str, meaning: str) -> str:
     return (

@@ -36,6 +36,7 @@ export async function analyzeSession(
     inner_reaction_text: session.innerText,
     meaning_text: session.meaningText,
   });
+  
   return {
     entryId: null,
     insight: result.seed_insight,

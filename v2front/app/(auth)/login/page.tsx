@@ -172,7 +172,7 @@ function LoginForm() {
             <Button asChild type="button" variant="outline" className="w-full" size="lg">
               <Link href="/demo">
                 <UserCircle className="w-5 h-5 mr-2" />
-                Демо үзэх (зочин)
+                Туршиж үзэх 
               </Link>
             </Button>
             <div className="flex items-start gap-2 px-1">

@@ -20,13 +20,13 @@ export function ThoughtProvider({ children }: { children: ReactNode }) {
   const { user, token } = useAuth();
   const supabase = createClient();
   
-  const [tier, setTier] = useState<Tier>('free');
+  const [tier, setTier] = useState<Tier>('demo');
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUserSubscription = async () => {
     if (!user) {
-      setTier('free');
+      setTier('demo');
       setExpiresAt(null);
       setLoading(false);
       return;
@@ -34,7 +34,7 @@ export function ThoughtProvider({ children }: { children: ReactNode }) {
 
     try {
       // 1. Эхлээд JWT (Metadata)-аас Tier-ийг шууд авах (Маш хурдан)
-      const jwtTier = (user.app_metadata?.tier as Tier) || 'free';
+      const jwtTier = (user.app_metadata?.tier as Tier) || 'demo';
       setTier(jwtTier);
 
       // 2. Database-аас Expiry болон сүүлийн үеийн Tier-ийг баталгаажуулж унших

@@ -6,6 +6,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from app.core.settings import get_settings
 from app.schemas.analysis import LlmAnalysisResult, SeedInsightData
 from app.services import prompt_builder
+import re  # Файлын хамгийн дээр import re нэмэхээ мартав аа!
 
 _log = logging.getLogger(__name__)
 _settings = get_settings()
@@ -165,9 +166,6 @@ class LlmService:
         _log.debug(f"📥 [{caller}] raw response: {content}")
 
         return content
-
-
-import re  # Файлын хамгийн дээр import re нэмэхээ мартав аа!
 
 def _parse_json(raw: str) -> dict:
     """Markdown болон илүүдэл текстийг цэвэрлэж JSON parse хийнэ."""
