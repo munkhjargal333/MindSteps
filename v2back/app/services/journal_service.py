@@ -154,7 +154,7 @@ class JournalService:
         analysis: LlmAnalysisResult,
         entry_id: str,
     ) -> None:
-        self._graph.update_nodes(user_id, analysis, entry_id)
+        self._graph.update_graph(user_id, analysis, entry_id)
 
     def fetch_value_graph(self, user_id: str) -> dict:
         return self._graph.fetch_graph(user_id)
