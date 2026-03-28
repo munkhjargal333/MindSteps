@@ -1,25 +1,4 @@
-"""
-LLM few-shot жишээнүүд.
-prompt_builder.py-с тусгаарласан (SRP + мөрийн хязгаар).
-"""
-
-import json
-
-ANALYSIS_FEW_SHOT: list[dict] = [
-    {
-        "role": "user",
-        "content": (
-            "Surface: Уулзалтад буруу зүйл хэлчихлээ, мартаж чадахгүй.\n"
-            "Inner Reaction: Дахин бодохоор улам л муу санагдаад"
-            " зайлсхийж байна.\n"
-            "Meaning: Хүмүүс чадваргүй гэж бодоосой гэхгүй,"
-            " хүндлэгдэхийг хүсч байна."
-        ),
-    },
-    {
-        "role": "assistant",
-        "content": json.dumps(
-            {
+LLM ээс ирэх хариу.
                 "maslow": [
                     {
                         "category": "esteem",
@@ -51,8 +30,16 @@ ANALYSIS_FEW_SHOT: list[dict] = [
                     "crisis_flag": False,
                 },
             },
-            ensure_ascii=False,
-            indent=2,
-        ),
-    },
-]
+
+
+LLM output
+   ↓
+[ Value Nodes ]  ← maslow
+   ↓
+[ Emotion Tracker ] ← plutchik (node level)
+   ↓
+[ Value Edges Tracker ] ← hawkins (relationship / timeline)
+   ↓
+[ Aggregations ]
+   ├── emotion table (overall feeling)
+   └── value graph state (direction / growth)
