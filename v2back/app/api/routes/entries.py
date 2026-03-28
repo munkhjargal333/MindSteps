@@ -85,20 +85,11 @@ async def create_entry(
         inner=data.inner_reaction_text,
         meaning=data.meaning_text,
     )
-    
-    journal.save_seed_insight(entry_id, seed.model_dump())
 
-    # 3. Analysis — queue
-    _enqueue_analysis(entry_id, user_id, data)
-
-    # 4. Deep Insight trigger шалгана
-    count = journal.count_user_entries(user_id)
-    if journal.should_trigger_deep_insight(count):
-        get_deep_insight_queue().enqueue(
-            "app.workers.jobs.process_deep_insight",
-            user_id=user_id,
-            job_timeout=300,
-        )
+    if seed.mirror != '':
+        journal.save_seed_insight(entry_id, seed.model_dump())
+            # 3. Analysis — queue
+        _enqueue_analysis(entry_id, user_id, data)
 
     return EntryCreateResponse(
         entry_id=entry_id,

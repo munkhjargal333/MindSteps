@@ -73,7 +73,7 @@ class JournalService:
         return result.data
 
     def create_entry(self, user_id: str, data: EntryCreateRequest) -> dict:
-        index = self.count_user_entries(user_id)
+        index = self.count_user_entries(user_id) + 1
         payload: dict = {
             "user_id": user_id,
             "entry_index": index,
@@ -154,7 +154,7 @@ class JournalService:
         analysis: LlmAnalysisResult,
         entry_id: str,
     ) -> None:
-        self._graph.update_nodes(user_id, analysis, entry_id)
+        self._graph.update_graph(user_id, analysis, entry_id)
 
     def fetch_value_graph(self, user_id: str) -> dict:
         return self._graph.fetch_graph(user_id)

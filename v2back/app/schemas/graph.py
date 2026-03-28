@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from uuid import UUID
 
-
 class ValueNodeResponse(BaseModel):
     id: UUID
     maslow_category: str
