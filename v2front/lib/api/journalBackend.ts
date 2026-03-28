@@ -103,10 +103,10 @@ export interface AdminStats {
 }
 
 export interface EmotionStat {
-  emotion: string;
-  count: number;
-  percentage?: number;
-  [key: string]: unknown;
+    emotion:    string,
+    score_sum:  number,
+    count:      number,
+    percentage: number,
 }
 
 export interface GraphData {

@@ -86,14 +86,14 @@ export function useThoughtFlow(onBack?: () => void) {  // ← энд нэмнэ
   }, [onBack]);
 
   const reset = useCallback(() => {
-    setState({
+    setState((s) => ({
       step:       1,
-      actionType: null,
+      actionType: s.actionType, 
       data:       EMPTY_DATA,
       analyzing:  false,
       result:     null,
       error:      null,
-    });
+    }));
   }, []);
 
   const canProceed =

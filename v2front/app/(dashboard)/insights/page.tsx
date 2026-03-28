@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { listDeepInsights, type DeepInsight } from '@/lib/api/journalBackend';
-import { DashboardLayout } from '@/components/shared/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Sparkles, Loader2, AlertCircle, RefreshCw } from 'lucide-react';

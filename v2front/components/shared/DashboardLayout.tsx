@@ -16,9 +16,9 @@ import { useThoughtContext } from '@/contexts/context';
 const NAV_ITEMS = [
   { href: '/home',     label:  'Тэмдэглэл',      icon: Zap,        isPro: false },
   { href: '/entries',   label: 'Түүх',     icon: BookOpen,   isPro: false },
-  { href: '/insights',  label: 'Паттерн',   icon: Sparkles,   isPro: true  },
-  { href: '/emotions',  label: 'Сэтгэл',    icon: BarChart2,  isPro: true  },
-  { href: '/graph',     label: 'Цэнэ',      icon: Network,    isPro: true  },
+  { href: '/insights',  label: 'Зөвлөмж',   icon: Sparkles,   isPro: true  },
+  { href: '/emotions',  label: 'Сэтгэл',    icon: BarChart2,  isPro: false  },
+  { href: '/graph',     label: 'Цэнэ',      icon: Network,    isPro: false  },
 ];
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {

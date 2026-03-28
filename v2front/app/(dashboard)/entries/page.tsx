@@ -3,10 +3,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEntries } from '@/lib/hooks/useEntries';
-import { DashboardLayout } from '@/components/shared/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 import {
   Search,
   Trash2,
