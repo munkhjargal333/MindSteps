@@ -73,7 +73,7 @@ class JournalService:
         return result.data
 
     def create_entry(self, user_id: str, data: EntryCreateRequest) -> dict:
-        index = self.count_user_entries(user_id)
+        index = self.count_user_entries(user_id) + 1
         payload: dict = {
             "user_id": user_id,
             "entry_index": index,
