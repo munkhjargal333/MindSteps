@@ -676,7 +676,7 @@ export default function GraphPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Үнэт зүйлсийн граф</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Node дарж дэлгэрэнгүй мэдээллийг харна уу
+            Дээр нь дарж дэлгэрэнгүй мэдээллийг харна уу
           </p>
         </div>
         <Button
