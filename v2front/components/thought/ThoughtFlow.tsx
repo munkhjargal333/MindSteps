@@ -14,12 +14,14 @@ import type { QuickActionType } from '../../types/types';
 
 interface Props {
   initialAction: QuickActionType;
-  onBack: () => void; // Нүүр хуудас руу буцах функц
+  onBack: () => void;
+  onComplete: () => void;
+  onReset: () => void;   // ← Дахин: increment хийж, step 1 руу буцах
   onUpgrade?: () => void;
 }
 
-export function ThoughtFlow({ initialAction, onBack, onUpgrade }: Props) {
-  const flow = useThoughtFlow(onBack); // ← onBack-ийг дамжуулна
+export function ThoughtFlow({ initialAction, onBack, onComplete, onReset, onUpgrade }: Props) {
+  const flow = useThoughtFlow(onBack);
 
   useEffect(() => {
     if (initialAction) {
@@ -37,7 +39,6 @@ export function ThoughtFlow({ initialAction, onBack, onUpgrade }: Props) {
     )
   }
 
-
   const session = { actionType: flow.actionType, ...flow.data };
 
   // ── Step 4: Seed Insight ─────────────────────────────────────
@@ -52,10 +53,21 @@ export function ThoughtFlow({ initialAction, onBack, onUpgrade }: Props) {
           onMount={flow.runAnalysis}
         />
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 rounded-2xl" onClick={flow.reset}>
+          <Button
+            variant="outline"
+            className="flex-1 rounded-2xl"
+            onClick={() => {
+              flow.reset();  // step 1 болгоно
+              onReset();     // increment хийнэ, нүүр рүү явахгүй
+            }}
+          >
             <RefreshCw size={13} className="mr-1.5" /> Дахин
           </Button>
-          <Button variant="outline" className="flex-1 rounded-2xl" onClick={onBack}>
+          <Button
+            variant="outline"
+            className="flex-1 rounded-2xl"
+            onClick={onComplete}
+          >
             Нүүр хуудас
           </Button>
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { HomePage } from '@/components/pages/HomePage'
 import { ThoughtFlow } from '@/components/thought/ThoughtFlow'
 import { useRateLimit } from '@/lib/hooks/useRateLimit'
@@ -13,6 +14,7 @@ import { cn } from '@/lib/utils'
 type View = 'home' | 'flow'
 
 export function HomeContainer() {
+  const router = useRouter()
   const [view, setView] = useState<View>('home')
   const [selectedAction, setSelectedAction] = useState<QuickActionType | null>(null)
   const [showLimitModal, setShowLimitModal] = useState(false)
@@ -26,17 +28,13 @@ export function HomeContainer() {
   const { usageCount, limit, remaining, isLimited, increment } = useRateLimit(userId, userTier)
 
   function handleSelectAction(type: QuickActionType) {
-    // Pro бол шууд нэвтрүүлнэ
     if (userTier === 'pro') {
       setSelectedAction(type)
       setView('flow')
       return
     }
 
-    // Хязгаар шалгана
-    const allowed = increment()
-
-    if (!allowed) {
+    if (isLimited) {
       setShowLimitModal(true)
       return
     }
@@ -45,7 +43,20 @@ export function HomeContainer() {
     setView('flow')
   }
 
+  function handleFlowComplete() {
+    // Flow дууссан → increment + нүүр хуудас
+    if (userTier !== 'pro') increment()
+    setView('home')
+    setSelectedAction(null)
+  }
+
+  function handleFlowReset() {
+
+    if (userTier !== 'pro') increment()
+  }
+
   function handleBack() {
+    // Дунд нь гарвал тоолохгүй
     setView('home')
     setSelectedAction(null)
   }
@@ -67,6 +78,8 @@ export function HomeContainer() {
         <ThoughtFlow
           initialAction={selectedAction}
           onBack={handleBack}
+          onComplete={handleFlowComplete}
+          onReset={handleFlowReset}
         />
       )}
 
@@ -80,7 +93,6 @@ export function HomeContainer() {
             className="w-full max-w-sm bg-card rounded-3xl p-6 shadow-2xl border"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Хаах товч */}
             <div className="flex justify-end mb-2">
               <button
                 onClick={() => setShowLimitModal(false)}
@@ -90,14 +102,12 @@ export function HomeContainer() {
               </button>
             </div>
 
-            {/* Icon */}
             <div className="flex justify-center mb-4">
               <div className="w-16 h-16 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
                 <Zap size={32} className="text-orange-500" />
               </div>
             </div>
 
-            {/* Текст */}
             <h2 className="text-xl font-bold text-center mb-2">
               Өдрийн хязгаарт хүрлээ
             </h2>
@@ -108,7 +118,6 @@ export function HomeContainer() {
               }
             </p>
 
-            {/* Usage indicator */}
             <div className="flex items-center gap-2 mb-6">
               {Array.from({ length: limit }).map((_, i) => (
                 <div
@@ -123,13 +132,11 @@ export function HomeContainer() {
               ))}
             </div>
 
-            {/* Товчнууд */}
             <div className="space-y-2">
               <button
                 onClick={() => {
                   setShowLimitModal(false)
-                  // TODO: upgrade page руу шилжүүлэх
-                  // router.push('/upgrade')
+                  router.push('/upgrade')
                 }}
                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm transition-all active:scale-95"
               >
@@ -141,12 +148,11 @@ export function HomeContainer() {
                 <button
                   onClick={() => {
                     setShowLimitModal(false)
-                    // TODO: signup page руу шилжүүлэх
-                    // router.push('/signup')
+                    router.push('/signup')
                   }}
                   className="w-full py-3 px-4 rounded-2xl border font-medium text-sm text-muted-foreground hover:bg-muted transition-all"
                 >
-                  Үнэгүй бүртгүүлэх (өдөрт {5} удаа)
+                  Үнэгүй бүртгүүлэх (өдөрт 7 эрх)
                 </button>
               )}
 
