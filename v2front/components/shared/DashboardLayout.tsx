@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   Sunrise, BookOpen, BarChart2, Sparkles,
-  Network, LogOut, Zap, Lock, Moon, X
+  Network, LogOut, Zap, Lock, Moon, X,
+  ChevronRight
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -244,6 +245,24 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
+
+          {/* ── Navigation / Upgrade ── */}
+        <div className="flex-1 p-3 flex flex-col justify-end">
+          {userTier !== 'pro' && (
+            <Link
+              href="/upgrade"
+              onClick={() => setDrawerOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-violet-600 text-white text-sm font-semibold shadow-md hover:from-violet-600 hover:to-violet-700 transition-all"
+            >
+              <Sparkles size={18} />
+              <div className="flex-1">
+                <p className="leading-none">Pro руу шилжих</p>
+                <p className="text-[10px] font-normal text-violet-200 mt-0.5">Бүх боломжийг нээх</p>
+              </div>
+              <ChevronRight size={16} className="opacity-70" />
+            </Link>
+          )}
+        </div>
         {/* ── Footer: theme toggle + logout ── */}
         <div className="p-3 border-t space-y-1">
           <div className="flex items-center gap-3 px-4 py-3 rounded-2xl">
