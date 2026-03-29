@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback } from 'react'
 export type Tier = 'demo' | 'free' | 'pro'
 
 const DAILY_LIMITS: Record<Tier, number> = {
-  demo: 3,
-  free: 5,
+  demo: 5,
+  free: 7,
   pro: Infinity,
 }
 
