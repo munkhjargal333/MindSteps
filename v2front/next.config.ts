@@ -1,8 +1,15 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // Disabled to avoid double-invoking effects during development
   reactStrictMode: false,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+    ],
+  },
 }
 
 export default nextConfig
