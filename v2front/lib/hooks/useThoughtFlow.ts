@@ -27,7 +27,7 @@ const EMPTY_DATA: StepData = {
 
 // ─── Hook ─────────────────────────────────────────────────────
 
-export function useThoughtFlow(onBack?: () => void) {  // ← энд нэмнэ
+export function useThoughtFlow(onBack?: () => void) { 
   const ctx = useThoughtContext();
 
   const [state, setState] = useState<ThoughtFlowState>({
