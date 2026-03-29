@@ -286,6 +286,7 @@ export default function LandingPage() {
               <span className="font-semibold">MindSteps</span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground">
+              <Link href="/upgrade" className="hover:text-foreground transition-colors">Upgrade</Link>
               <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
               <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
               <Link href="/join" className="hover:text-foreground transition-colors">Join</Link>

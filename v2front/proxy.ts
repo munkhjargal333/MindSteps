@@ -5,7 +5,7 @@ import { can, type Permission, type Tier } from '@/lib/permissions'
 
 const PUBLIC_PATHS = [
   '/', '/login', '/terms', '/privacy',
-  '/unauthorized', '/join', '/about', '/demo',
+  '/unauthorized', '/join', '/about', '/demo', '/upgrade',
 ]
 
 const PROTECTED_ROUTES: { path: string; permission: Permission }[] = [
@@ -30,6 +30,11 @@ function resolveTierFromAuth(user: any): Tier {
 }
 
 export async function proxy(request: NextRequest) {
+
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.next()
+  }
+
   const { pathname } = request.nextUrl
 
   // 1. Нийтэд нээлттэй зам эсэхийг шалгах

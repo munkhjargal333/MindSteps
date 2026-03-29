@@ -1,8 +1,23 @@
-import type { NextConfig } from 'next'
+const withPWA = require('next-pwa')
 
-const nextConfig: NextConfig = {
-  // Disabled to avoid double-invoking effects during development
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: false,
+  turbopack: {},          // ← энийг нэм
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+    ],
+  },
 }
 
-export default nextConfig
+module.exports = withPWA({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  // disable: process.env.NODE_ENV === 'development',
+  disable: false,
+})(nextConfig)

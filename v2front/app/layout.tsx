@@ -4,7 +4,7 @@ import { ThemeProvider } from "@/contexts/theme-provider";
 import { Plus_Jakarta_Sans } from 'next/font/google'; 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThoughtProvider } from "@/components/thought";
-import { TourProvider } from "@/contexts/TourContext";
+// import { TourProvider } from "@/contexts/TourContext";
 
 // Фонт тохируулга
 const jakarta = Plus_Jakarta_Sans({ 
@@ -52,11 +52,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <TourProvider>
+            {/* <TourProvider> */}
               <ThoughtProvider >
                   {children}
               </ThoughtProvider>
-            </TourProvider>
+            {/* </TourProvider> */}
 
           </ThemeProvider>
         </AuthProvider>
