@@ -20,17 +20,15 @@ export const metadata: Metadata = {
   },
   description: 'Сэтгэлзүйн туслах платформ',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/logo.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
     title: 'Mind-steps',
-  },
-  icons: {
-    icon: [
-      { url: '/logo.png' },
-      { url: '/logo.png', sizes: '192x192', type: 'image/png' },
-    ],
-    apple: '/logo.png',
   },
 };
 
