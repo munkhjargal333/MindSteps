@@ -276,7 +276,7 @@ export default function EmotionsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Сэтгэл хөдлөл</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Плутчикийн загварт суурилсан дүн шинжилгээ
+            Сэтгэлзүйн тархалт
           </p>
         </div>
 

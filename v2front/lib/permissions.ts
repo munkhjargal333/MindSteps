@@ -2,9 +2,9 @@ export const TIERS = ['free', 'demo', 'pro'] as const;
 export type Tier = (typeof TIERS)[number];
 
 export const PERMISSIONS = {
-  view_insights: ['pro'],
-  view_emotions: ['pro'],
-  view_graph:    ['pro'],
+  view_insights: ["free",'pro'],
+  view_emotions: ["free",'pro'],
+  view_graph:    ["free",'pro'],
 } as const;
 
 export type Permission = keyof typeof PERMISSIONS;
