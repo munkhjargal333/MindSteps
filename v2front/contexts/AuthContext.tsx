@@ -1,9 +1,23 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// contexts/AuthContext.tsx
+// Global Context — Auth state only. No business logic.
+// Business logic (session analysis, tier check) lives in feature hooks/services.
+// ─────────────────────────────────────────────────────────────────────────────
+
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from 'react';
+import type { User, Session } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface AuthContextType {
   user: User | null;
@@ -13,13 +27,17 @@ interface AuthContextType {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  loginAnonymously: () => Promise<void>; 
+  loginAnonymously: () => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
 }
 
+// ─── Context ──────────────────────────────────────────────────────────────────
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -31,7 +49,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient();
 
   useEffect(() => {
-    // Initial session load
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -39,23 +56,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // Auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth event:', event, session?.user?.email);
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        setToken(session?.access_token ?? null);
-        
-        // Гарах үед login руу шилжүүлэх
-        if (event === 'SIGNED_OUT') {
-          router.push('/login');
-        }
-        
-        setLoading(false);
-      }
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setToken(session?.access_token ?? null);
+      if (event === 'SIGNED_OUT') router.push('/login');
+      setLoading(false);
+    });
 
     return () => subscription.unsubscribe();
   }, [router, supabase.auth]);
@@ -64,19 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      
-      const { data, error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
-      });
-      
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      
-      if (!data.user) {
-        throw new Error('Нэвтрэх боломжгүй');
-      }
-      
-      router.push('/quick');
+      if (!data.user) throw new Error('Нэвтрэх боломжгүй');
+      router.push('/home');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Нэвтрэх үед алдаа гарлаа';
       setError(message);
@@ -90,28 +90,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      
       const { data, error } = await supabase.auth.signInAnonymously();
-      
       if (error) {
-        console.error('Anonymous login error:', error);
-        
-        // Whitelist-д байхгүй anonymous user
-        if (error.message.includes('not authorized') || 
-            error.message.includes('Signup Error')) {
+        if (error.message.includes('not authorized') || error.message.includes('Signup Error')) {
           router.push('/join');
           return;
         }
-        
         throw error;
       }
-      
-      if (!data.user) {
-        throw new Error('Зочноор нэвтрэх боломжгүй');
-      }
-      
-      console.log('Guest login success:', data.user.id);
-      router.push('/quick');
+      if (!data.user) throw new Error('Зочноор нэвтрэх боломжгүй');
+      router.push('/home');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Зочноор нэвтрэх үед алдаа гарлаа';
       setError(message);
@@ -124,19 +112,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithGoogle = async () => {
     try {
       setError(null);
-      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-
           redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-          queryParams: { 
-            access_type: 'offline', 
-            prompt: 'consent' 
-          }
+          queryParams: { access_type: 'offline', prompt: 'consent' },
         },
       });
-      
       if (error) throw error;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Google нэвтрэлт амжилтгүй';
@@ -149,8 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -158,16 +139,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
         },
       });
-      
       if (error) {
-        if (error.message.includes('not authorized') || 
-            error.message.includes('Signup Error')) {
+        if (error.message.includes('not authorized') || error.message.includes('Signup Error')) {
           router.push('/login');
           return;
         }
         throw error;
       }
-      
       setError('И-мэйл хаяг руугаа илгээсэн холбоосыг дарж баталгаажуулна уу');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Бүртгэл амжилтгүй';
@@ -186,8 +164,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       setToken(null);
       router.push('/login');
-    } catch (err) {
-      console.error('Logout error:', err);
     } finally {
       setLoading(false);
     }
@@ -195,25 +171,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearError = () => setError(null);
 
-  const value = {
-    user,
-    session,
-    loading,
-    error,
-    token,
-    login,
-    loginWithGoogle,
-    loginAnonymously,
-    register,
-    logout,
-    clearError,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        error,
+        token,
+        login,
+        loginWithGoogle,
+        loginAnonymously,
+        register,
+        logout,
+        clearError,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
-  return context;
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useAuth(): AuthContextType {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 }

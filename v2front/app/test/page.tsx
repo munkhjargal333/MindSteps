@@ -29,7 +29,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-import { ThemeToggle } from "@/components/shared/ThemeToggle"
+import { ThemeToggle } from "@/components/atoms/ThemeToggle"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Settings, User, Mail, Bell } from "lucide-react"
 

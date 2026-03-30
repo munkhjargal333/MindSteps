@@ -1,7 +1,21 @@
-export { ThoughtFlow }     from './ThoughtFlow';
-export { QuickActionHome } from './QuickActionHome';
-export { HomePage }        from './HomePage';
-export { ThoughtProvider, useThoughtContext } from '../../contexts/context';
-export { useThoughtFlow }  from '../../lib/hooks/useThoughtFlow';
+// ─────────────────────────────────────────────────────────────────────────────
+// components/thought/index.ts
+// Backward-compatibility barrel — consumers can still import from here.
+// This is a SHIM only. In new code, import directly from the canonical paths.
+// ─────────────────────────────────────────────────────────────────────────────
 
-export type { QuickActionType, SessionData, SeedInsight, Tier } from '../../types/types';
+// Organisms
+export { ThoughtFlow }   from '@/components/organisms/ThoughtFlow';
+export { ActionGrid }    from '@/components/organisms/ActionGrid';
+
+// Templates
+export { HomePageTemplate as HomePage } from '@/components/templates/HomePageTemplate';
+
+// Contexts (canonical)
+export { TierProvider as ThoughtProvider, useThoughtContext } from '@/contexts/TierContext';
+
+// Feature hook (canonical)
+export { useJournalFlow as useThoughtFlow } from '@/features/journal/hooks/useJournalFlow';
+
+// Types
+export type { QuickActionType, SessionData, SeedInsight, Tier } from '@/types';

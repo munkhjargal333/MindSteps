@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getValueGraph, type GraphData } from '@/lib/api/journalBackend';
+import { getValueGraph } from '@/lib/services/journal.service';
+import {type GraphData} from '@/types/index'
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {

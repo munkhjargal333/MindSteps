@@ -18,7 +18,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { MainHeader } from '@/components/shared/MainHeader'
+import { MainHeader } from '@/components/organisms/MainHeader'
 
 function LoginForm() {
   const [email, setEmail] = useState('')

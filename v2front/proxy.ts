@@ -1,7 +1,8 @@
 // middleware.ts
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { can, type Permission, type Tier } from '@/lib/permissions'
+import type { User } from '@supabase/supabase-js'
 
 const PUBLIC_PATHS = [
   '/', '/login', '/terms', '/privacy',
@@ -18,15 +19,15 @@ const PROTECTED_ROUTES: { path: string; permission: Permission }[] = [
  * JWT-ийн app_metadata-аас tier-ийг унших функц.
  * Хэрэглэгч өөрөө засах боломжгүй хэсэг (app_metadata) тул аюулгүй.
  */
-function resolveTierFromAuth(user: any): Tier {
-  
-  // 2. JWT-ийн app_metadata доторх tier-ийг унших
-  const tier = user?.app_metadata?.tier
-  
-  // Зөвшөөрөгдсөн утга мөн эсэхийг шалгах
-  if (tier === 'premium' || tier === 'pro') return tier
-  
-  return 'free'
+function resolveTierFromAuth(user: User | null): Tier {
+  const tier = user?.app_metadata?.tier;
+  const validTiers: Tier[] = ['demo', 'pro', 'free'];
+
+  if (typeof tier === 'string' && (validTiers as string[]).includes(tier)) {
+    return tier as Tier;
+  }
+
+  return 'free';
 }
 
 export async function proxy(request: NextRequest) {
@@ -58,18 +59,19 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options })
-          response = NextResponse.next({ request: { headers: request.headers } })
-          response.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: '', ...options })
-          response = NextResponse.next({ request: { headers: request.headers } })
-          response.cookies.set({ name, value: '', ...options })
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            request.cookies.set(name, value)
+          )
+          response = NextResponse.next({
+            request: { headers: request.headers },
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
         },
       },
     }

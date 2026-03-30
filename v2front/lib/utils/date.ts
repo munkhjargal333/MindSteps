@@ -43,7 +43,7 @@ export function relativeTimeMn(dateInput: string | Date): string {
 /**
  * Format: "2024 оны 3 сарын 15, 14:30"
  */
-export function formatDatetimeMn(dateInput: string | Date): string {
+export function formatDateShorttimeMn(dateInput: string | Date): string {
   try {
     const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
     if (isNaN(d.getTime())) return '—';
@@ -61,7 +61,7 @@ export function formatDatetimeMn(dateInput: string | Date): string {
 /**
  * Format: "2024-03-15"
  */
-export function formatDateShort(dateInput: string | Date): string {
+export function formatDateShortShort(dateInput: string | Date): string {
   try {
     const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
     if (isNaN(d.getTime())) return '—';

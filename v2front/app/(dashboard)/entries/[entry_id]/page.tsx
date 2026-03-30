@@ -1,12 +1,11 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
+import { use, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEntry } from '@/lib/hooks/useEntries';
-import { DashboardLayout } from '@/components/shared/DashboardLayout';
+import { useEntry } from '@/features/entries/hooks/useEntries';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { formatDatetimeMn } from '@/lib/utils/date';
+import { formatDateShortShort } from '@/lib/utils/date';
 import {
   ArrowLeft,
   Loader2,
@@ -17,7 +16,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
-import { getSeedInsight, type SeedInsightData } from '@/lib/api/journalBackend';
+import { getSeedInsight } from '@/lib/services/journal.service';
+import {type SeedInsight } from '@/types/index';
 
 // ─── Insight card config ──────────────────────────────────────
 
@@ -51,7 +51,7 @@ export default function EntryDetailPage({
   const { token } = useAuth();
   const { entry, loading, error } = useEntry(token, entry_id);
 
-  const [insight, setInsight]           = useState<SeedInsightData | null>(null);
+  const [insight, setInsight]           = useState<SeedInsight | null>(null);
   const [insightLoading, setInsightLoading] = useState(false);
   const [insightError, setInsightError] = useState<string | null>(null);
 
@@ -70,7 +70,6 @@ export default function EntryDetailPage({
   };
 
   return (
-    <DashboardLayout>
       <div className="max-w-xl mx-auto px-4 py-8 space-y-8">
         {/* Back */}
         <Link href="/entries">
@@ -114,7 +113,7 @@ export default function EntryDetailPage({
                   </span>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">{formatDatetimeMn(entry.created_at)}</p>
+              <p className="text-sm text-muted-foreground">{formatDateShortShort(entry.created_at)}</p>
             </div>
 
             {/* Texts */}
@@ -187,6 +186,5 @@ export default function EntryDetailPage({
           </>
         )}
       </div>
-    </DashboardLayout>
   );
 }
