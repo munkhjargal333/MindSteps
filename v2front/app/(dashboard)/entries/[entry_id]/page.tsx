@@ -70,7 +70,6 @@ export default function EntryDetailPage({
   };
 
   return (
-    <DashboardLayout>
       <div className="max-w-xl mx-auto px-4 py-8 space-y-8">
         {/* Back */}
         <Link href="/entries">
@@ -187,6 +186,5 @@ export default function EntryDetailPage({
           </>
         )}
       </div>
-    </DashboardLayout>
   );
 }
