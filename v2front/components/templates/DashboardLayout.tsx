@@ -1,11 +1,11 @@
+'use client';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // components/templates/DashboardLayout.tsx
 // TEMPLATE — Full dashboard shell: sidebar (desktop) + bottom nav (mobile)
 //            + side drawer (mobile).
-// All state (drawer open, avatar error) is UI-only — appropriate here.
+// REFACTORED: All colors use design tokens. No bg-white, bg-zinc-900, etc.
 // ─────────────────────────────────────────────────────────────────────────────
-
-'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -13,7 +13,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect, type ReactNode } from 'react';
 import {
   Sunrise, BookOpen, BarChart2, Sparkles,
-  Network, LogOut, Zap, Lock, Moon, X, ChevronRight,
+  Network, LogOut, Zap, Lock, X, ChevronRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/atoms/ThemeToggle';
@@ -80,13 +80,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex min-h-screen bg-background pb-20 md:pb-0">
 
       {/* ── Desktop Sidebar ───────────────────────────────────── */}
-      <aside className="hidden md:flex flex-col w-64 border-r bg-card/40 shrink-0">
-        <div className="h-16 flex items-center gap-2.5 px-6 border-b">
-          <Sunrise className="w-6 h-6 text-orange-500" />
-          <span className="text-lg font-bold">MindSteps</span>
+      <aside className="hidden md:flex flex-col w-64 border-r border-border bg-surface shrink-0">
+        {/* Logo */}
+        <div className="h-16 flex items-center gap-2.5 px-6 border-b border-border">
+          <Sunrise className="w-6 h-6 text-primary" />
+          <span className="text-lg font-bold text-foreground">MindSteps</span>
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-2">
+        {/* Nav */}
+        <nav className="flex-1 px-4 py-6 space-y-1">
           {NAV_ITEMS.map((item) => {
             const Icon = NAV_ICONS[item.href as keyof typeof NAV_ICONS];
             const active = pathname === item.href;
@@ -97,29 +99,30 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 key={item.href}
                 href={locked ? '#' : item.href}
                 className={cn(
-                  'flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-all',
+                  'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all',
                   active
-                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                    : 'text-muted-foreground hover:bg-muted',
+                    ? 'bg-primary text-primary-fg shadow-sm'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                   locked && 'opacity-50 cursor-not-allowed'
                 )}
               >
                 <Icon size={18} />
                 <span className="flex-1">{item.label}</span>
-                {locked && <Lock size={14} className="text-muted-foreground/60" />}
+                {locked && <Lock size={14} className="opacity-60" />}
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t space-y-3">
+        {/* Footer */}
+        <div className="p-4 border-t border-border space-y-3">
           <div className="flex items-center justify-between px-2">
             <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
               onClick={logout}
-              className="text-xs text-destructive"
+              className="text-xs text-destructive hover:bg-destructive/10"
             >
               Гарах
             </Button>
@@ -133,10 +136,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* ── Main Content ──────────────────────────────────────── */}
       <main className="flex-1 min-w-0 overflow-y-auto">
         {/* Mobile top bar */}
-        <div className="md:hidden flex items-center justify-between px-4 h-14 border-b bg-background/80 backdrop-blur-sm sticky top-0 z-30">
+        <div className="md:hidden flex items-center justify-between px-4 h-14 border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-30">
           <div className="flex items-center gap-2">
-            <Sunrise className="w-5 h-5 text-orange-500" />
-            <span className="font-bold text-base">MindSteps</span>
+            <Sunrise className="w-5 h-5 text-primary" />
+            <span className="font-bold text-base text-foreground">MindSteps</span>
           </div>
 
           <button
@@ -149,9 +152,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 src={avatarUrl}
                 alt={displayName}
                 className="w-full h-full object-cover"
+                onError={() => setAvatarError(true)}
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-semibold text-sm">
+              // Avatar fallback — uses primary gradient, no hardcoded orange
+              <div className="w-full h-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-fg font-semibold text-sm">
                 {initials}
               </div>
             )}
@@ -162,7 +167,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </main>
 
       {/* ── Mobile Bottom Tab Bar ─────────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 h-16 bg-background/80 backdrop-blur-xl border-t flex items-center justify-around px-2">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 h-16 bg-background/90 backdrop-blur-xl border-t border-border flex items-center justify-around px-2">
         {NAV_ITEMS.map((item) => {
           const Icon = NAV_ICONS[item.href as keyof typeof NAV_ICONS];
           const active = pathname === item.href;
@@ -195,36 +200,37 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         })}
       </nav>
 
-      {/* ── Mobile Side Drawer overlay ────────────────────────── */}
+      {/* ── Mobile Drawer overlay ─────────────────────────────── */}
       <div
         className={cn(
-          'md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300',
+          'md:hidden fixed inset-0 z-40 bg-overlay/50 backdrop-blur-sm transition-opacity duration-300',
           drawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         )}
         onClick={() => setDrawerOpen(false)}
       />
 
-      {/* ── Mobile Side Drawer panel ──────────────────────────── */}
+      {/* ── Mobile Drawer panel ───────────────────────────────── */}
       <aside
         className={cn(
-          'md:hidden fixed top-0 left-0 z-50 h-full w-72 bg-card border-r flex flex-col',
+          'md:hidden fixed top-0 left-0 z-50 h-full w-72',
+          'bg-surface border-r border-border flex flex-col',
           'transition-transform duration-300 ease-in-out shadow-2xl',
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* Header */}
-        <div className="p-5 border-b">
+        <div className="p-5 border-b border-border">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Sunrise className="w-5 h-5 text-orange-500" />
-              <span className="font-bold text-sm">MindSteps</span>
+              <Sunrise className="w-5 h-5 text-primary" />
+              <span className="font-bold text-sm text-foreground">MindSteps</span>
             </div>
             <button
               onClick={() => setDrawerOpen(false)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
+              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted transition-colors text-muted-foreground"
               aria-label="Хаах"
             >
-              <X size={16} className="text-muted-foreground" />
+              <X size={16} />
             </button>
           </div>
 
@@ -240,12 +246,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 onError={() => setAvatarError(true)}
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-semibold text-lg shrink-0">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-fg font-semibold text-lg shrink-0">
                 {initials}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm truncate">{displayName}</p>
+              <p className="font-semibold text-sm text-foreground truncate">{displayName}</p>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
           </div>
@@ -261,12 +267,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <Link
               href="/upgrade"
               onClick={() => setDrawerOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-violet-500 to-violet-600 text-white text-sm font-semibold shadow-md hover:from-violet-600 hover:to-violet-700 transition-all"
+              className={cn(
+                'flex items-center gap-3 px-4 py-3 rounded-2xl',
+                'bg-accent text-accent-fg text-sm font-semibold',
+                'shadow-md hover:bg-accent/90 transition-all'
+              )}
             >
               <Sparkles size={18} />
               <div className="flex-1">
                 <p className="leading-none">Pro руу шилжих</p>
-                <p className="text-[10px] font-normal text-violet-200 mt-0.5">
+                <p className="text-[10px] font-normal opacity-70 mt-0.5">
                   Бүх боломжийг нээх
                 </p>
               </div>
@@ -276,17 +286,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t space-y-1">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl">
-            <Moon size={18} className="text-muted-foreground" />
-            <span className="flex-1 text-sm font-medium text-muted-foreground">
-              Харанхуй горим
-            </span>
-            <ThemeToggle />
-          </div>
+        <div className="p-3 border-t border-border space-y-1">
+          {/* Theme toggle — labeled variant for drawer */}
+          <ThemeToggle variant="labeled" />
+
           <button
             onClick={() => { setDrawerOpen(false); logout(); }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-all"
           >
             <LogOut size={18} />
             <span>Гарах</span>

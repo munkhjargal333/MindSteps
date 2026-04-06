@@ -1,7 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// app/layout.tsx  — ROOT LAYOUT (Server Component)
+// app/layout.tsx — ROOT LAYOUT (Server Component)
 // Provider order: Auth → Theme → Tier → Toast → children
-// ThoughtProvider нэр → TierProvider болж өөрчлөгдсөн (SoC: нэр нь үүргийг тусгана)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Metadata } from 'next';
@@ -41,15 +40,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
+    // suppressHydrationWarning prevents React warning when next-themes
+    // adds the `dark` class on the server vs client hydration.
     <html lang="mn" suppressHydrationWarning>
-      <body className={`${jakarta.variable} antialiased`}>
+      <body
+        className={`${jakarta.variable} font-sans antialiased bg-background text-foreground`}
+      >
         <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
+          <ThemeProvider>
             <TierProvider>
               <ToastProvider>
                 {children}

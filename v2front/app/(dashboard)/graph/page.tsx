@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getValueGraph } from '@/lib/services/journal.service';
-import {type GraphData} from '@/types/index'
+import { type GraphData} from '@/types'
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {

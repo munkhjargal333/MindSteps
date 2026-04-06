@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useInsights } from '@/features/insights/hooks/useInsights';
 import { useThoughtContext } from '@/contexts/TierContext';
-import { formatDateShortShort } from '@/lib/utils/date';
+import { relativeTimeMn } from '@/lib/utils/date';
 
 export default function InsightsPage() {
   return (
@@ -89,7 +89,7 @@ function InsightsView() {
               className="p-5 rounded-2xl bg-card border border-border space-y-2"
             >
               <p className="text-[11px] text-muted-foreground">
-                {formatDateShortShort(insight.created_at)}
+                {relativeTimeMn(insight.created_at)}
               </p>
               <p className="text-sm leading-relaxed text-foreground/85">
                 {insight.content}

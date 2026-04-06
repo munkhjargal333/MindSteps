@@ -14,7 +14,7 @@ import { ActionBadge } from '@/components/atoms/ActionBadge';
 import { useEntries } from '@/features/entries/hooks/useEntries';
 import { useThoughtContext } from '@/contexts/TierContext';
 import { cn } from '@/lib/utils';
-import { formatDateShortShort } from '@/lib/utils/date';
+import { relativeTimeMn } from '@/lib/utils/date';
 
 export default function EntriesPage() {
   return (
@@ -96,7 +96,7 @@ function EntriesView() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0 space-y-2">
                   <p className="text-[11px] text-muted-foreground">
-                    {formatDateShortShort(entry.created_at)}
+                    {relativeTimeMn(entry.created_at)}
                   </p>
                   {entry.surface_text && (
                     <p className="text-sm text-foreground/80 line-clamp-2 leading-relaxed">

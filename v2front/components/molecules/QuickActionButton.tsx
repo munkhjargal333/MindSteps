@@ -1,8 +1,10 @@
+'use client';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // components/molecules/QuickActionButton.tsx
 // MOLECULE — Clickable card for a single quick-action type.
-// Combines icon atom + text. Handles active/disabled/locked visual states.
-// NO business logic — all state is communicated via props.
+// REFACTORED: Replaced bg-white/dark:bg-zinc-900 with bg-surface token.
+//             Replaced bg-white/90 dark:bg-black/20 with bg-surface/90.
 // ─────────────────────────────────────────────────────────────────────────────
 
 'use client';
@@ -46,8 +48,10 @@ export function QuickActionButton({
       className={cn(
         'group relative text-left overflow-hidden transition-all',
         isCompact
-          ? cn('flex flex-col items-start p-5 rounded-[2.5rem] border min-h-[160px]', action.bg)
-          : 'flex flex-col items-start p-5 rounded-[2.5rem] bg-white dark:bg-zinc-900 border border-border shadow-sm',
+          // Compact: uses the action's own bg color token (from data/constants)
+          ? cn('flex flex-col items-start p-5 rounded-[2.5rem] border border-border min-h-[160px]', action.bg)
+          // Default: token-based surface card
+          : 'flex flex-col items-start p-5 rounded-[2.5rem] bg-surface border border-border shadow-sm',
         !isDisabled && 'hover:border-border hover:shadow-md hover:scale-[1.02] active:scale-[0.95]',
         isDisabled && 'bg-muted/30 border-dashed border-border opacity-60 grayscale cursor-not-allowed',
         className
@@ -55,17 +59,19 @@ export function QuickActionButton({
     >
       {/* Lock badge */}
       {isDisabled && (
-        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] bg-muted px-1.5 py-0.5 rounded-full">
+        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
           <Lock size={10} />Pro
         </div>
       )}
 
-      {/* Icon */}
+      {/* Icon container */}
       <div
         className={cn(
           'p-3 rounded-2xl mb-4 transition-transform',
           isCompact
-            ? cn('bg-white/90 dark:bg-black/20 shadow-sm', action.color)
+            // Compact: subtle surface overlay on top of the colored card bg
+            ? cn('bg-surface/80 shadow-sm', action.color)
+            // Default: full action color block
             : cn(action.bg, action.color),
           !isDisabled && 'group-hover:scale-110 group-hover:rotate-3'
         )}

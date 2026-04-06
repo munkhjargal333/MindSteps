@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // components/molecules/JournalTextarea.tsx
-// MOLECULE — Combines a question heading + styled textarea.
-// Shared across SurfaceStep, InnerReactionStep, MeaningStep organisms.
+// MOLECULE — Question heading + styled textarea for journal steps.
+// REFACTORED: All colors via design tokens. Clean focus ring using ring token.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { Textarea } from '@/components/ui/textarea';
@@ -19,9 +19,12 @@ export interface JournalTextareaProps {
 
 const textareaClass = cn(
   'min-h-[180px] text-base resize-none',
-  'bg-muted/40 border-0 rounded-2xl p-4',
-  'focus-visible:ring-1 focus-visible:ring-foreground/20',
-  'placeholder:text-muted-foreground/40'
+  // Token-based: bg-muted with low opacity, no border, rounded
+  'bg-muted/50 border-0 rounded-2xl p-4',
+  // Focus: uses --ring token
+  'focus-visible:ring-1 focus-visible:ring-ring/30',
+  'placeholder:text-muted-foreground/40',
+  'text-foreground'
 );
 
 export function JournalTextarea({
@@ -36,7 +39,7 @@ export function JournalTextarea({
   return (
     <div className={cn('space-y-6', className)}>
       <div className="space-y-1.5">
-        <h2 className="text-xl font-bold leading-snug">{question}</h2>
+        <h2 className="text-xl font-bold leading-snug text-foreground">{question}</h2>
       </div>
       <Textarea
         value={value}

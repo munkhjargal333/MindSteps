@@ -1,10 +1,10 @@
+'use client';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // components/organisms/MainHeader.tsx
 // ORGANISM — Top navigation bar (marketing + public pages).
-// Reads auth + tier from context. No business logic.
+// REFACTORED: Uses design tokens. Removed violet-100/900 hardcoded values.
 // ─────────────────────────────────────────────────────────────────────────────
-
-'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -24,14 +24,14 @@ export function MainHeader() {
     pathname?.startsWith('/login') || pathname?.startsWith('/join');
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm">
       <div className="container max-w-2xl mx-auto h-14 flex items-center justify-between px-4">
         {/* Logo */}
         <Link
           href="/"
           className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
         >
-          <Sunrise className="w-6 h-6 text-orange-500" strokeWidth={2.5} />
+          <Sunrise className="w-6 h-6 text-primary" strokeWidth={2.5} />
           <span className="text-[17px] font-bold tracking-tight text-foreground">
             MindSteps
           </span>
@@ -44,7 +44,8 @@ export function MainHeader() {
           {isLoggedIn ? (
             <div className="flex items-center gap-2">
               {tier === 'pro' && (
-                <span className="hidden sm:inline-flex items-center gap-1 text-xs bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 px-2 py-1 rounded-full">
+                // Uses accent token instead of violet-100/violet-900
+                <span className="hidden sm:inline-flex items-center gap-1 text-xs bg-accent/15 text-accent px-2 py-1 rounded-full font-medium">
                   <Sparkles size={12} />
                   Pro
                 </span>
@@ -57,7 +58,7 @@ export function MainHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full text-muted-foreground hover:text-destructive"
+                className="rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                 onClick={logout}
               >
                 <LogOut className="h-4 w-4" />
